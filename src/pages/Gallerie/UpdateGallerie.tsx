@@ -5,30 +5,14 @@ import { useLocation } from "react-router-dom";
 import Flatpickr from "react-flatpickr";
 import Select from "react-select";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
-import { useUpdateEvenementMutation } from "features/evenements/evenementSlice";
 import { useUpdateGallerieMutation } from "features/galleries/gallerieSlice";
+import { French } from "flatpickr/dist/l10n/fr";
+import { formatDate, formatTime } from "helpers/data_time_format";
+import { convertToBase64 } from "helpers/base64_convert";
 
 interface ChildProps {
   modal_UpdateGallerie: boolean;
   setmodal_UpdateGallerie: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-function convertToBase64(
-  file: File
-): Promise<{ base64Data: string; extension: string }> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      const base64String = fileReader.result as string;
-      const [, base64Data] = base64String.split(",");
-      const extension = file.name.split(".").pop() ?? "";
-      resolve({ base64Data, extension });
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
-    fileReader.readAsDataURL(file);
-  });
 }
 
 const UpdateGallerie: React.FC<ChildProps> = ({
@@ -245,7 +229,7 @@ const UpdateGallerie: React.FC<ChildProps> = ({
       if (selectedDate === null) {
         Galleries["creation_date"] = gallerieLocation?.state?.creation_date!;
       } else {
-        Galleries["creation_date"] = selectedDate?.toDateString()!;
+        Galleries["creation_date"] = formatDate(selectedDate);
       }
 
       if (!Galleries.fichier_base64_string) {
@@ -344,6 +328,7 @@ const UpdateGallerie: React.FC<ChildProps> = ({
                 placeholder="Choisir Date"
                 options={{
                   dateFormat: "d M, Y",
+                  locale: French,
                 }}
                 onChange={handleDateChange}
               />

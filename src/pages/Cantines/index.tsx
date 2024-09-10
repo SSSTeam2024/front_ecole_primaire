@@ -10,7 +10,6 @@ import {
   Offcanvas,
   Image,
 } from "react-bootstrap";
-import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
 import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -22,24 +21,9 @@ import {
 } from "features/cantines/cantineSlice";
 import Masonry from "react-responsive-masonry";
 import UpdateCantine from "./UpdateCantine";
-
-function convertToBase64(
-  file: File
-): Promise<{ base64Data: string; extension: string }> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      const base64String = fileReader.result as string;
-      const [, base64Data] = base64String.split(",");
-      const extension = file.name.split(".").pop() ?? "";
-      resolve({ base64Data, extension });
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
-    fileReader.readAsDataURL(file);
-  });
-}
+import { French } from "flatpickr/dist/l10n/fr";
+import { formatDate, formatTime } from "helpers/data_time_format";
+import { convertToBase64 } from "helpers/base64_convert";
 
 const Cantines = () => {
   const { data = [] } = useFetchCantinesQuery();
@@ -104,7 +88,7 @@ const Cantines = () => {
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           swalWithBootstrapButtons.fire(
             "Annulé",
-            "L'événement est en sécurité :)",
+            "La cantine est en sécurité :)",
             "info"
           );
         }
@@ -183,7 +167,7 @@ const Cantines = () => {
   const onSubmitCantine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      cantine["creation_date"] = selectedDate?.toDateString()!;
+      cantine["creation_date"] = formatDate(selectedDate);
       cantine["jour"] = selectedJour;
       createCantine(cantine)
         .then(() => notifySuccess())

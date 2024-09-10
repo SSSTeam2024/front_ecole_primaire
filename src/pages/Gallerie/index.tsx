@@ -33,24 +33,9 @@ import "swiper/css/effect-flip";
 import { Pagination } from "swiper/modules";
 import { Autoplay } from "swiper/modules";
 import UpdateGallerie from "./UpdateGallerie";
-
-function convertToBase64(
-  file: File
-): Promise<{ base64Data: string; extension: string }> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      const base64String = fileReader.result as string;
-      const [, base64Data] = base64String.split(",");
-      const extension = file.name.split(".").pop() ?? "";
-      resolve({ base64Data, extension });
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
-    fileReader.readAsDataURL(file);
-  });
-}
+import { French } from "flatpickr/dist/l10n/fr";
+import { formatDate, formatTime } from "helpers/data_time_format";
+import { convertToBase64 } from "helpers/base64_convert";
 
 const Gallerie = () => {
   const { data = [] } = useFetchGallerieQuery();
@@ -226,7 +211,7 @@ const Gallerie = () => {
   const onSubmitGallerie = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      gallerie["creation_date"] = selectedDate?.toDateString()!;
+      gallerie["creation_date"] = formatDate(selectedDate);
       gallerie["classes"] = selectedColumnValues;
       createGallerie(gallerie)
         .then(() => notifySuccess())
@@ -497,6 +482,7 @@ const Gallerie = () => {
                       onChange={handleDateChange}
                       options={{
                         dateFormat: "d M, Y",
+                        locale: French,
                       }}
                       id="date"
                       name="date"

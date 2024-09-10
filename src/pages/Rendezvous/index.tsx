@@ -14,7 +14,6 @@ import Breadcrumb from "Common/BreadCrumb";
 import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
-import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 import {
   useAddRendezvousMutation,
   useDeleteRendezvousMutation,
@@ -25,11 +24,12 @@ import Select from "react-select";
 import UpdateRendezvous from "./UpdateRendezvous";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate, formatTime } from "helpers/data_time_format";
+import { useFetchParentsQuery } from "features/parents/parentSlice";
 
 const Rendezvous = () => {
   const { data = [] } = useFetchRendezvousQuery();
 
-  const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
+  const { data: AllParents = [] } = useFetchParentsQuery();
 
   const [deleteRendezvous] = useDeleteRendezvousMutation();
 
@@ -92,9 +92,9 @@ const Rendezvous = () => {
       });
   };
 
-  const optionColumnsTable = AllEnseignants.map((enseignant: any) => ({
-    value: enseignant?._id!,
-    label: `${enseignant.nom_enseignant} ${enseignant.prenom_enseignant}`,
+  const optionColumnsTable = AllParents.map((parent: any) => ({
+    value: parent?._id!,
+    label: `${parent.prenom_parent} ${parent.nom_parent}`,
   }));
 
   const [selectedColumnValues, setSelectedColumnValues] = useState<any[]>([]);
@@ -134,13 +134,15 @@ const Rendezvous = () => {
     titre: "",
     date: "",
     description: "",
-    enseignants: [""],
+    parents: [""],
     heure: "",
+    administration: "",
   };
 
   const [rendezvous, setRendezvous] = useState(initialRendezvous);
 
-  const { titre, date, description, enseignants, heure } = rendezvous;
+  const { titre, date, description, parents, heure, administration } =
+    rendezvous;
 
   const onChangeRendezvous = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -155,7 +157,8 @@ const Rendezvous = () => {
     e.preventDefault();
     try {
       rendezvous["date"] = formatDate(selectedDate);
-      rendezvous["enseignants"] = selectedColumnValues;
+      rendezvous["parents"] = selectedColumnValues;
+      rendezvous["administration"] = "false";
       rendezvous["heure"] = formatTime(selectedTime);
       createRendezvous(rendezvous)
         .then(() => notifySuccess())
@@ -172,13 +175,13 @@ const Rendezvous = () => {
       sortable: true,
     },
     {
-      name: <span className="font-weight-bold fs-13">Enseignant(s)</span>,
+      name: <span className="font-weight-bold fs-13">Parent(s)</span>,
       selector: (row: any) => {
         return (
           <ul className="vstack gap-2 list-unstyled mb-0">
-            {row.enseignants.map((enseignant: any) => (
-              <li key={enseignant._id}>
-                {enseignant.nom_enseignant} {enseignant.prenom_enseignant}
+            {row.parents.map((parent: any) => (
+              <li key={parent._id}>
+                {parent.prenom_parent} {parent.nom_parent}
               </li>
             ))}
           </ul>
@@ -298,26 +301,23 @@ const Rendezvous = () => {
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase());
 
-        // Check if any enseignant's nom_enseignant or prenom_enseignant matches the searchTerm
-        const matchEnseignants = rendezvous.enseignants.some(
-          (enseignant: any) => {
-            return (
-              enseignant.nom_enseignant
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()) ||
-              enseignant.prenom_enseignant
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase())
-            );
-          }
-        );
+        const matchParents = rendezvous.parents.some((parent: any) => {
+          return (
+            parent.nom_parent
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            parent.prenom_parent
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          );
+        });
 
         return (
           matchTitre ||
           matchDescription ||
           matchDate ||
           matchHeure ||
-          matchEnseignants
+          matchParents
         );
       });
     }
@@ -469,7 +469,7 @@ const Rendezvous = () => {
                 </Row>
                 <Row className="mb-4">
                   <Col lg={3}>
-                    <Form.Label htmlFor="enseignants">Enseignant(s)</Form.Label>
+                    <Form.Label htmlFor="parents">Parent(s)</Form.Label>
                   </Col>
                   <Col lg={8}>
                     <Select
@@ -572,21 +572,28 @@ const Rendezvous = () => {
             </Row>
             <Row className="mb-3">
               <Col lg={4}>
-                <span className="fw-medium">Enseignant(s)</span>
+                <span className="fw-medium">Parent(s)</span>
               </Col>
               <Col lg={8}>
                 <ul className="vstack gap-2 list-unstyled mb-0">
-                  {rendezvousLocation?.state?.enseignants.map(
-                    (enseignant: any) => (
-                      <li key={enseignant._id}>
-                        {enseignant.nom_enseignant}{" "}
-                        {enseignant.prenom_enseignant}
-                      </li>
-                    )
-                  )}
+                  {rendezvousLocation?.state?.parents.map((parent: any) => (
+                    <li key={parent._id}>
+                      {parent.prenom_parent} {parent.nom_parent}
+                    </li>
+                  ))}
                 </ul>
               </Col>
             </Row>
+            {rendezvousLocation?.state?.matiere! !== null && (
+              <Row className="mb-3">
+                <Col lg={4}>
+                  <span className="fw-medium">Matiere</span>
+                </Col>
+                <Col lg={8}>
+                  <i>{rendezvousLocation?.state?.matiere?.nom_matiere!}</i>
+                </Col>
+              </Row>
+            )}
           </Offcanvas.Body>
         </Offcanvas>
       </div>

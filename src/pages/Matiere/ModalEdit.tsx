@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
-
 import { useLocation } from "react-router-dom";
-import { useUpdateClasseMutation } from "features/classes/classeSlice";
 import { useUpdateMatiereMutation } from "features/matieres/matiereSlice";
+import Select from "react-select";
+import { useFetchClassesQuery } from "features/classes/classeSlice";
 
 interface ChildProps {
   modal_UpdateMatiere: boolean;
@@ -15,7 +15,42 @@ const ModalEdit: React.FC<ChildProps> = ({
   modal_UpdateMatiere,
   setmodal_UpdateMatiere,
 }) => {
+  const customStyles = {
+    control: (styles: any, { isFocused }: any) => ({
+      ...styles,
+      minHeight: "41px",
+      borderColor: isFocused ? "#4b93ff" : "#e9ebec",
+      boxShadow: isFocused ? "0 0 0 1px #4b93ff" : styles.boxShadow,
+      ":hover": {
+        borderColor: "#4b93ff",
+      },
+    }),
+    multiValue: (styles: any, { data }: any) => {
+      return {
+        ...styles,
+        backgroundColor: "#4b93ff",
+      };
+    },
+    multiValueLabel: (styles: any, { data }: any) => ({
+      ...styles,
+      backgroundColor: "#4b93ff",
+      color: "white",
+    }),
+    multiValueRemove: (styles: any, { data }: any) => ({
+      ...styles,
+      color: "white",
+      backgroundColor: "#4b93ff",
+      ":hover": {
+        backgroundColor: "#4b93ff",
+        color: "white",
+      },
+    }),
+  };
+
   const matiereLocation = useLocation();
+
+  const { data: AllClasses = [] } = useFetchClassesQuery();
+
   const [matiereName, setMatiereName] = useState<string>(
     matiereLocation?.state?.nom_matiere ?? ""
   );
@@ -31,6 +66,7 @@ const ModalEdit: React.FC<ChildProps> = ({
 
   const initialMatiere = {
     nom_matiere: "",
+    classe: [""],
   };
 
   const [matiere, setMatiere] = useState(initialMatiere);
@@ -55,12 +91,33 @@ const ModalEdit: React.FC<ChildProps> = ({
     });
   };
 
+  const [selectedValues, setSelectedValues] = useState(
+    matiereLocation?.state?.classe || []
+  );
+
+  const allClassesOptions = AllClasses.map((classe) => ({
+    value: classe?._id!,
+    label: `${classe.nom_classe}`,
+  }));
+
+  const defaultClassesOptions =
+    matiereLocation?.state?.classe?.map((item: any) => ({
+      label: `${item.nom_classe}`,
+      value: item._id,
+    })) || [];
+
+  const handleSelectValueColumnChange = (selectedOptions: any) => {
+    const values = selectedOptions.map((option: any) => option.value);
+    setSelectedValues(values);
+  };
+
   const onSubmitUpdateMatiere = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const classe = {
         _id: matiere_id || matiereLocation?.state?._id!,
         nom_matiere: matiereName || matiereLocation?.state?.nom_matiere,
+        classe: selectedValues || matiereLocation?.state?.classe,
       };
       updateMatiere(classe)
         .then(() => notifySuccess())
@@ -84,6 +141,22 @@ const ModalEdit: React.FC<ChildProps> = ({
               name="matiereName"
               value={matiereName}
               onChange={handleMatiereName}
+            />
+          </Col>
+        </Row>
+        <Row className="mb-4">
+          <Col lg={3}>
+            <Form.Label htmlFor="parents">Classe(s) : </Form.Label>
+          </Col>
+          <Col lg={8}>
+            <Select
+              closeMenuOnSelect={false}
+              isMulti
+              options={allClassesOptions}
+              styles={customStyles}
+              onChange={handleSelectValueColumnChange}
+              placeholder="Filter Columns"
+              defaultValue={defaultClassesOptions}
             />
           </Col>
         </Row>

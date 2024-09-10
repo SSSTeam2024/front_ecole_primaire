@@ -15,11 +15,6 @@ import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
-import {
-  useAddObservationMutation,
-  useDeleteObservationMutation,
-  useFetchObservationsQuery,
-} from "features/observations/observationSlice";
 import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 import {
   useAddExerciceMutation,
@@ -28,24 +23,9 @@ import {
 } from "features/exercices/exerciceSlice";
 import Select from "react-select";
 import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
-
-function convertToBase64(
-  file: File
-): Promise<{ base64Data: string; extension: string }> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      const base64String = fileReader.result as string;
-      const [, base64Data] = base64String.split(","); // Extract only the Base64 data
-      const extension = file.name.split(".").pop() ?? ""; // Get the file extension
-      resolve({ base64Data, extension });
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
-    fileReader.readAsDataURL(file);
-  });
-}
+import { French } from "flatpickr/dist/l10n/fr";
+import { formatDate, formatTime } from "helpers/data_time_format";
+import { convertToBase64 } from "helpers/base64_convert";
 
 const Exercices = () => {
   const { data = [] } = useFetchExercicesQuery();
@@ -221,8 +201,8 @@ const Exercices = () => {
   const onSubmitObservation = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      observation["creation_date"] = selectedDate?.toDateString()!;
-      observation["badge_date"] = selectedBadgeDate?.toDateString()!;
+      observation["creation_date"] = formatDate(selectedDate);
+      observation["badge_date"] = formatDate(selectedBadgeDate);
       observation["classes"] = selectedColumnValues;
       observation["enseignant"] = selectedPar;
       observation["matiere"] = selectedMatiere;
@@ -343,22 +323,15 @@ const Exercices = () => {
   const observationLocation = useLocation();
 
   const openFileInNewTab = (fileUrl: string, fileName: string) => {
-    // Create a temporary link element
     const link = document.createElement("a");
     link.href = fileUrl;
-    link.target = "_blank"; // Open in new tab
-    link.download = fileName; // Optional: specify a filename for download
-
-    // Append the link to the document body and trigger a click event
+    link.target = "_blank";
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
-
-    // Clean up by removing the link element
     document.body.removeChild(link);
   };
-
   const handleButtonClick = () => {
-    // Example file URL and name
     const fileUrl = `${process.env.REACT_APP_BASE_URL}/exerciceFiles/${observationLocation.state.fichier}`;
     const fileName = "sample.pdf";
 
@@ -483,6 +456,7 @@ const Exercices = () => {
                       onChange={handleDateChange}
                       options={{
                         dateFormat: "d M, Y",
+                        locale: French,
                       }}
                       id="date"
                       name="date"
@@ -500,6 +474,7 @@ const Exercices = () => {
                       onChange={handleBadgeDateChange}
                       options={{
                         dateFormat: "d M, Y",
+                        locale: French,
                       }}
                       id="badge_date"
                       name="badge_date"

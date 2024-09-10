@@ -51,6 +51,8 @@ const UpdatePaiment: React.FC<ChildProps> = ({
     montant: "",
     date_paiement: "",
     annee_scolaire: "",
+    period: "",
+    designation: "",
   };
 
   const [paiement, setPaiment] = useState(initialPaiment);
@@ -103,6 +105,8 @@ const UpdatePaiment: React.FC<ChildProps> = ({
         annee_scolaire:
           anneeScolaire || paiementLocation?.state?.annee_scolaire,
         eleve: selectedEleve || paiementLocation?.state?.eleve,
+        period: paiementLocation?.state?.period,
+        designation: paiementLocation?.state?.designation,
       };
       updatePaiment(update_paiement)
         .then(() => notifySuccess())

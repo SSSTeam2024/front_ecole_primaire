@@ -3,9 +3,11 @@ import { Button, Col, Form, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
 import Flatpickr from "react-flatpickr";
-import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 import Select from "react-select";
 import { useUpdateRendezvousMutation } from "features/rendezvous/rendezvousSlice";
+import { useFetchParentsQuery } from "features/parents/parentSlice";
+import { French } from "flatpickr/dist/l10n/fr";
+import { formatDate, formatTime } from "helpers/data_time_format";
 
 interface ChildProps {
   modal_UpdateRendezvous: boolean;
@@ -50,7 +52,7 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
 
   const rendezvousLocation = useLocation();
 
-  const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
+  const { data: AllParents = [] } = useFetchParentsQuery();
 
   // Date
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -67,19 +69,19 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
     setSelectedTime(time);
   };
 
-  // Enseignants
+  // Parents
   const [selectedValues, setSelectedValues] = useState(
-    rendezvousLocation?.state?.enseignants || []
+    rendezvousLocation?.state?.parents || []
   );
 
-  const allEnseignantsOptions = AllEnseignants.map((enseignant) => ({
-    value: enseignant?._id!,
-    label: `${enseignant.nom_enseignant} ${enseignant.prenom_enseignant}`,
+  const allParentsOptions = AllParents.map((parent) => ({
+    value: parent?._id!,
+    label: `${parent.prenom_parent} ${parent.nom_parent}`,
   }));
 
-  const defaultEnseignantsOptions =
-    rendezvousLocation?.state?.enseignants?.map((item: any) => ({
-      label: `${item.nom_enseignant} ${item.prenom_enseignant}`,
+  const defaultParentsOptions =
+    rendezvousLocation?.state?.parents?.map((item: any) => ({
+      label: `${item.prenom_parent} ${item.nom_parent}`,
       value: item._id,
     })) || [];
 
@@ -111,8 +113,6 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
     rendezvousLocation?.state?._id! ?? ""
   );
 
-  const [showEnseignant, setShowEnseignant] = useState<boolean>(false);
-
   const [showTime, setShowTime] = useState<boolean>(false);
 
   const [showDate, setShowDate] = useState<boolean>(false);
@@ -123,7 +123,7 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
     titre: "",
     date: "",
     description: "",
-    enseignants: [""],
+    parents: [""],
     heure: "",
   };
 
@@ -157,11 +157,10 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
         titre: rendezvous_titre || rendezvousLocation?.state?.titre,
         description:
           rendezvous_description || rendezvousLocation?.state?.description,
-        date: selectedDate?.toDateString()! || rendezvousLocation?.state?.date,
-        heure:
-          selectedTime?.toLocaleTimeString()! ||
-          rendezvousLocation?.state?.heure!,
-        enseignants: selectedValues || rendezvousLocation?.state?.enseignants!,
+        date: formatDate(selectedDate) || rendezvousLocation?.state?.date,
+        heure: formatTime(selectedTime) || rendezvousLocation?.state?.heure!,
+        parents: selectedValues || rendezvousLocation?.state?.parents!,
+        administration: "false",
       };
       updateRendezvous(update_rendezvous)
         .then(() => notifySuccess())
@@ -176,17 +175,17 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
       <Form onSubmit={onSubmitUpdateRendezvous}>
         <Row className="mb-4">
           <Col lg={3}>
-            <Form.Label htmlFor="enseignants">Enseignant(s) : </Form.Label>
+            <Form.Label htmlFor="parents">Parent(s) : </Form.Label>
           </Col>
           <Col lg={8}>
             <Select
               closeMenuOnSelect={false}
               isMulti
-              options={allEnseignantsOptions}
+              options={allParentsOptions}
               styles={customStyles}
               onChange={handleSelectValueColumnChange}
               placeholder="Filter Columns"
-              defaultValue={defaultEnseignantsOptions}
+              defaultValue={defaultParentsOptions}
             />
           </Col>
         </Row>
@@ -252,6 +251,7 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
                 placeholder="Choisir Date"
                 options={{
                   dateFormat: "d M, Y",
+                  locale: French,
                 }}
                 onChange={handleDateChange}
               />

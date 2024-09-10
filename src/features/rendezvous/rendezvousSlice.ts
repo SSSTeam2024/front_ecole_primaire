@@ -5,8 +5,10 @@ export interface Rendezvous {
   titre: string;
   date: string;
   description: string;
-  enseignants: string[];
+  parents: string[];
   heure: string;
+  matiere?: string;
+  administration: string;
 }
 
 export const rendezvousSlice = createApi({

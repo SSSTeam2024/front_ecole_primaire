@@ -19,9 +19,13 @@ import {
   useFetchMatieresQuery,
 } from "features/matieres/matiereSlice";
 import * as XLSX from "xlsx";
+import { useFetchClassesQuery } from "features/classes/classeSlice";
+import Select from "react-select";
 
 const Matieres = () => {
   const { data = [] } = useFetchMatieresQuery();
+
+  const { data: AllClasses = [] } = useFetchClassesQuery();
 
   const [deleteMatiere] = useDeleteMatiereMutation();
 
@@ -91,15 +95,29 @@ const Matieres = () => {
   function tog_UpdateMatiere() {
     setmodal_UpdateMatiere(!modal_UpdateMatiere);
   }
+
+  const optionColumnsTable = AllClasses.map((classe: any) => ({
+    value: classe?._id!,
+    label: `${classe.nom_classe}`,
+  }));
+
+  const [selectedColumnValues, setSelectedColumnValues] = useState<any[]>([]);
+
+  const handleSelectValueColumnChange = (selectedOption: any) => {
+    const values = selectedOption.map((option: any) => option.value);
+    setSelectedColumnValues(values);
+  };
+
   const [createMatiere] = useAddMatiereMutation();
 
   const initialMatiere = {
     nom_matiere: "",
+    classe: [""],
   };
 
   const [matiere, setMatiere] = useState(initialMatiere);
 
-  const { nom_matiere } = matiere;
+  const { nom_matiere, classe } = matiere;
 
   const onChangeMatiere = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMatiere((prevState) => ({
@@ -111,6 +129,7 @@ const Matieres = () => {
   const onSubmitMatiere = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      matiere["classe"] = selectedColumnValues;
       createMatiere(matiere)
         .then(() => notifySuccess())
         .then(() => setMatiere(initialMatiere));
@@ -125,7 +144,19 @@ const Matieres = () => {
       selector: (row: any) => row.nom_matiere,
       sortable: true,
     },
-
+    {
+      name: <span className="font-weight-bold fs-13">Classe(s)</span>,
+      selector: (row: any) => {
+        return (
+          <ul className="vstack gap-2 list-unstyled mb-0">
+            {row.classe.map((classe: any) => (
+              <li key={classe._id}>{classe.nom_classe}</li>
+            ))}
+          </ul>
+        );
+      },
+      sortable: true,
+    },
     {
       name: <span className="font-weight-bold fs-13">Actions</span>,
       sortable: true,
@@ -202,7 +233,7 @@ const Matieres = () => {
   const submitExcelData = async (parsedData: any[]) => {
     try {
       for (const matiere of parsedData) {
-        await createMatiere(matiere); // Assuming createMatiere is a promise-based function
+        await createMatiere(matiere);
       }
       notifySuccess();
     } catch (error) {
@@ -217,18 +248,12 @@ const Matieres = () => {
       reader.onload = (event) => {
         const data = new Uint8Array(event.target!.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: "array" });
-
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-
         const excelData = XLSX.utils.sheet_to_json(worksheet);
-
-        // Assuming the structure [{ nom_matiere: 'value' }]
         const parsedData = excelData.map((row: any) => ({
           nom_matiere: row["nom_matiere"],
         }));
-
-        // Submit the parsed data to the backend
         submitExcelData(parsedData);
       };
 
@@ -317,18 +342,31 @@ const Matieres = () => {
             </Modal.Header>
             <Modal.Body>
               <Form className="create-form" onSubmit={onSubmitMatiere}>
-                <Row>
-                  <Col lg={12} className="d-flex justify-content-center">
-                    <div className="mb-3">
-                      <Form.Label htmlFor="nom_matiere">Nom</Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="nom_matiere"
-                        name="nom_matiere"
-                        onChange={onChangeMatiere}
-                        value={matiere.nom_matiere}
-                      />
-                    </div>
+                <Row className="mb-4">
+                  <Col lg={3} className="d-flex justify-content-center">
+                    <Form.Label htmlFor="nom_matiere">Nom</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <Form.Control
+                      type="text"
+                      id="nom_matiere"
+                      name="nom_matiere"
+                      onChange={onChangeMatiere}
+                      value={matiere.nom_matiere}
+                    />
+                  </Col>
+                </Row>
+                <Row className="mb-4">
+                  <Col lg={3}>
+                    <Form.Label htmlFor="classe">Classe(s)</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <Select
+                      closeMenuOnSelect={false}
+                      isMulti
+                      options={optionColumnsTable}
+                      onChange={handleSelectValueColumnChange}
+                    />
                   </Col>
                 </Row>
                 <Row>

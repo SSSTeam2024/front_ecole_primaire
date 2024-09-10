@@ -14,6 +14,7 @@ import Breadcrumb from "Common/BreadCrumb";
 import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
+  Paiement,
   useAddPaiementMutation,
   useDeletePaiementMutation,
   useFetchPaiementsQuery,
@@ -29,25 +30,7 @@ const formatDate = (date: Date): string => {
   return `${day}-${month}-${year}`;
 };
 
-// function convertToBase64(
-//   file: File
-// ): Promise<{ base64Data: string; extension: string }> {
-//   return new Promise((resolve, reject) => {
-//     const fileReader = new FileReader();
-//     fileReader.onload = () => {
-//       const base64String = fileReader.result as string;
-//       const [, base64Data] = base64String.split(",");
-//       const extension = file.name.split(".").pop() ?? "";
-//       resolve({ base64Data, extension });
-//     };
-//     fileReader.onerror = (error) => {
-//       reject(error);
-//     };
-//     fileReader.readAsDataURL(file);
-//   });
-// }
-
-const Paiement = () => {
+const PaiementPage = () => {
   const { data = [] } = useFetchPaiementsQuery();
   const { data: AllEleves = [] } = useFetchEtudiantsQuery();
 
@@ -69,6 +52,36 @@ const Paiement = () => {
       position: "center",
       icon: "error",
       title: `Sothing Wrong, ${err}`,
+      showConfirmButton: false,
+      timer: 2500,
+    });
+  };
+
+  const notifyAnnuel = () => {
+    Swal.fire({
+      position: "center",
+      icon: "info",
+      title: "Le montant doit être = 7700 d",
+      showConfirmButton: false,
+      timer: 2500,
+    });
+  };
+
+  const notifyCheck = (msg: string) => {
+    Swal.fire({
+      position: "center",
+      icon: "info",
+      title: msg,
+      showConfirmButton: false,
+      timer: 2500,
+    });
+  };
+
+  const notify1erVersement = () => {
+    Swal.fire({
+      position: "center",
+      icon: "info",
+      title: "Le montant doit être = 3350 d",
       showConfirmButton: false,
       timer: 2500,
     });
@@ -118,6 +131,77 @@ const Paiement = () => {
     setSelectedEleve(value);
   };
 
+  const [selectedPeriode, setSelectedPeriode] = useState<string>("");
+
+  const handleSelectPeriode = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedPeriode(value);
+  };
+
+  const [isInscriptionChecked, setInscriptionChecked] = useState(false);
+  // const handleInscriptionCheckboxChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setInscriptionChecked(event.target.checked);
+  // };
+
+  const [isUniformeFilleChecked, setIsUniformeFilleChecked] = useState(false);
+  // const handleUniformeFilleCheckboxChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setIsUniformeFilleChecked(event.target.checked);
+  // };
+
+  const [isUniformeGarconChecked, setIsUniformeGarconChecked] = useState(false);
+  // const handleUniformeGarconCheckboxChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setIsUniformeGarconChecked(event.target.checked);
+  // };
+
+  const [isScolariteChecked, setIsScolariteChecked] = useState(false);
+  // const handleScolariteCheckboxChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setIsScolariteChecked(event.target.checked);
+  // };
+
+  const [isRestaurationChecked, setIsRestaurationChecked] = useState(false);
+  // const handleRestaurationCheckboxChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setIsRestaurationChecked(event.target.checked);
+  // };
+
+  const [isPanierChecked, setIsPanierChecked] = useState(false);
+  // const handlePanierCheckboxChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setIsPanierChecked(event.target.checked);
+  // };
+
+  const handleCheckboxChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    designationValue: string
+  ) => {
+    const { checked } = event.target;
+
+    setPaiement((prevState) => {
+      let newDesignations = prevState.designation;
+      if (checked) {
+        if (!newDesignations.includes(designationValue)) {
+          newDesignations = [...newDesignations, designationValue];
+        }
+      } else {
+        newDesignations = newDesignations.filter(
+          (designation) => designation !== designationValue
+        );
+      }
+
+      return { ...prevState, designation: newDesignations };
+    });
+  };
+
   const [modal_AddPaiement, setmodal_AddPaiement] = useState<boolean>(false);
   function tog_AddPaiement() {
     setmodal_AddPaiement(!modal_AddPaiement);
@@ -131,16 +215,19 @@ const Paiement = () => {
 
   const [createPaiement] = useAddPaiementMutation();
 
-  const initialPaiement = {
+  const initialPaiement: Paiement = {
     eleve: "",
     annee_scolaire: "",
     montant: "",
     date_paiement: "",
+    period: "",
+    designation: [] as string[],
   };
 
   const [paiement, setPaiement] = useState(initialPaiement);
 
-  const { eleve, annee_scolaire, montant, date_paiement } = paiement;
+  const { eleve, annee_scolaire, montant, date_paiement, period, designation } =
+    paiement;
 
   const onChangePaiement = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -151,27 +238,12 @@ const Paiement = () => {
     }));
   };
 
-  // const handleFileUploadFile = async (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   const file = (
-  //     document.getElementById("fichier_base64_string") as HTMLFormElement
-  //   ).files[0];
-  //   if (file) {
-  //     const { base64Data, extension } = await convertToBase64(file);
-  //     const file_observation = base64Data + "." + extension;
-  //     setObservation({
-  //       ...observation,
-  //       fichier: file_observation,
-  //       fichier_base64_string: base64Data,
-  //       fichier_extension: extension,
-  //     });
-  //   }
-  // };
   const [anneeScolaire, setAnneeScolaire] = useState<string>("");
+
   const currentDate = new Date();
+
   useEffect(() => {
-    const currentMonth = currentDate.getMonth() + 1; // getMonth() is zero-based, so add 1
+    const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear();
 
     let anneeScolaire: string;
@@ -185,16 +257,50 @@ const Paiement = () => {
   }, []);
 
   const formattedDate = formatDate(currentDate);
+  const [showAlert, setShowAlert] = useState(false);
 
   const onSubmitPaiement = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (
+      (selectedPeriode === "1er Versement" || selectedPeriode === "Annuel") &&
+      (!isInscriptionChecked ||
+        !isScolariteChecked ||
+        !isRestaurationChecked ||
+        !isPanierChecked)
+    ) {
+      notifyCheck(
+        "Veuillez cocher toutes les cases requises : Inscription, Scolarité, Restauration, Panier."
+      );
+      return;
+    }
+
+    if (
+      (selectedPeriode === "1er Versement" || selectedPeriode === "Annuel") &&
+      !(isUniformeFilleChecked || isUniformeGarconChecked)
+    ) {
+      setShowAlert(true);
+    } else {
+      setShowAlert(false);
+    }
+
     try {
       paiement["eleve"] = selectedEleve;
       paiement["annee_scolaire"] = anneeScolaire;
       paiement["date_paiement"] = formattedDate;
-      createPaiement(paiement)
-        .then(() => notifySuccess())
-        .then(() => setPaiement(initialPaiement));
+      paiement["period"] = selectedPeriode;
+
+      if (selectedPeriode === "Annuel" && Number(paiement.montant) < 7700) {
+        notifyAnnuel();
+      } else if (
+        selectedPeriode === "1er Versement" &&
+        Number(paiement.montant) < 3350
+      ) {
+        notify1erVersement();
+      } else {
+        createPaiement(paiement)
+          .then(() => notifySuccess())
+          .then(() => setPaiement(initialPaiement));
+      }
     } catch (error) {
       notifyError(error);
     }
@@ -298,29 +404,6 @@ const Paiement = () => {
   ];
 
   const paiementLocation = useLocation();
-
-  // const openFileInNewTab = (fileUrl: string, fileName: string) => {
-  //   // Create a temporary link element
-  //   const link = document.createElement("a");
-  //   link.href = fileUrl;
-  //   link.target = "_blank"; // Open in new tab
-  //   link.download = fileName; // Optional: specify a filename for download
-
-  //   // Append the link to the document body and trigger a click event
-  //   document.body.appendChild(link);
-  //   link.click();
-
-  //   // Clean up by removing the link element
-  //   document.body.removeChild(link);
-  // };
-
-  // const handleButtonClick = () => {
-  //   // Example file URL and name
-  //   const fileUrl = `${process.env.REACT_APP_BASE_URL}/observationFiles/${observationLocation.state.fichier}`;
-  //   const fileName = "sample.pdf";
-
-  //   openFileInNewTab(fileUrl, fileName);
-  // };
 
   const [searchTerm, setSearchTerm] = useState("");
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -429,6 +512,23 @@ const Paiement = () => {
               </h1>
             </Modal.Header>
             <Modal.Body>
+              {showAlert && (
+                <div
+                  className="alert alert-primary alert-dismissible alert-label-icon label-arrow fade show"
+                  role="alert"
+                >
+                  <i className="ri-user-smile-line label-icon"></i>
+                  <strong>Veuillez sélectionner un uniforme</strong> : Fille ou
+                  Garçon.
+                  <button
+                    type="button"
+                    className="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                    onClick={() => setShowAlert(false)}
+                  ></button>
+                </div>
+              )}
               <Form className="create-form" onSubmit={onSubmitPaiement}>
                 <Row className="mb-4">
                   <Col lg={3}>
@@ -450,6 +550,155 @@ const Paiement = () => {
                     </select>
                   </Col>
                 </Row>
+
+                <Row className="mb-4">
+                  <Col lg={3}>
+                    <Form.Label htmlFor="period">Période</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <select
+                      className="form-select text-muted"
+                      name="period"
+                      id="period"
+                      onChange={handleSelectPeriode}
+                    >
+                      <option value="">Choisir</option>
+                      <option value="Annuel">Annuel</option>
+                      <option value="1er Versement">1er Versement</option>
+                      <option value="2ème Versement">2ème Versement</option>
+                      <option value="3ème Versement">3ème Versement</option>
+                    </select>
+                  </Col>
+                </Row>
+                {(selectedPeriode === "Annuel" ||
+                  selectedPeriode === "1er Versement") && (
+                  <Row className="mb-4">
+                    <Col lg={12} className="d-flex align-items-center">
+                      <div className="form-check form-check-inline">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="inscription"
+                          value="Inscription"
+                          checked={isInscriptionChecked}
+                          onChange={(e) => {
+                            handleCheckboxChange(e, "Frais d'inscription");
+                            setInscriptionChecked(e.target.checked);
+                          }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="inscription"
+                        >
+                          Frais d'inscription
+                        </label>
+                      </div>
+                      <div className="form-check form-check-inline">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          id="optionFille"
+                          name="uniforme"
+                          value="fille"
+                          checked={isUniformeFilleChecked}
+                          onChange={(e) => {
+                            handleCheckboxChange(e, "Uniforme Fille");
+                            setIsUniformeFilleChecked(e.target.checked);
+                          }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="optionFille"
+                        >
+                          Uniforme Fille
+                        </label>
+                      </div>
+                      <div className="form-check form-check-inline">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          id="optionGarcon"
+                          name="uniforme"
+                          value="garcon"
+                          checked={isUniformeGarconChecked}
+                          onChange={(e) => {
+                            handleCheckboxChange(e, "Uniforme Garçon");
+                            setIsUniformeGarconChecked(e.target.checked);
+                          }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="optionGarcon"
+                        >
+                          Uniforme Garçon
+                        </label>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+                {selectedPeriode !== "" && (
+                  <Row className="mb-4">
+                    <Col lg={12} className="d-flex align-items-center">
+                      <div className="form-check form-check-inline">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="inlineCheck1"
+                          value="optio1"
+                          checked={isScolariteChecked}
+                          onChange={(e) => {
+                            handleCheckboxChange(e, "Scolarité");
+                            setIsScolariteChecked(e.target.checked);
+                          }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="inlineCheck1"
+                        >
+                          Scolarité
+                        </label>
+                      </div>
+                      <div className="form-check form-check-inline">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="inlineCheck2"
+                          value="optio2"
+                          checked={isRestaurationChecked}
+                          onChange={(e) => {
+                            handleCheckboxChange(e, "Garde et restauration");
+                            setIsRestaurationChecked(e.target.checked);
+                          }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="inlineCheck2"
+                        >
+                          Garde et restauration
+                        </label>
+                      </div>
+                      <div className="form-check form-check-inline">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="inlineChec2"
+                          value="opti2"
+                          checked={isPanierChecked}
+                          onChange={(e) => {
+                            handleCheckboxChange(e, "Garde et panier");
+                            setIsPanierChecked(e.target.checked);
+                          }}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="inlineChec2"
+                        >
+                          Garde et panier
+                        </label>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
                 <Row className="mb-4">
                   <Col lg={3}>
                     <Form.Label htmlFor="montant">Montant</Form.Label>
@@ -517,7 +766,6 @@ const Paiement = () => {
           show={showPaiement}
           onHide={() => setShowPaiement(!showPaiement)}
           placement="end"
-          // style={{ width: "40%" }}
         >
           <Offcanvas.Header closeButton>
             <Offcanvas.Title>Détails Paiement</Offcanvas.Title>
@@ -564,4 +812,4 @@ const Paiement = () => {
     </React.Fragment>
   );
 };
-export default Paiement;
+export default PaiementPage;

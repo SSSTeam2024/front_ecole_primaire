@@ -15,23 +15,7 @@ import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
-import {
-  useAddObservationMutation,
-  useDeleteObservationMutation,
-  useFetchObservationsQuery,
-} from "features/observations/observationSlice";
-import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
-import {
-  useAddExerciceMutation,
-  useFetchExercicesQuery,
-} from "features/exercices/exerciceSlice";
 import Select from "react-select";
-import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
-import {
-  useAddAvisMutation,
-  useDeleteAvisMutation,
-  useFetchAvisQuery,
-} from "features/avis/avisSlice";
 import {
   useAddEvenementMutation,
   useDeleteEvenementMutation,
@@ -39,23 +23,9 @@ import {
 } from "features/evenements/evenementSlice";
 import UpdateEvenement from "./UpdateEvenement";
 
-function convertToBase64(
-  file: File
-): Promise<{ base64Data: string; extension: string }> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      const base64String = fileReader.result as string;
-      const [, base64Data] = base64String.split(",");
-      const extension = file.name.split(".").pop() ?? "";
-      resolve({ base64Data, extension });
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
-    fileReader.readAsDataURL(file);
-  });
-}
+import { French } from "flatpickr/dist/l10n/fr";
+import { formatDate, formatTime } from "helpers/data_time_format";
+import { convertToBase64 } from "helpers/base64_convert";
 
 const Evenements = () => {
   const { data = [] } = useFetchEvenementQuery();
@@ -215,7 +185,7 @@ const Evenements = () => {
   const onSubmitEvenement = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      evenement["creation_date"] = selectedDate?.toDateString()!;
+      evenement["creation_date"] = formatDate(selectedDate);
       evenement["classes"] = selectedColumnValues;
       evenement["type"] = selectedType;
       createEvenement(evenement)
@@ -520,6 +490,7 @@ const Evenements = () => {
                       onChange={handleDateChange}
                       options={{
                         dateFormat: "d M, Y",
+                        locale: French,
                       }}
                       id="date"
                       name="date"

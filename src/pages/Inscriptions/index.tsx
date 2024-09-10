@@ -22,6 +22,7 @@ import { useFetchClassesQuery } from "features/classes/classeSlice";
 
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 interface InscriptionRow {
   _id: string;
@@ -273,7 +274,6 @@ const Inscriptions = () => {
               <Link
                 to="/details-inscription"
                 className="badge badge-soft-info edit-item-btn"
-                // onClick={() => setShowInscription(!showInscription)}
                 state={row}
               >
                 <i
@@ -530,7 +530,7 @@ const Inscriptions = () => {
       body: tableRows,
     });
 
-    doc.save("table.pdf");
+    doc.save("table_inscription.pdf");
   };
 
   const selectedClasse = selectedRow?.classe!;
@@ -544,6 +544,26 @@ const Inscriptions = () => {
   } else {
     console.log("No class found starting with", selectedClasse);
   }
+
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      getFilteredInscriptions().map((row) => ({
+        Niveau: row.classe,
+        Groupe: row.groupe || "--",
+        "Nom Elève": `${row.nom_eleve} ${row.prenom_eleve}`,
+        Sexe: row.sexe,
+        Moyenne: row.moyenne_annuelle,
+        "N° Téléphone": row.phone,
+        "Adresse Parent": row.adresse_parent,
+        Etat: row.status === "" ? "En Attente" : row.status,
+      }))
+    );
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inscriptions");
+
+    XLSX.writeFile(workbook, "inscriptions.xlsx");
+  };
 
   return (
     <React.Fragment>
@@ -640,7 +660,16 @@ const Inscriptions = () => {
                       </label>
                     </div>
                   </Col>
-                  <Col lg={2} className="text-end">
+                  <Col lg={1}>
+                    <span
+                      className="badge badge-label bg-success"
+                      onClick={handleExport}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <i className="mdi mdi-file-excel fs-22"></i>
+                    </span>
+                  </Col>
+                  <Col lg={1} className="text-end">
                     <span
                       className="badge badge-label bg-danger"
                       onClick={downloadPDF}
