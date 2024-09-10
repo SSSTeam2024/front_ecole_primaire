@@ -1,6 +1,5 @@
 {
   "name": "toner-react-backend",
-  "homepage": "https://leaders.smartschools.tn",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

@@ -11,9 +11,6 @@ const AuthProtected = (props: any) => {
   const tokenc = Cookies.get("astk");
   const dispatch = useDispatch<any>();
 
-  /*
-    Navigate is un-auth access protected routes via url
-    */
   if (!tokenc) {
     return <Navigate to={{ pathname: "/login" }} />;
   }
@@ -26,7 +23,7 @@ const AuthProtected = (props: any) => {
       }
     )
     .then((res: any) => {
-      dispatch(setCredentials(res)); // Pass response data to setCredentials action
+      dispatch(setCredentials(res));
     })
     .catch((error: any) => {
       console.error("Error fetching user data:", error);
