@@ -187,7 +187,7 @@ const Notes = () => {
     },
     {
       name: <span className="font-weight-bold fs-13">Matière</span>,
-      selector: (row: any) => row.matiere.nom_matiere,
+      selector: (row: any) => row?.matiere?.nom_matiere!,
       sortable: true,
     },
     {
