@@ -132,6 +132,7 @@ const Etudiants = () => {
     avatar_base64_string: "",
     avatar_extension: "",
     avatar: "",
+    statusPaiement: "",
   };
 
   const [etudiant, setEtudiant] = useState(initialEtudiant);
@@ -145,6 +146,7 @@ const Etudiants = () => {
     avatar_base64_string,
     avatar_extension,
     avatar,
+    statusPaiement,
   } = etudiant;
 
   const onChangeEtudiant = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,6 +180,7 @@ const Etudiants = () => {
       etudiant["date_de_naissance"] = formatDate(selectedDateDeNaissance);
       etudiant["classe"] = selectedClasse;
       etudiant["genre"] = selectedGenre;
+      etudiant["statusPaiement"] = "0";
       createEtudiant(etudiant)
         .then(() => notifySuccess())
         .then(() => setEtudiant(initialEtudiant));

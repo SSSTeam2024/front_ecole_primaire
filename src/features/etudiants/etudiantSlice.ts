@@ -11,14 +11,20 @@ export interface Etudiant {
   avatar_base64_string: string,
   avatar_extension: string,
   avatar: string,
+  statusPaiement?: string,
 }
+
+export interface StatusPaiement {
+  _id?:string;
+  statusPaiement: string;
+ }
 
 export const etudiantSlice = createApi({
   reducerPath: "Etudiant",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.REACT_APP_BASE_URL}/api/etudiants`,
   }),
-  tagTypes: ["Etudiant"],
+  tagTypes: ["Etudiant", "StatusPaiement"],
   endpoints(builder) {
     return {
       fetchEtudiants: builder.query<Etudiant[], number | void>({
@@ -52,6 +58,16 @@ export const etudiantSlice = createApi({
         }),
         invalidatesTags: ["Etudiant"],
       }),
+      updatePaymentStataus: builder.mutation<void, StatusPaiement>({
+        query(payload) {
+          return {
+            url: "/updateStatusPaiment",
+            method: "POST",
+            body: payload,
+          };
+        },
+        invalidatesTags: ["Etudiant", "StatusPaiement"],
+      }),
       deleteEtudiant: builder.mutation<void, Etudiant>({
         query: (_id) => ({
           url: `/deleteEtudiant/${_id}`,
@@ -68,5 +84,6 @@ export const {
  useFetchEtudiantsQuery,
  useDeleteEtudiantMutation,
  useUpdateEtudiantMutation,
- useFetchEtudiantsByClasseIdMutation
+ useFetchEtudiantsByClasseIdMutation,
+ useUpdatePaymentStatausMutation
 } = etudiantSlice;

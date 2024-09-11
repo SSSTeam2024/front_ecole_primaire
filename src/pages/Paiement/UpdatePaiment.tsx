@@ -31,6 +31,13 @@ const UpdatePaiment: React.FC<ChildProps> = ({
     setSelectedEleve(value);
   };
 
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
+
+  const handleSelectPeriod = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedPeriod(value);
+  };
+
   const [paiment_montant, setPaiementMontant] = useState<string>(
     paiementLocation?.state?.montant ?? ""
   );
@@ -43,6 +50,7 @@ const UpdatePaiment: React.FC<ChildProps> = ({
   };
 
   const [showEleve, setShowEleve] = useState<boolean>(false);
+  const [showPeriod, setShowPeriod] = useState<boolean>(false);
 
   const [updatePaiment] = useUpdatePaiementMutation();
 
@@ -105,7 +113,7 @@ const UpdatePaiment: React.FC<ChildProps> = ({
         annee_scolaire:
           anneeScolaire || paiementLocation?.state?.annee_scolaire,
         eleve: selectedEleve || paiementLocation?.state?.eleve,
-        period: paiementLocation?.state?.period,
+        period: selectedPeriod || paiementLocation?.state?.period,
         designation: paiementLocation?.state?.designation,
       };
       updatePaiment(update_paiement)
@@ -166,6 +174,71 @@ const UpdatePaiment: React.FC<ChildProps> = ({
                 </select>
               )}
             </div>
+          </Col>
+        </Row>
+        <Row className="mb-4">
+          <Col lg={3}>
+            <Form.Label htmlFor="eleve">Période : </Form.Label>
+          </Col>
+          <Col lg={8}>
+            <div className="mb-3">
+              <span>{paiementLocation.state.period}</span>
+              <div
+                className="d-flex justify-content-start mt-n3"
+                style={{ marginLeft: "140px" }}
+              >
+                <label
+                  htmlFor="period"
+                  className="mb-0"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="right"
+                  title="Choisir Période"
+                >
+                  <span
+                    className="d-inline-block"
+                    onClick={() => setShowPeriod(!showPeriod)}
+                  >
+                    <span className="text-success cursor-pointer">
+                      <i className="bi bi-pen fs-14"></i>
+                    </span>
+                  </span>
+                </label>
+              </div>
+              {showPeriod && (
+                <select
+                  className="form-select text-muted"
+                  name="period"
+                  id="period"
+                  onChange={handleSelectPeriod}
+                >
+                  <option value="">Choisir</option>
+                  <option value="Annuel">Annuel</option>
+                  <option value="1er Versement">1er Versement</option>
+                  <option value="2ème Versement">2ème Versement</option>
+                  <option value="3ème Versement">3ème Versement</option>
+                </select>
+              )}
+            </div>
+          </Col>
+        </Row>
+        <Row className="mb-4">
+          <Col lg={3}>
+            <Form.Label htmlFor="designation">Désignation</Form.Label>
+          </Col>
+          <Col lg={8}>
+            {" "}
+            {paiementLocation.state.designation.map(
+              (item: any, index: number) => (
+                <Form.Check
+                  key={index}
+                  type="checkbox"
+                  label={item}
+                  checked={true}
+                  // onChange={() => {
+                  // }}
+                />
+              )
+            )}
           </Col>
         </Row>
         <Row className="mb-4">
