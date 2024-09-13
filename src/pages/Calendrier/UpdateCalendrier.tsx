@@ -254,11 +254,13 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
                   onChange={handleSelectMatiere}
                 >
                   <option value="">Choisir</option>
-                  {AllMatieres.map((matiere) => (
-                    <option value={matiere._id!} key={matiere?._id!}>
-                      {matiere.nom_matiere}
-                    </option>
-                  ))}
+                  {AllMatieres.map((matiere) =>
+                    matiere.matieres.map((m) => (
+                      <option value={matiere?._id!} key={m.nom_matiere}>
+                        {m.nom_matiere}
+                      </option>
+                    ))
+                  )}
                 </select>
               )}
             </div>

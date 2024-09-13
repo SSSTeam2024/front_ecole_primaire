@@ -1,9 +1,14 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+interface Matieres {
+  _id?: string,
+  nom_matiere: string;
+}
+
 export interface Matiere {
   _id?: string,
-  nom_matiere: string,
-  classe: string[]
+  matieres: Matieres[],
+  niveau: string
 }
 
 export const matiereSlice = createApi({

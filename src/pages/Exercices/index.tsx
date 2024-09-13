@@ -51,7 +51,7 @@ const Exercices = () => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "L'exercice a été créée avec succès",
+      title: "Le travail à la maison a été créée avec succès",
       showConfirmButton: false,
       timer: 2500,
     });
@@ -91,13 +91,13 @@ const Exercices = () => {
           deleteExercice(_id);
           swalWithBootstrapButtons.fire(
             "Supprimé !",
-            "L'exercice est supprimé.",
+            "Le travail à la maison est supprimé.",
             "success"
           );
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           swalWithBootstrapButtons.fire(
             "Annulé",
-            "L'exercice est en sécurité :)",
+            "Le travail à la maison est en sécurité :)",
             "info"
           );
         }
@@ -217,7 +217,7 @@ const Exercices = () => {
   const columns = [
     {
       name: <span className="font-weight-bold fs-13">Matière</span>,
-      selector: (row: any) => row?.matiere?.nom_matiere!,
+      selector: (row: any) => row?.matiere!,
       sortable: true,
     },
     {
@@ -342,7 +342,7 @@ const Exercices = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumb title="Exercices" pageTitle="Tableau de bord" />
+          <Breadcrumb title="Travail à la maison" pageTitle="Tableau de bord" />
           <Col lg={12}>
             <Card id="shipmentsList">
               <Card.Header className="border-bottom-dashed">
@@ -383,7 +383,7 @@ const Exercices = () => {
                             (e.currentTarget.style.transform = "scale(1)")
                           }
                         ></i>{" "}
-                        <span>Ajouter Exercice</span>
+                        <span>Ajouter Travail à la maison</span>
                       </button>
                     </div>
                   </Col>
@@ -405,11 +405,25 @@ const Exercices = () => {
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Exercice
+                Ajouter Travail à la maison
               </h1>
             </Modal.Header>
             <Modal.Body>
               <Form className="create-form" onSubmit={onSubmitObservation}>
+                <Row className="mb-4">
+                  <Col lg={3}>
+                    <Form.Label htmlFor="classe">Classe(s)</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <Select
+                      closeMenuOnSelect={false}
+                      isMulti
+                      options={optionColumnsTable}
+                      onChange={handleSelectValueColumnChange}
+                      placeholder="Choisir..."
+                    />
+                  </Col>
+                </Row>
                 <Row className="mb-4">
                   <Col lg={3}>
                     <Form.Label htmlFor="matiere">Matière</Form.Label>
@@ -422,11 +436,13 @@ const Exercices = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) => (
-                        <option value={matiere?._id!} key={matiere?._id!}>
-                          {matiere.nom_matiere}
-                        </option>
-                      ))}
+                      {AllMatieres.map((matiere) =>
+                        matiere.matieres.map((m) => (
+                          <option value={m.nom_matiere} key={m?._id!}>
+                            {m.nom_matiere}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </Col>
                 </Row>
@@ -478,20 +494,6 @@ const Exercices = () => {
                       }}
                       id="badge_date"
                       name="badge_date"
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="classe">Classe(s)</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Select
-                      closeMenuOnSelect={false}
-                      isMulti
-                      options={optionColumnsTable}
-                      onChange={handleSelectValueColumnChange}
-                      placeholder="Choisir..."
                     />
                   </Col>
                 </Row>
@@ -569,7 +571,7 @@ const Exercices = () => {
           style={{ width: "40%" }}
         >
           <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Détails d'Exercice</Offcanvas.Title>
+            <Offcanvas.Title>Détails du travail à la maison</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
             <Row className="mb-3">
@@ -577,7 +579,7 @@ const Exercices = () => {
                 <span className="fw-medium">Matière</span>
               </Col>
               <Col lg={9}>
-                <i>{observationLocation?.state?.matiere?.nom_matiere!}</i>
+                <i>{observationLocation?.state?.matiere!}</i>
               </Col>
             </Row>
             <Row className="mb-3">

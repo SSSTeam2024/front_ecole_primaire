@@ -25,11 +25,12 @@ import Matieres from "pages/Matiere";
 import Cantines from "pages/Cantines";
 import Salles from "pages/Salles";
 import Calendrier from "pages/Calendrier";
-import Evaluations from "pages/Evaluations";
+// import Evaluations from "pages/Evaluations";
 import Rendezvous from "pages/Rendezvous";
 import Inscriptions from "pages/Inscriptions";
 import InscriptionDetails from "pages/Inscriptions/InscriptionDetails";
 import UpdateInscription from "pages/Inscriptions/UpdateInscription";
+import Niveaux from "pages/Niveaux";
 // import Messages from "pages/Messages";
 
 const authProtectedRoutes = [
@@ -52,11 +53,12 @@ const authProtectedRoutes = [
   { path: "/paiement", component: <Paiement /> },
   { path: "/compte_rendu", component: <CompteRendu /> },
   { path: "/matieres", component: <Matieres /> },
+  { path: "/niveaux", component: <Niveaux /> },
   // { path: "/messages", component: <Messages /> },
   { path: "/cantines", component: <Cantines /> },
   { path: "/salles", component: <Salles /> },
   { path: "/calendrier-examen", component: <Calendrier /> },
-  { path: "/evaluations", component: <Evaluations /> },
+  // { path: "/evaluations", component: <Evaluations /> },
   { path: "/rendez-vous", component: <Rendezvous /> },
   { path: "/inscriptions", component: <Inscriptions /> },
   { path: "/details-inscription", component: <InscriptionDetails /> },

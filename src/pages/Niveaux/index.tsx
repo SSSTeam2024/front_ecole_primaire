@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -12,29 +12,25 @@ import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import ModalEdit from "./ModalEdit";
-import {
-  useAddMatiereMutation,
-  useDeleteMatiereMutation,
-  useFetchMatieresQuery,
-} from "features/matieres/matiereSlice";
-import * as XLSX from "xlsx";
-import { useFetchClassesQuery } from "features/classes/classeSlice";
+
 import Select from "react-select";
-import { useGetNiveauxQuery } from "features/niveaux/niveauxSlice";
+import {
+  useCreateNiveauMutation,
+  useDeleteNiveauMutation,
+  useGetNiveauxQuery,
+} from "features/niveaux/niveauxSlice";
+import UpdateNiveau from "./UpdateNiveau";
 
-const Matieres = () => {
-  const { data = [] } = useFetchMatieresQuery();
+const Niveaux = () => {
+  const { data = [] } = useGetNiveauxQuery();
 
-  const { data: AllClasses = [] } = useFetchClassesQuery();
-  const { data: AllNiveaux = [] } = useGetNiveauxQuery();
-  const [deleteMatiere] = useDeleteMatiereMutation();
+  const [deleteNiveau] = useDeleteNiveauMutation();
 
   const notifySuccess = () => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "La matière a été créée avec succès",
+      title: "Le niveau a été créé avec succès",
       showConfirmButton: false,
       timer: 2500,
     });
@@ -71,88 +67,76 @@ const Matieres = () => {
       })
       .then((result) => {
         if (result.isConfirmed) {
-          deleteMatiere(_id);
+          deleteNiveau(_id);
           swalWithBootstrapButtons.fire(
             "Supprimé !",
-            "La matière est supprimée.",
+            "Le niveau est supprimé.",
             "success"
           );
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           swalWithBootstrapButtons.fire(
             "Annulé",
-            "La matière est en sécurité :)",
+            "Le niveau est en sécurité :)",
             "info"
           );
         }
       });
   };
 
-  const [modal_AddMatiere, setmodal_AddMatiere] = useState<boolean>(false);
-  function tog_AddMatiere() {
-    setmodal_AddMatiere(!modal_AddMatiere);
+  const [modal_AddNiveau, setmodal_AddNiveau] = useState<boolean>(false);
+  function tog_AddNiveau() {
+    setmodal_AddNiveau(!modal_AddNiveau);
   }
-  const [modal_UpdateMatiere, setmodal_UpdateMatiere] =
-    useState<boolean>(false);
-  function tog_UpdateMatiere() {
-    setmodal_UpdateMatiere(!modal_UpdateMatiere);
+  const [modal_UpdateNiveau, setmodal_UpdateNiveau] = useState<boolean>(false);
+  function tog_UpdateNiveau() {
+    setmodal_UpdateNiveau(!modal_UpdateNiveau);
   }
 
-  const [selectedNiveau, setSelectedNiveau] = useState<string>("");
+  const [createNiveau] = useCreateNiveauMutation();
 
-  const handleSelectNiveau = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedNiveau(value);
+  const initialNiveau = {
+    nom_niveau: "",
+    type: "",
   };
 
-  const [createMatiere] = useAddMatiereMutation();
+  const [niveau, setNiveau] = useState(initialNiveau);
+  const [newType, setNewType] = useState("");
+  const { nom_niveau, type } = niveau;
 
-  const initialMatiere = {
-    matieres: [{ nom_matiere: "" }], // Initialize with one empty matiere
-    niveau: "",
-  };
+  useEffect(() => {
+    if (
+      nom_niveau.startsWith("7") ||
+      nom_niveau.startsWith("8") ||
+      nom_niveau.startsWith("9")
+    ) {
+      setNewType("Collège");
+    } else if (
+      nom_niveau.startsWith("1") ||
+      nom_niveau.startsWith("2") ||
+      nom_niveau.startsWith("3") ||
+      nom_niveau.startsWith("4") ||
+      nom_niveau.toLowerCase() === "bac"
+    ) {
+      setNewType("Lycée");
+    } else {
+      setNewType("");
+    }
+  }, [nom_niveau]);
 
-  const [matiere, setMatiere] = useState(initialMatiere);
-
-  const { matieres, niveau } = matiere;
-
-  const handleAddMatiere = () => {
-    setMatiere((prevState) => ({
-      ...prevState,
-      matieres: [...prevState.matieres, { nom_matiere: "" }],
-    }));
-  };
-
-  const handleRemoveMatiere = (index: number) => {
-    setMatiere((prevState) => ({
-      ...prevState,
-      matieres: prevState.matieres.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleMatiereChange = (index: number, value: any) => {
-    const updatedMatieres = matiere.matieres.map((item, i) =>
-      i === index ? { ...item, nom_matiere: value } : item
-    );
-    setMatiere((prevState) => ({
-      ...prevState,
-      matieres: updatedMatieres,
-    }));
-  };
-
-  const onChangeMatiere = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMatiere((prevState) => ({
+  const onChangeNiveau = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNiveau((prevState) => ({
       ...prevState,
       [e.target.id]: e.target.value,
     }));
   };
 
-  const onSubmitMatiere = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmitNiveau = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      matiere["niveau"] = selectedNiveau;
-      createMatiere(matiere)
+      niveau["type"] = newType;
+      createNiveau(niveau)
         .then(() => notifySuccess())
-        .then(() => setMatiere(initialMatiere));
+        .then(() => setNiveau(initialNiveau));
     } catch (error) {
       notifyError(error);
     }
@@ -161,13 +145,12 @@ const Matieres = () => {
   const columns = [
     {
       name: <span className="font-weight-bold fs-13">Niveau</span>,
-      selector: (row: any) => row.niveau.nom_niveau,
+      selector: (row: any) => row.nom_niveau,
       sortable: true,
     },
     {
-      name: <span className="font-weight-bold fs-13">Matières</span>,
-      selector: (row: any) =>
-        row.matieres.map((matiere: any) => matiere.nom_matiere).join(", "),
+      name: <span className="font-weight-bold fs-13">Type</span>,
+      selector: (row: any) => row.type,
       sortable: true,
     },
     {
@@ -180,7 +163,7 @@ const Matieres = () => {
               <Link
                 to="#"
                 className="badge badge-soft-success edit-item-btn"
-                // onClick={() => tog_UpdateMatiere()}
+                // onClick={() => tog_UpdateNiveau()}
                 // state={row}
               >
                 <i
@@ -224,61 +207,28 @@ const Matieres = () => {
     },
   ];
 
-  // const [matieres, setMatieres] = useState(data);
-
   const [searchTerm, setSearchTerm] = useState("");
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  const getFilteredMatieres = () => {
-    let filteredMatieres = data;
+  const getFilteredNiveaux = () => {
+    let filteredNiveaux = data;
 
     if (searchTerm) {
-      filteredMatieres = filteredMatieres.filter((matiere: any) =>
-        matiere?.nom_matiere!.toLowerCase().includes(searchTerm.toLowerCase())
+      filteredNiveaux = filteredNiveaux.filter((niveau: any) =>
+        niveau?.nom_niveau!.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    return filteredMatieres;
+    return filteredNiveaux;
   };
-
-  // const submitExcelData = async (parsedData: any[]) => {
-  //   try {
-  //     for (const matiere of parsedData) {
-  //       await createMatiere(matiere);
-  //     }
-  //     notifySuccess();
-  //   } catch (error) {
-  //     notifyError("An error occurred while uploading matieres.");
-  //   }
-  // };
-
-  // const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onload = (event) => {
-  //       const data = new Uint8Array(event.target!.result as ArrayBuffer);
-  //       const workbook = XLSX.read(data, { type: "array" });
-  //       const firstSheetName = workbook.SheetNames[0];
-  //       const worksheet = workbook.Sheets[firstSheetName];
-  //       const excelData = XLSX.utils.sheet_to_json(worksheet);
-  //       const parsedData = excelData.map((row: any) => ({
-  //         nom_matiere: row["nom_matiere"],
-  //       }));
-  //       submitExcelData(parsedData);
-  //     };
-
-  //     reader.readAsArrayBuffer(file);
-  //   }
-  // };
 
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumb title="Matières" pageTitle="Tableau de bord" />
+          <Breadcrumb title="Niveaux" pageTitle="Tableau de bord" />
           <Col lg={12}>
             <Card id="shipmentsList">
               <Card.Header className="border-bottom-dashed">
@@ -321,10 +271,10 @@ const Matieres = () => {
                       <button
                         type="button"
                         className="btn btn-darken-primary"
-                        onClick={() => tog_AddMatiere()}
+                        onClick={() => tog_AddNiveau()}
                       >
                         <i className="ri-add-fill align-middle fs-18"></i>{" "}
-                        <span>Ajouter Matière</span>
+                        <span>Ajouter Niveau</span>
                       </button>
                     </div>
                   </Col>
@@ -333,7 +283,7 @@ const Matieres = () => {
               <Card.Body>
                 <DataTable
                   columns={columns}
-                  data={getFilteredMatieres()}
+                  data={getFilteredNiveaux()}
                   pagination
                 />
               </Card.Body>
@@ -342,96 +292,47 @@ const Matieres = () => {
           <Modal
             className="fade"
             id="createModal"
-            show={modal_AddMatiere}
+            show={modal_AddNiveau}
             onHide={() => {
-              tog_AddMatiere();
+              tog_AddNiveau();
             }}
             centered
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Matière
+                Ajouter Niveau
               </h1>
             </Modal.Header>
             <Modal.Body>
-              <Form className="create-form" onSubmit={onSubmitMatiere}>
+              <Form className="create-form" onSubmit={onSubmitNiveau}>
                 <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="niveau">Niveau</Form.Label>
+                  <Col lg={3} className="d-flex justify-content-center">
+                    <Form.Label htmlFor="nom_niveau">Niveau</Form.Label>
                   </Col>
                   <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="niveau"
-                      id="niveau"
-                      onChange={handleSelectNiveau}
-                    >
-                      <option value="">Choisir</option>
-                      {AllNiveaux.map((niveau: any) => (
-                        <option value={niveau._id} key={niveau?._id!}>
-                          {niveau.nom_niveau}
-                        </option>
-                      ))}
-                    </select>
+                    <Form.Control
+                      type="text"
+                      id="nom_niveau"
+                      name="nom_niveau"
+                      onChange={onChangeNiveau}
+                      value={niveau.nom_niveau}
+                    />
                   </Col>
                 </Row>
-                {matiere.matieres.map((item, index) => (
-                  <Row className="mb-4" key={index}>
-                    <Col lg={3}>
-                      <Form.Label htmlFor={`nom_matiere_${index}`}>
-                        Matière {index + 1}
-                      </Form.Label>
-                    </Col>
-                    <Col lg={6}>
-                      <Form.Control
-                        type="text"
-                        id={`nom_matiere_${index}`}
-                        name={`nom_matiere_${index}`}
-                        placeholder="Matière"
-                        className="w-100"
-                        value={item.nom_matiere}
-                        onChange={(e) =>
-                          handleMatiereChange(index, e.target.value)
-                        }
-                      />
-                    </Col>
-                    <Col lg={1} className="m-1">
-                      {/* Show the add button only in the last row */}
-                      {index === matiere.matieres.length - 1 && (
-                        <button
-                          type="button"
-                          className="btn btn-soft-info btn-icon"
-                          onClick={handleAddMatiere}
-                        >
-                          <i className="ri-add-line"></i>
-                        </button>
-                      )}
-                    </Col>
-                    <Col lg={1} className="m-1">
-                      <button
-                        type="button"
-                        className="btn btn-danger btn-icon"
-                        onClick={() => handleRemoveMatiere(index)}
-                      >
-                        <i className="ri-delete-bin-5-line"></i>
-                      </button>
-                    </Col>
-                  </Row>
-                ))}
                 <Row>
                   <div className="hstack gap-2 justify-content-end">
                     <Button
                       variant="light"
                       onClick={() => {
-                        tog_AddMatiere();
-                        setMatiere(initialMatiere);
+                        tog_AddNiveau();
+                        setNiveau(initialNiveau);
                       }}
                     >
                       Close
                     </Button>
                     <Button
                       onClick={() => {
-                        tog_AddMatiere();
+                        tog_AddNiveau();
                       }}
                       type="submit"
                       variant="success"
@@ -447,21 +348,21 @@ const Matieres = () => {
           <Modal
             className="fade"
             id="createModal"
-            show={modal_UpdateMatiere}
+            show={modal_UpdateNiveau}
             onHide={() => {
-              tog_UpdateMatiere();
+              tog_UpdateNiveau();
             }}
             centered
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
-                Modifier Matiere
+                Modifier Niveau
               </h1>
             </Modal.Header>
             <Modal.Body>
-              <ModalEdit
-                modal_UpdateMatiere={modal_UpdateMatiere}
-                setmodal_UpdateMatiere={setmodal_UpdateMatiere}
+              <UpdateNiveau
+                modal_UpdateNiveau={modal_UpdateNiveau}
+                setmodal_UpdateNiveau={setmodal_UpdateNiveau}
               />
             </Modal.Body>
           </Modal>
@@ -470,4 +371,4 @@ const Matieres = () => {
     </React.Fragment>
   );
 };
-export default Matieres;
+export default Niveaux;

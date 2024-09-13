@@ -3,6 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export interface Classe {
   _id?: string,
   nom_classe: string,
+  niveau: string
 }
 
 export const classeSlice = createApi({

@@ -187,7 +187,7 @@ const Notes = () => {
     },
     {
       name: <span className="font-weight-bold fs-13">Matière</span>,
-      selector: (row: any) => row?.matiere?.nom_matiere!,
+      selector: (row: any) => row?.matiere!,
       sortable: true,
     },
     {
@@ -304,9 +304,7 @@ const Notes = () => {
           note?.eleve
             ?.prenom!.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          note?.matiere
-            ?.nom_matiere!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
+          note?.matiere!.toLowerCase().includes(searchTerm.toLowerCase()) ||
           note?.trimestre!.toLowerCase().includes(searchTerm.toLowerCase()) ||
           note?.type!.toLowerCase().includes(searchTerm.toLowerCase()) ||
           note?.note!.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -427,11 +425,13 @@ const Notes = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) => (
-                        <option value={matiere?._id!} key={matiere?._id!}>
-                          {matiere.nom_matiere}
-                        </option>
-                      ))}
+                      {AllMatieres.map((matiere) =>
+                        matiere.matieres.map((m) => (
+                          <option value={m.nom_matiere} key={m?._id!}>
+                            {m.nom_matiere}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </Col>
                 </Row>
@@ -447,8 +447,8 @@ const Notes = () => {
                       onChange={handleSelectType}
                     >
                       <option value="">Choisir</option>
-                      <option value="Examen">Examen</option>
-                      <option value="DS">DS</option>
+                      <option value="Contrôle">Contrôle</option>
+                      <option value="Synthèse">Synthèse</option>
                     </select>
                   </Col>
                 </Row>
@@ -577,7 +577,7 @@ const Notes = () => {
                 <span className="fw-medium">Matiere</span>
               </Col>
               <Col lg={9}>
-                <i>{observationLocation?.state?.matiere?.nom_matiere!}</i>
+                <i>{observationLocation?.state?.matiere!}</i>
               </Col>
             </Row>
             <Row className="mb-3">

@@ -32,6 +32,7 @@ import { calendrierSlice } from "features/calendriers/calendrierSlice";
 import { evaluationsSlice } from "features/evaluations/evaluationSlice";
 import { rendezvousSlice } from "features/rendezvous/rendezvousSlice";
 import { inscriptionsSlice } from "features/inscriptions/inscriptionSlice";
+import { niveauSlice } from "features/niveaux/niveauxSlice";
 
 export const store = configureStore({
   reducer: {
@@ -61,6 +62,7 @@ export const store = configureStore({
     [evaluationsSlice.reducerPath]: evaluationsSlice.reducer,
     [rendezvousSlice.reducerPath]: rendezvousSlice.reducer,
     [inscriptionsSlice.reducerPath]: inscriptionsSlice.reducer,
+    [niveauSlice.reducerPath]: niveauSlice.reducer,
     auth: authSlice,
     Layout: LayoutReducer,
     Dashboard: DashboardReducer,
@@ -93,6 +95,7 @@ export const store = configureStore({
       evaluationsSlice.middleware,
       rendezvousSlice.middleware,
       inscriptionsSlice.middleware,
+      niveauSlice.middleware
     ]);
   },
 });

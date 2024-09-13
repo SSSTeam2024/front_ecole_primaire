@@ -205,7 +205,7 @@ const UpdateNote: React.FC<ChildProps> = ({
           </Col>
           <Col lg={8}>
             <div className="mb-3">
-              <span>{noteLocation?.state?.matiere?.nom_matiere!} </span>
+              <span>{noteLocation?.state?.matiere!} </span>
               <div
                 className="d-flex justify-content-start mt-n3"
                 style={{ marginLeft: "140px" }}
@@ -235,11 +235,13 @@ const UpdateNote: React.FC<ChildProps> = ({
                   onChange={handleSelectMatiere}
                 >
                   <option value="">Choisir</option>
-                  {AllMatieres.map((matiere) => (
-                    <option value={matiere._id!} key={matiere?._id!}>
-                      {matiere.nom_matiere}
-                    </option>
-                  ))}
+                  {AllMatieres.map((matiere) =>
+                    matiere.matieres.map((m) => (
+                      <option value={m.nom_matiere} key={m?._id!}>
+                        {m.nom_matiere}
+                      </option>
+                    ))
+                  )}
                 </select>
               )}
             </div>

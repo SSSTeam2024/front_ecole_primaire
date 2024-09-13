@@ -49,8 +49,6 @@ const ModalEdit: React.FC<ChildProps> = ({
 
   const matiereLocation = useLocation();
 
-  const { data: AllClasses = [] } = useFetchClassesQuery();
-
   const [matiereName, setMatiereName] = useState<string>(
     matiereLocation?.state?.nom_matiere ?? ""
   );
@@ -66,7 +64,6 @@ const ModalEdit: React.FC<ChildProps> = ({
 
   const initialMatiere = {
     nom_matiere: "",
-    classe: [""],
   };
 
   const [matiere, setMatiere] = useState(initialMatiere);
@@ -95,29 +92,13 @@ const ModalEdit: React.FC<ChildProps> = ({
     matiereLocation?.state?.classe || []
   );
 
-  const allClassesOptions = AllClasses.map((classe) => ({
-    value: classe?._id!,
-    label: `${classe.nom_classe}`,
-  }));
-
-  const defaultClassesOptions =
-    matiereLocation?.state?.classe?.map((item: any) => ({
-      label: `${item.nom_classe}`,
-      value: item._id,
-    })) || [];
-
-  const handleSelectValueColumnChange = (selectedOptions: any) => {
-    const values = selectedOptions.map((option: any) => option.value);
-    setSelectedValues(values);
-  };
-
   const onSubmitUpdateMatiere = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const classe = {
         _id: matiere_id || matiereLocation?.state?._id!,
-        nom_matiere: matiereName || matiereLocation?.state?.nom_matiere,
-        classe: selectedValues || matiereLocation?.state?.classe,
+        matieres: matiereLocation?.state?.matieres,
+        niveau: matiereLocation?.state?.niveau!,
       };
       updateMatiere(classe)
         .then(() => notifySuccess())
@@ -141,22 +122,6 @@ const ModalEdit: React.FC<ChildProps> = ({
               name="matiereName"
               value={matiereName}
               onChange={handleMatiereName}
-            />
-          </Col>
-        </Row>
-        <Row className="mb-4">
-          <Col lg={3}>
-            <Form.Label htmlFor="parents">Classe(s) : </Form.Label>
-          </Col>
-          <Col lg={8}>
-            <Select
-              closeMenuOnSelect={false}
-              isMulti
-              options={allClassesOptions}
-              styles={customStyles}
-              onChange={handleSelectValueColumnChange}
-              placeholder="Filter Columns"
-              defaultValue={defaultClassesOptions}
             />
           </Col>
         </Row>

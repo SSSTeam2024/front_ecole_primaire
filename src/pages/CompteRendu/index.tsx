@@ -13,12 +13,7 @@ import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
 import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
-import {
-  useAddEtudiantMutation,
-  useDeleteEtudiantMutation,
-  useFetchEtudiantsByClasseIdMutation,
-  useFetchEtudiantsQuery,
-} from "features/etudiants/etudiantSlice";
+import { useFetchEtudiantsByClasseIdMutation } from "features/etudiants/etudiantSlice";
 import Flatpickr from "react-flatpickr";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
 import {
@@ -29,24 +24,7 @@ import {
 } from "features/compteRendus/compteRenduSlice";
 import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
 import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
-
-function convertToBase64(
-  file: File
-): Promise<{ base64Data: string; extension: string }> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      const base64String = fileReader.result as string;
-      const [, base64Data] = base64String.split(","); // Extract only the Base64 data
-      const extension = file.name.split(".").pop() ?? ""; // Get the file extension
-      resolve({ base64Data, extension });
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
-    fileReader.readAsDataURL(file);
-  });
-}
+import { convertToBase64 } from "helpers/base64_convert";
 
 const CompteRendu = () => {
   const { data = [] } = useFetchCompteRenduQuery();
@@ -197,7 +175,7 @@ const CompteRendu = () => {
 
   const onChangeCompteRendu = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    etudiantId?: string // Pass the student ID if it's a note change
+    etudiantId?: string
   ) => {
     const { id, value, name } = e.target;
 
@@ -597,11 +575,13 @@ const CompteRendu = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) => (
-                        <option value={matiere?._id!} key={matiere?._id!}>
-                          {matiere.nom_matiere}
-                        </option>
-                      ))}
+                      {AllMatieres.map((matiere) =>
+                        matiere.matieres.map((m) => (
+                          <option value={matiere?._id!} key={m.nom_matiere}>
+                            {m.nom_matiere}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </Col>
                 </Row>

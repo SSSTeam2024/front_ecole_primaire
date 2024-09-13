@@ -232,7 +232,7 @@ const Calendrier = () => {
     },
     {
       name: <span className="font-weight-bold fs-13">Matiere</span>,
-      selector: (row: any) => row?.matiere?.nom_matiere!,
+      selector: (row: any) => row?.matiere!,
       sortable: true,
     },
     {
@@ -302,8 +302,8 @@ const Calendrier = () => {
               <Link
                 to="#"
                 className="badge badge-soft-success edit-item-btn"
-                onClick={() => tog_UpdateCalendrier()}
-                state={row}
+                // onClick={() => tog_UpdateCalendrier()}
+                // state={row}
               >
                 <i
                   className="ri-edit-2-line"
@@ -408,8 +408,8 @@ const Calendrier = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        value={searchTerm}
-                        onChange={handleSearchChange}
+                        // value={searchTerm}
+                        // onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -503,11 +503,13 @@ const Calendrier = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) => (
-                        <option value={matiere?._id!} key={matiere?._id!}>
-                          {matiere.nom_matiere}
-                        </option>
-                      ))}
+                      {AllMatieres.map((matiere) =>
+                        matiere.matieres.map((m) => (
+                          <option value={m.nom_matiere} key={m._id}>
+                            {m.nom_matiere}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </Col>
                 </Row>
@@ -695,7 +697,7 @@ const Calendrier = () => {
                 <span className="fw-medium">Matiere</span>
               </Col>
               <Col lg={9}>
-                <i>{calendrierLocation?.state?.matiere?.nom_matiere!}</i>
+                <i>{calendrierLocation?.state?.matiere!}</i>
               </Col>
             </Row>
             <Row className="mb-3">

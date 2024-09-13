@@ -21,24 +21,9 @@ import {
   useFetchObservationsQuery,
 } from "features/observations/observationSlice";
 import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
-
-function convertToBase64(
-  file: File
-): Promise<{ base64Data: string; extension: string }> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      const base64String = fileReader.result as string;
-      const [, base64Data] = base64String.split(","); // Extract only the Base64 data
-      const extension = file.name.split(".").pop() ?? ""; // Get the file extension
-      resolve({ base64Data, extension });
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
-    fileReader.readAsDataURL(file);
-  });
-}
+import { convertToBase64 } from "helpers/base64_convert";
+import { French } from "flatpickr/dist/l10n/fr";
+import { formatDate } from "helpers/data_time_format";
 
 const Observations = () => {
   const { data = [] } = useFetchObservationsQuery();
@@ -185,7 +170,7 @@ const Observations = () => {
   const onSubmitObservation = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      observation["date"] = selectedDate?.toDateString()!;
+      observation["date"] = formatDate(selectedDate);
       observation["classe"] = selectedClasse;
       observation["par"] = selectedPar;
       createObservation(observation)
@@ -420,6 +405,7 @@ const Observations = () => {
                       onChange={handleDateChange}
                       options={{
                         dateFormat: "d M, Y",
+                        locale: French,
                       }}
                       id="date"
                       name="date"

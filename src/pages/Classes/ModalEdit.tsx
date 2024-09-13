@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 
 import { useLocation } from "react-router-dom";
 import { useUpdateClasseMutation } from "features/classes/classeSlice";
+import { useGetNiveauxQuery } from "features/niveaux/niveauxSlice";
 
 interface ChildProps {
   modal_UpdateClasse: boolean;
@@ -26,10 +27,20 @@ const ModalEdit: React.FC<ChildProps> = ({
     setClasseName(e.target.value);
   };
 
+  const { data: AllNiveaux = [] } = useGetNiveauxQuery();
   const [updateClasse] = useUpdateClasseMutation();
 
   const initialClasse = {
     nom_classe: "",
+    niveau: "",
+  };
+
+  const [selectedNiveau, setSelectedNiveau] = useState<string>("");
+  const [showNiveau, setShowNiveau] = useState<boolean>(false);
+
+  const handleSelectNiveau = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedNiveau(value);
   };
 
   const [classe, setClasse] = useState(initialClasse);
@@ -60,6 +71,7 @@ const ModalEdit: React.FC<ChildProps> = ({
       const classe = {
         _id: classe_id || classeLocation?.state?._id!,
         nom_classe: classeName || classeLocation?.state?.nom_classe,
+        niveau: classeLocation?.state?.niveau,
       };
       updateClasse(classe)
         .then(() => notifySuccess())
@@ -72,6 +84,52 @@ const ModalEdit: React.FC<ChildProps> = ({
   return (
     <React.Fragment>
       <Form onSubmit={onSubmitUpdateClasse}>
+        <Row className="mb-4">
+          <Col lg={3}>
+            <Form.Label htmlFor="type">Niveau : </Form.Label>
+          </Col>
+          <Col lg={8}>
+            <div className="mb-3">
+              <span>{classeLocation?.state?.niveau.nom_niveau!}</span>
+              <div
+                className="d-flex justify-content-start mt-n3"
+                style={{ marginLeft: "140px" }}
+              >
+                <label
+                  htmlFor="niveau"
+                  className="mb-0"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="right"
+                  title="Choisir Niveau"
+                >
+                  <span
+                    className="d-inline-block"
+                    onClick={() => setShowNiveau(!showNiveau)}
+                  >
+                    <span className="text-success cursor-pointer">
+                      <i className="bi bi-pen fs-14"></i>
+                    </span>
+                  </span>
+                </label>
+              </div>
+              {showNiveau && (
+                <select
+                  className="form-select text-muted"
+                  name="niveau"
+                  id="niveau"
+                  onChange={handleSelectNiveau}
+                >
+                  <option value="">Choisir</option>
+                  {AllNiveaux.map((niveau) => (
+                    <option value={niveau?._id!} key={niveau?._id!}>
+                      {niveau?.nom_niveau!}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </Col>
+        </Row>
         <Row className="mb-4">
           <Col lg={3}>
             <Form.Label htmlFor="classeName">Nom</Form.Label>

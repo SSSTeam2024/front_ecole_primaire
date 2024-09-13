@@ -212,8 +212,8 @@ const Absence = () => {
       sortable: true,
     },
     {
-      name: <span className="font-weight-bold fs-13">Matière</span>,
-      selector: (row: any) => row.matiere.nom_matiere,
+      name: <span className="font-weight-bold fs-13">Matières</span>,
+      selector: (row: any) => row?.matiere!,
       sortable: true,
     },
     {
@@ -454,11 +454,13 @@ const Absence = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) => (
-                        <option value={matiere?._id!} key={matiere?._id!}>
-                          {matiere.nom_matiere}
-                        </option>
-                      ))}
+                      {AllMatieres.map((matiere) =>
+                        matiere.matieres.map((m) => (
+                          <option value={m.nom_matiere} key={m?._id!}>
+                            {m.nom_matiere}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </Col>
                 </Row>
@@ -611,7 +613,7 @@ const Absence = () => {
                 <span className="fw-medium">Matiere</span>
               </Col>
               <Col lg={9}>
-                <i>{observationLocation?.state?.matiere?.nom_matiere!}</i>
+                <i>{observationLocation?.state?.matiere!}</i>
               </Col>
             </Row>
             <Row className="mb-3">
