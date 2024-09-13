@@ -21,7 +21,10 @@ import {
   useFetchAbsencesQuery,
 } from "features/absences/absenceSlice";
 import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
-import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
+import {
+  useFetchMatieresByEtudiantIdQuery,
+  useFetchMatieresQuery,
+} from "features/matieres/matiereSlice";
 import UpdateAbsence from "./UpdateAbsence";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate, formatTime } from "helpers/data_time_format";
@@ -344,6 +347,9 @@ const Absence = () => {
     return filteredAbsences;
   };
 
+  const { data: allMatieresByEtudiantId = [] } =
+    useFetchMatieresByEtudiantIdQuery(selectedEleve);
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -454,7 +460,7 @@ const Absence = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) =>
+                      {allMatieresByEtudiantId.map((matiere) =>
                         matiere.matieres.map((m) => (
                           <option value={m.nom_matiere} key={m?._id!}>
                             {m.nom_matiere}

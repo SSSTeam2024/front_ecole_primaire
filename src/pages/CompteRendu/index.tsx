@@ -552,7 +552,6 @@ const CompteRendu = () => {
                               onChangeCompteRendu(e, etudiant._id)
                             }
                             value={
-                              // Type assertion to ensure TypeScript recognizes 'note' as a string
                               compteRendu.notes.find(
                                 (note) => note.eleve === etudiant._id
                               )?.note ?? ""

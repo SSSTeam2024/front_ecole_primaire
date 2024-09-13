@@ -3,7 +3,10 @@ import { Button, Col, Form, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
 import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
-import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
+import {
+  useFetchMatieresByEtudiantIdQuery,
+  useFetchMatieresQuery,
+} from "features/matieres/matiereSlice";
 import { useUpdateNoteMutation } from "features/notes/noteSlice";
 import Flatpickr from "react-flatpickr";
 import { French } from "flatpickr/dist/l10n/fr";
@@ -133,6 +136,11 @@ const UpdateNote: React.FC<ChildProps> = ({
     }
   };
 
+  const selectedEleveId = selectedEleve || noteLocation?.state?.eleve?._id;
+
+  const { data: allMatieresByEtudiantId = [] } =
+    useFetchMatieresByEtudiantIdQuery(selectedEleveId);
+
   return (
     <React.Fragment>
       <Form onSubmit={onSubmitUpdateNote}>
@@ -235,7 +243,7 @@ const UpdateNote: React.FC<ChildProps> = ({
                   onChange={handleSelectMatiere}
                 >
                   <option value="">Choisir</option>
-                  {AllMatieres.map((matiere) =>
+                  {allMatieresByEtudiantId.map((matiere) =>
                     matiere.matieres.map((m) => (
                       <option value={m.nom_matiere} key={m?._id!}>
                         {m.nom_matiere}

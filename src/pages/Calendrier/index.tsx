@@ -16,7 +16,10 @@ import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
 import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
-import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
+import {
+  useFetchMatieresByClasseIdQuery,
+  useFetchMatieresQuery,
+} from "features/matieres/matiereSlice";
 import UpdateCalendrier from "./UpdateCalendrier";
 import {
   useAddCalendrierMutation,
@@ -302,8 +305,8 @@ const Calendrier = () => {
               <Link
                 to="#"
                 className="badge badge-soft-success edit-item-btn"
-                // onClick={() => tog_UpdateCalendrier()}
-                // state={row}
+                onClick={() => tog_UpdateCalendrier()}
+                state={row}
               >
                 <i
                   className="ri-edit-2-line"
@@ -359,8 +362,8 @@ const Calendrier = () => {
     if (searchTerm) {
       filteredCalendriers = filteredCalendriers.filter(
         (calendrier: any) =>
-          calendrier?.matiere
-            ?.nom_matiere!.toLowerCase()
+          calendrier
+            ?.matiere!.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
           calendrier
             ?.trimestre!.toLowerCase()
@@ -390,6 +393,9 @@ const Calendrier = () => {
     return filteredCalendriers;
   };
 
+  const { data: allMatieresByClasseId = [] } =
+    useFetchMatieresByClasseIdQuery(selectedClasse);
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -408,8 +414,8 @@ const Calendrier = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        // value={searchTerm}
-                        // onChange={handleSearchChange}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -503,7 +509,7 @@ const Calendrier = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) =>
+                      {allMatieresByClasseId.map((matiere) =>
                         matiere.matieres.map((m) => (
                           <option value={m.nom_matiere} key={m._id}>
                             {m.nom_matiere}

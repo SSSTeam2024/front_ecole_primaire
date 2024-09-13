@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export interface Exercice {
   _id?: string,
   matiere: string,
-  classes: string[],
+  classes: string,
   desc: string,
   creation_date: string,
   badge_date: string,

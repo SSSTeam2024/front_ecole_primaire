@@ -22,7 +22,10 @@ import {
   useFetchExercicesQuery,
 } from "features/exercices/exerciceSlice";
 import Select from "react-select";
-import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
+import {
+  useFetchMatieresByClasseIdQuery,
+  useFetchMatieresQuery,
+} from "features/matieres/matiereSlice";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate, formatTime } from "helpers/data_time_format";
 import { convertToBase64 } from "helpers/base64_convert";
@@ -147,7 +150,7 @@ const Exercices = () => {
 
   const initialObservation = {
     matiere: "",
-    classes: [""],
+    classes: "",
     desc: "",
     creation_date: "",
     badge_date: "",
@@ -203,7 +206,7 @@ const Exercices = () => {
     try {
       observation["creation_date"] = formatDate(selectedDate);
       observation["badge_date"] = formatDate(selectedBadgeDate);
-      observation["classes"] = selectedColumnValues;
+      observation["classes"] = selectedClasse;
       observation["enseignant"] = selectedPar;
       observation["matiere"] = selectedMatiere;
       createObservation(observation)
@@ -221,16 +224,8 @@ const Exercices = () => {
       sortable: true,
     },
     {
-      name: <span className="font-weight-bold fs-13">Classe(s)</span>,
-      selector: (row: any) => {
-        return (
-          <ul className="vstack gap-2 list-unstyled mb-0">
-            {row.classes?.map((classe: any) => (
-              <li key={classe._id}>{classe.nom_classe}</li>
-            ))}
-          </ul>
-        );
-      },
+      name: <span className="font-weight-bold fs-13">Classe</span>,
+      selector: (row: any) => row?.classes.nom_classe!,
       sortable: true,
     },
     {
@@ -338,6 +333,10 @@ const Exercices = () => {
     openFileInNewTab(fileUrl, fileName);
   };
 
+  const { data: allMatieresByClasseId = [] } =
+    useFetchMatieresByClasseIdQuery(selectedClasse);
+
+  console.log(observationLocation.state);
   return (
     <React.Fragment>
       <div className="page-content">
@@ -412,16 +411,29 @@ const Exercices = () => {
               <Form className="create-form" onSubmit={onSubmitObservation}>
                 <Row className="mb-4">
                   <Col lg={3}>
-                    <Form.Label htmlFor="classe">Classe(s)</Form.Label>
+                    <Form.Label htmlFor="classe">Classe</Form.Label>
                   </Col>
                   <Col lg={8}>
-                    <Select
+                    {/* <Select
                       closeMenuOnSelect={false}
                       isMulti
                       options={optionColumnsTable}
                       onChange={handleSelectValueColumnChange}
                       placeholder="Choisir..."
-                    />
+                    /> */}
+                    <select
+                      className="form-select text-muted"
+                      name="classe"
+                      id="classe"
+                      onChange={handleSelectClasse}
+                    >
+                      <option value="">Choisir</option>
+                      {AllClasses.map((classe) => (
+                        <option value={classe?._id!} key={classe?._id!}>
+                          {classe.nom_classe}
+                        </option>
+                      ))}
+                    </select>
                   </Col>
                 </Row>
                 <Row className="mb-4">
@@ -436,7 +448,7 @@ const Exercices = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) =>
+                      {allMatieresByClasseId.map((matiere) =>
                         matiere.matieres.map((m) => (
                           <option value={m.nom_matiere} key={m?._id!}>
                             {m.nom_matiere}
@@ -576,6 +588,14 @@ const Exercices = () => {
           <Offcanvas.Body>
             <Row className="mb-3">
               <Col lg={3}>
+                <span className="fw-medium">Classe</span>
+              </Col>
+              <Col lg={9}>
+                <i>{observationLocation?.state?.classes.nom_classe}</i>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col lg={3}>
                 <span className="fw-medium">Matière</span>
               </Col>
               <Col lg={9}>
@@ -604,18 +624,6 @@ const Exercices = () => {
               </Col>
               <Col lg={9}>
                 <i>{observationLocation?.state?.badge_date!}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Classe(s)</span>
-              </Col>
-              <Col lg={9}>
-                <i>
-                  {observationLocation?.state?.classes
-                    ?.map((c: any) => c.nom_classe)
-                    .join(" / ")}
-                </i>
               </Col>
             </Row>
             <Row className="mb-3">

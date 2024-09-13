@@ -2,7 +2,10 @@ import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
-import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
+import {
+  useFetchMatieresByClasseIdQuery,
+  useFetchMatieresQuery,
+} from "features/matieres/matiereSlice";
 import Flatpickr from "react-flatpickr";
 import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
@@ -169,6 +172,12 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
     }
   };
 
+  const selectedClasseId =
+    selectedClasse || calendrierLocation?.state?.classe?._id;
+
+  const { data: allMatieresByClasseId = [] } =
+    useFetchMatieresByClasseIdQuery(selectedClasseId);
+
   return (
     <React.Fragment>
       <Form onSubmit={onSubmitUpdateCalendrier}>
@@ -224,7 +233,7 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
           </Col>
           <Col lg={8}>
             <div className="mb-3">
-              <span>{calendrierLocation?.state?.matiere?.nom_matiere!} </span>
+              <span>{calendrierLocation?.state?.matiere!} </span>
               <div
                 className="d-flex justify-content-start mt-n3"
                 style={{ marginLeft: "140px" }}
@@ -254,9 +263,9 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
                   onChange={handleSelectMatiere}
                 >
                   <option value="">Choisir</option>
-                  {AllMatieres.map((matiere) =>
+                  {allMatieresByClasseId.map((matiere) =>
                     matiere.matieres.map((m) => (
-                      <option value={matiere?._id!} key={m.nom_matiere}>
+                      <option value={m.nom_matiere} key={m?._id!}>
                         {m.nom_matiere}
                       </option>
                     ))

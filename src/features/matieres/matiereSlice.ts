@@ -25,6 +25,20 @@ export const matiereSlice = createApi({
         },
         providesTags: ["Matiere"],
       }),
+      fetchMatieresByClasseId: builder.query<Matiere[], string | void>({
+        query: (_id) => ({
+          url: `/getMatieresByClasse/${_id}`,
+          method: "GET",
+        }),
+        providesTags: ["Matiere"],
+      }),
+      fetchMatieresByEtudiantId: builder.query<Matiere[], string | void>({
+        query: (_id) => ({
+          url: `/getMatieresByEtudiant/${_id}`,
+          method: "GET",
+        }),
+        providesTags: ["Matiere"],
+      }),
       addMatiere: builder.mutation<void, Matiere>({
         query(payload) {
           return {
@@ -58,5 +72,7 @@ export const {
  useAddMatiereMutation,
  useDeleteMatiereMutation,
  useFetchMatieresQuery,
- useUpdateMatiereMutation
+ useUpdateMatiereMutation,
+ useFetchMatieresByClasseIdQuery,
+ useFetchMatieresByEtudiantIdQuery
 } = matiereSlice;

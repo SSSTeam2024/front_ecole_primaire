@@ -19,7 +19,10 @@ import {
   useDeleteNoteMutation,
   useFetchNotesQuery,
 } from "features/notes/noteSlice";
-import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
+import {
+  useFetchMatieresByEtudiantIdQuery,
+  useFetchMatieresQuery,
+} from "features/matieres/matiereSlice";
 import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
 import UpdateNote from "./UpdateNote";
 import { French } from "flatpickr/dist/l10n/fr";
@@ -315,6 +318,9 @@ const Notes = () => {
     return filteredNotes;
   };
 
+  const { data: allMatieresByEtudiantId = [] } =
+    useFetchMatieresByEtudiantIdQuery(selectedEleve);
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -425,7 +431,7 @@ const Notes = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) =>
+                      {allMatieresByEtudiantId.map((matiere) =>
                         matiere.matieres.map((m) => (
                           <option value={m.nom_matiere} key={m?._id!}>
                             {m.nom_matiere}
