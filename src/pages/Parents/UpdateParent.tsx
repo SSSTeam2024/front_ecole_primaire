@@ -64,6 +64,10 @@ const UpdateParent: React.FC<ChildProps> = ({
     parentLocation?.state?.cin ?? ""
   );
 
+  const [parentProfession, setParentProfession] = useState<string>(
+    parentLocation?.state?.profession ?? ""
+  );
+
   const [parentPhone, setParentPhone] = useState<string>(
     parentLocation?.state?.phone ?? ""
   );
@@ -86,6 +90,10 @@ const UpdateParent: React.FC<ChildProps> = ({
 
   const handleCin = (e: React.ChangeEvent<HTMLInputElement>) => {
     setParentCin(e.target.value);
+  };
+
+  const handleProfession = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setParentProfession(e.target.value);
   };
 
   const handlePhone = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,6 +140,7 @@ const UpdateParent: React.FC<ChildProps> = ({
     phone: "",
     username: "",
     fils: [],
+    profession: "",
   };
 
   const [parent, setParent] = useState(initialParent);
@@ -167,6 +176,7 @@ const UpdateParent: React.FC<ChildProps> = ({
         phone: parentPhone || parentLocation?.state?.phone,
         username: parentLogin || parentLocation?.state?.username,
         fils: selectedColumnValues || parentLocation?.state?.fils!,
+        profession: parentProfession || parentLocation?.state?.profession!,
       };
       updateParent(update_parent)
         .then(() => notifySuccess())
@@ -232,6 +242,20 @@ const UpdateParent: React.FC<ChildProps> = ({
               name="parentPhone"
               value={parentPhone}
               onChange={handlePhone}
+            />
+          </Col>
+        </Row>
+        <Row className="mb-4">
+          <Col lg={3}>
+            <Form.Label htmlFor="parentProfession">Profession</Form.Label>
+          </Col>
+          <Col lg={8}>
+            <Form.Control
+              type="text"
+              id="parentProfession"
+              name="parentProfession"
+              value={parentProfession}
+              onChange={handleProfession}
             />
           </Col>
         </Row>

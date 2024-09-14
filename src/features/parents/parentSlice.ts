@@ -1,19 +1,20 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Parent {
-  _id?: string,
-  cin: string,
-  nom_parent: string,
-  prenom_parent: string,
-  phone: string,
-  username: string,
-  password?: string,
+  _id?: string;
+  cin: string;
+  nom_parent: string;
+  prenom_parent: string;
+  phone: string;
+  username: string;
+  password?: string;
   fils: {
-    _id: string,
-    nom : string,
-    prenom : string,
-    avatar : string
-  }[],
+    _id: string;
+    nom: string;
+    prenom: string;
+    avatar: string;
+  }[];
+  profession: string;
 }
 
 export const parentSlice = createApi({
@@ -60,8 +61,8 @@ export const parentSlice = createApi({
 });
 
 export const {
- useAddParentMutation,
- useFetchParentsQuery,
- useDeleteParentMutation,
- useUpdateParentMutation
+  useAddParentMutation,
+  useFetchParentsQuery,
+  useDeleteParentMutation,
+  useUpdateParentMutation,
 } = parentSlice;

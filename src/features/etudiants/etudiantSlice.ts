@@ -1,23 +1,35 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Etudiant {
-  _id?: string,
-  nom: string,
-  prenom: string,
-  date_de_naissance: string,
-  classe: string,
-  parent?: string,
-  genre: string,
-  avatar_base64_string: string,
-  avatar_extension: string,
-  avatar: string,
-  statusPaiement?: string,
+  _id?: string;
+  nom: string;
+  prenom: string;
+  date_de_naissance: string;
+  classe: string;
+  parent?: string;
+  genre: string;
+  avatar_base64_string: string;
+  avatar_extension: string;
+  avatar: string;
+  statusPaiement?: string;
+  lieu_naissance: string;
+  adresse_eleve: string;
+  ville: string;
+  nationalite: string;
+  annee_scolaire: string;
+  etablissement_frequente: string;
+  moyenne_trimestre_1: string;
+  moyenne_trimestre_2: string;
+  moyenne_trimestre_3: string;
+  moyenne_annuelle: string;
+  moyenne_concours_6: string;
+  numero_convocation_concours: string;
 }
 
 export interface StatusPaiement {
-  _id?:string;
+  _id?: string;
   statusPaiement: string;
- }
+}
 
 export const etudiantSlice = createApi({
   reducerPath: "Etudiant",
@@ -80,10 +92,10 @@ export const etudiantSlice = createApi({
 });
 
 export const {
- useAddEtudiantMutation,
- useFetchEtudiantsQuery,
- useDeleteEtudiantMutation,
- useUpdateEtudiantMutation,
- useFetchEtudiantsByClasseIdMutation,
- useUpdatePaymentStatausMutation
+  useAddEtudiantMutation,
+  useFetchEtudiantsQuery,
+  useDeleteEtudiantMutation,
+  useUpdateEtudiantMutation,
+  useFetchEtudiantsByClasseIdMutation,
+  useUpdatePaymentStatausMutation,
 } = etudiantSlice;

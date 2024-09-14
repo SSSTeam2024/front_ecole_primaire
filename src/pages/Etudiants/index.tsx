@@ -133,6 +133,18 @@ const Etudiants = () => {
     avatar_extension: "",
     avatar: "",
     statusPaiement: "",
+    lieu_naissance: "",
+    adresse_eleve: "",
+    ville: "",
+    nationalite: "",
+    annee_scolaire: "",
+    etablissement_frequente: "",
+    moyenne_trimestre_1: "",
+    moyenne_trimestre_2: "",
+    moyenne_trimestre_3: "",
+    moyenne_annuelle: "",
+    moyenne_concours_6: "",
+    numero_convocation_concours: "",
   };
 
   const [etudiant, setEtudiant] = useState(initialEtudiant);
@@ -147,6 +159,18 @@ const Etudiants = () => {
     avatar_extension,
     avatar,
     statusPaiement,
+    lieu_naissance,
+    adresse_eleve,
+    ville,
+    nationalite,
+    annee_scolaire,
+    etablissement_frequente,
+    moyenne_trimestre_1,
+    moyenne_trimestre_2,
+    moyenne_trimestre_3,
+    moyenne_annuelle,
+    moyenne_concours_6,
+    numero_convocation_concours,
   } = etudiant;
 
   const onChangeEtudiant = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -399,7 +423,7 @@ const Etudiants = () => {
               tog_AddEtudiant();
             }}
             centered
-            size="lg"
+            size="xl"
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
@@ -408,131 +432,336 @@ const Etudiants = () => {
             </Modal.Header>
             <Modal.Body>
               <Form className="create-form" onSubmit={onSubmitEtudiant}>
-                <Row className="mb-4">
-                  <div className="text-center mb-3">
-                    <div className="position-relative d-inline-block">
-                      <div className="position-absolute top-100 start-100 translate-middle">
-                        <label
-                          htmlFor="avatar_base64_string"
-                          className="mb-0"
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="right"
-                          title="Choisir avatar pour élève"
-                        >
-                          <span className="avatar-xs d-inline-block">
-                            <span className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
-                              <i className="ri-image-fill"></i>
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          className="form-control d-none"
-                          type="file"
-                          name="avatar_base64_string"
-                          id="avatar_base64_string"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload(e)}
-                          style={{ width: "210px", height: "120px" }}
-                        />
-                      </div>
-                      <div className="avatar-lg">
-                        <div className="avatar-title bg-light rounded-3">
-                          <img
-                            src={`data:image/jpeg;base64, ${etudiant.avatar_base64_string}`}
-                            alt={etudiant.nom}
-                            id="avatar_base64_string"
-                            className="avatar-xl h-auto rounded-3 object-fit-cover"
-                            style={{
-                              width: "210px",
-                              height: "120px",
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="nom">Nom</Form.Label>
+                <Row>
+                  <Col lg={7}>
+                    <Card>
+                      <Card.Header>
+                        <h5>RENSEIGNEMENTS CONCERNANT L’ÉLÈVE</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <Row className="mb-4">
+                          <div className="text-center mb-3">
+                            <div className="position-relative d-inline-block">
+                              <div className="position-absolute top-100 start-100 translate-middle">
+                                <label
+                                  htmlFor="avatar_base64_string"
+                                  className="mb-0"
+                                  data-bs-toggle="tooltip"
+                                  data-bs-placement="right"
+                                  title="Choisir avatar pour élève"
+                                >
+                                  <span className="avatar-xs d-inline-block">
+                                    <span className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
+                                      <i className="ri-image-fill"></i>
+                                    </span>
+                                  </span>
+                                </label>
+                                <input
+                                  className="form-control d-none"
+                                  type="file"
+                                  name="avatar_base64_string"
+                                  id="avatar_base64_string"
+                                  accept="image/*"
+                                  onChange={(e) => handleFileUpload(e)}
+                                  // style={{ width: "210px", height: "120px" }}
+                                />
+                              </div>
+                              <div className="avatar-lg">
+                                <div className="avatar-title bg-light rounded-3">
+                                  <img
+                                    src={`data:image/jpeg;base64, ${etudiant.avatar_base64_string}`}
+                                    alt={etudiant.nom}
+                                    id="avatar_base64_string"
+                                    className="img-thumbnail rounded-circle"
+                                    width={200}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </Row>
+                        <Row className="mb-4"></Row>
+                        <Row className="mb-4">
+                          <Col lg={3}>
+                            <Form.Label htmlFor="nom">Nom</Form.Label>
+                          </Col>
+                          <Col lg={9}>
+                            <Form.Control
+                              type="text"
+                              id="nom"
+                              name="nom"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.nom}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={3}>
+                            <Form.Label htmlFor="prenom">Prénom</Form.Label>
+                          </Col>
+                          <Col lg={9}>
+                            <Form.Control
+                              type="text"
+                              id="prenom"
+                              name="prenom"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.prenom}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={3}>
+                            <Form.Label htmlFor="prenom">
+                              Date et Lieu de Naissance
+                            </Form.Label>
+                          </Col>
+                          <Col lg={4}>
+                            <Flatpickr
+                              className="form-control flatpickr-input"
+                              placeholder="Choisir date de Naissance"
+                              onChange={handleDateDeNaissanceChange}
+                              options={{
+                                dateFormat: "d M, Y",
+                                locale: French,
+                              }}
+                              id="startDate"
+                              name="startDate"
+                            />
+                          </Col>
+                          <Col lg={5}>
+                            <Form.Control
+                              type="text"
+                              id="lieu_naissance"
+                              name="lieu_naissance"
+                              onChange={onChangeEtudiant}
+                              placeholder="Lieu de Naissance"
+                              value={etudiant.lieu_naissance}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={3}>
+                            <Form.Label htmlFor="adresse_eleve">
+                              Adresse
+                            </Form.Label>
+                          </Col>
+                          <Col lg={4}>
+                            <Form.Control
+                              type="text"
+                              id="adresse_eleve"
+                              name="adresse_eleve"
+                              onChange={onChangeEtudiant}
+                              placeholder="Adresse"
+                              value={etudiant.adresse_eleve}
+                            />
+                          </Col>
+                          <Col lg={1}>
+                            <Form.Label htmlFor="ville">Ville</Form.Label>
+                          </Col>
+                          <Col lg={4}>
+                            <Form.Control
+                              type="text"
+                              id="ville"
+                              name="ville"
+                              onChange={onChangeEtudiant}
+                              placeholder="Ville"
+                              value={etudiant.ville}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={3}>
+                            <Form.Label htmlFor="nationalite">
+                              Nationalité
+                            </Form.Label>
+                          </Col>
+                          <Col lg={9}>
+                            <Form.Control
+                              type="text"
+                              id="nationalite"
+                              name="nationalite"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.nationalite}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={3}>
+                            <Form.Label htmlFor="genre">Genre</Form.Label>
+                          </Col>
+                          <Col lg={9}>
+                            <select
+                              className="form-select text-muted"
+                              name="genre"
+                              id="genre"
+                              onChange={handleSelectGenre}
+                            >
+                              <option value="">Choisir</option>
+                              <option value="Mâle">Mâle</option>
+                              <option value="Femelle">Femelle</option>
+                            </select>
+                          </Col>
+                        </Row>
+                        <Row className="mb-4"></Row>
+                      </Card.Body>
+                    </Card>
                   </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="nom"
-                      name="nom"
-                      onChange={onChangeEtudiant}
-                      value={etudiant.nom}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="prenom">Prénom</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="prenom"
-                      name="prenom"
-                      onChange={onChangeEtudiant}
-                      value={etudiant.prenom}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="prenom">Date de Naissance</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Flatpickr
-                      className="form-control flatpickr-input"
-                      placeholder="Choisir date de Naissance"
-                      onChange={handleDateDeNaissanceChange}
-                      options={{
-                        dateFormat: "d M, Y",
-                        locale: French,
-                      }}
-                      id="startDate"
-                      name="startDate"
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="genre">Genre</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="genre"
-                      id="genre"
-                      onChange={handleSelectGenre}
-                    >
-                      <option value="">Choisir</option>
-                      <option value="Mâle">Mâle</option>
-                      <option value="Femelle">Femelle</option>
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="classe">Classe</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="classe"
-                      id="classe"
-                      onChange={handleSelectClasse}
-                    >
-                      <option value="">Choisir</option>
-                      {AllClasses.map((classe) => (
-                        <option value={classe?._id!} key={classe?._id!}>
-                          {classe.nom_classe}
-                        </option>
-                      ))}
-                    </select>
+                  <Col lg={5}>
+                    <Card>
+                      <Card.Header>
+                        <h5>SCOLARITE ANTERIEURE</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <Row className="mb-4">
+                          <Col lg={4}>
+                            <Form.Label htmlFor="classe">Classe</Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <select
+                              className="form-select text-muted"
+                              name="classe"
+                              id="classe"
+                              onChange={handleSelectClasse}
+                            >
+                              <option value="">Choisir</option>
+                              {AllClasses.map((classe) => (
+                                <option value={classe?._id!} key={classe?._id!}>
+                                  {classe.nom_classe}
+                                </option>
+                              ))}
+                            </select>
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={4}>
+                            <Form.Label htmlFor="numero_convocation_concours">
+                              N° Convocation Concours
+                            </Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <Form.Control
+                              type="text"
+                              id="numero_convocation_concours"
+                              name="numero_convocation_concours"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.numero_convocation_concours}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={4}>
+                            <Form.Label htmlFor="moyenne_concours_6">
+                              Moyenne Concours
+                            </Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <Form.Control
+                              type="text"
+                              id="moyenne_concours_6"
+                              name="moyenne_concours_6"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.moyenne_concours_6}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={4}>
+                            <Form.Label htmlFor="annee_scolaire">
+                              Année Scolaire
+                            </Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <Form.Control
+                              type="text"
+                              id="annee_scolaire"
+                              name="annee_scolaire"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.annee_scolaire}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={4}>
+                            <Form.Label htmlFor="etablissement_frequente">
+                              Etablissement Fréquenté
+                            </Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <Form.Control
+                              type="text"
+                              id="etablissement_frequente"
+                              name="etablissement_frequente"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.etablissement_frequente}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={4}>
+                            <Form.Label htmlFor="moyenne_trimestre_1">
+                              Moyenne 1er Trimestre
+                            </Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <Form.Control
+                              type="text"
+                              id="moyenne_trimestre_1"
+                              name="moyenne_trimestre_1"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.moyenne_trimestre_1}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={4}>
+                            <Form.Label htmlFor="moyenne_trimestre_2">
+                              Moyenne 2ème Trimestre
+                            </Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <Form.Control
+                              type="text"
+                              id="moyenne_trimestre_2"
+                              name="moyenne_trimestre_2"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.moyenne_trimestre_2}
+                            />
+                          </Col>
+                        </Row>
+                        <Row className="mb-4">
+                          <Col lg={4}>
+                            <Form.Label htmlFor="moyenne_trimestre_3">
+                              Moyenne 3ème Trimestre
+                            </Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <Form.Control
+                              type="text"
+                              id="moyenne_trimestre_3"
+                              name="moyenne_trimestre_3"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.moyenne_trimestre_3}
+                            />
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col lg={4}>
+                            <Form.Label htmlFor="moyenne_annuelle">
+                              Moyenne Annuelle
+                            </Form.Label>
+                          </Col>
+                          <Col lg={8}>
+                            <Form.Control
+                              type="text"
+                              id="moyenne_annuelle"
+                              name="moyenne_annuelle"
+                              onChange={onChangeEtudiant}
+                              value={etudiant.moyenne_annuelle}
+                            />
+                          </Col>
+                        </Row>
+                      </Card.Body>
+                    </Card>
                   </Col>
                 </Row>
                 <Row>
@@ -569,7 +798,7 @@ const Etudiants = () => {
               tog_UpdateEtudiant();
             }}
             centered
-            size="lg"
+            size="xl"
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
@@ -627,18 +856,11 @@ const Etudiants = () => {
                 </tr>
                 <tr>
                   <td>
-                    <h6>Date : </h6>
+                    <h6>Date et Lieu de Naissance : </h6>
                   </td>
                   <td>
-                    <i>{etudiantLocation?.state?.date_de_naissance!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Classe : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.classe?.nom_classe!}</i>
+                    <i>{etudiantLocation?.state?.date_de_naissance!}</i> à{" "}
+                    <strong>{etudiantLocation?.state?.lieu_naissance!}</strong>
                   </td>
                 </tr>
                 <tr>
@@ -647,6 +869,30 @@ const Etudiants = () => {
                   </td>
                   <td>
                     <i>{etudiantLocation?.state?.genre!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Adresse: </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.adresse_eleve!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Ville: </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.ville!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Nationalité: </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.nationalite!}</i>
                   </td>
                 </tr>
                 {etudiantLocation?.state?.parent! === null ? (
@@ -673,6 +919,80 @@ const Etudiants = () => {
                     </td>
                   </tr>
                 )}
+                <tr>
+                  <td>
+                    <h6>Classe : </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.classe?.nom_classe!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Année Scolaire : </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.annee_scolaire!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>N° Convocation Concours : </h6>
+                  </td>
+                  <td>
+                    <i>
+                      {etudiantLocation?.state?.numero_convocation_concours!}
+                    </i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Moyenne Concours : </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.moyenne_concours_6!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Etablissement Fréquenté : </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.etablissement_frequente!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Moyenne 1er Trimestre : </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.moyenne_trimestre_1!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Moyenne 2ème Trimestre : </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.moyenne_trimestre_2!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Moyenne 3ème Trimestre : </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.moyenne_trimestre_3!}</i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h6>Moyenne Annuelle : </h6>
+                  </td>
+                  <td>
+                    <i>{etudiantLocation?.state?.moyenne_annuelle!}</i>
+                  </td>
+                </tr>
               </table>
             </div>
           </div>

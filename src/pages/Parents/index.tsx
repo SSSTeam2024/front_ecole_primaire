@@ -25,6 +25,7 @@ import {
   useFetchEtudiantsQuery,
 } from "features/etudiants/etudiantSlice";
 import UpdateParent from "./UpdateParent";
+import { generateRandom8DigitNumber } from "helpers/generate_numbers";
 
 const Parents = () => {
   const { data = [] } = useFetchParentsQuery();
@@ -133,13 +134,22 @@ const Parents = () => {
         avatar: "",
       },
     ],
+    profession: "",
   };
 
   const [parent, setParent] = useState(initialParent);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { cin, nom_parent, prenom_parent, phone, username, password, fils } =
-    parent;
+  const {
+    cin,
+    nom_parent,
+    prenom_parent,
+    phone,
+    username,
+    password,
+    fils,
+    profession,
+  } = parent;
 
   const onChangeParent = (e: React.ChangeEvent<HTMLInputElement>) => {
     setParent((prevState) => ({
@@ -151,10 +161,15 @@ const Parents = () => {
   const toggleShowPassword = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };
+  const [randomNumber, setRandomNumber] = useState<number>(
+    generateRandom8DigitNumber()
+  );
 
   const onSubmitParent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      parent["username"] = phone;
+      parent["password"] = String(randomNumber);
       parent["fils"] = selectedColumnValues;
       createParent(parent)
         .then(() => notifySuccess())
@@ -185,8 +200,8 @@ const Parents = () => {
       sortable: true,
     },
     {
-      name: <span className="font-weight-bold fs-13">Login</span>,
-      selector: (row: any) => row.username,
+      name: <span className="font-weight-bold fs-13">Profession</span>,
+      selector: (row: any) => row?.profession!,
       sortable: true,
     },
     {
@@ -458,42 +473,16 @@ const Parents = () => {
                 </Row>
                 <Row className="mb-4">
                   <Col lg={3}>
-                    <Form.Label htmlFor="username">Login</Form.Label>
+                    <Form.Label htmlFor="profession">Profession</Form.Label>
                   </Col>
                   <Col lg={8}>
                     <Form.Control
                       type="text"
-                      id="username"
-                      name="username"
+                      id="profession"
+                      name="profession"
                       onChange={onChangeParent}
-                      value={parent.username}
+                      value={parent.profession}
                     />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="password">Mot de passe</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <InputGroup>
-                      <Form.Control
-                        type={showPassword ? "text" : "password"}
-                        id="password"
-                        name="password"
-                        onChange={onChangeParent}
-                        value={parent.password}
-                      />
-                      <InputGroup.Text
-                        onClick={toggleShowPassword}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {showPassword ? (
-                          <i className="ph ph-eye"></i>
-                        ) : (
-                          <i className="ph ph-eye-slash"></i>
-                        )}
-                      </InputGroup.Text>
-                    </InputGroup>
                   </Col>
                 </Row>
                 <Row>
@@ -590,10 +579,10 @@ const Parents = () => {
                   </tr>
                   <tr>
                     <td>
-                      <h6>Login : </h6>
+                      <h6>Profession : </h6>
                     </td>
                     <td>
-                      <i>{parentLocation?.state?.username!}</i>
+                      <i>{parentLocation?.state?.profession!}</i>
                     </td>
                   </tr>
                   <tr>
