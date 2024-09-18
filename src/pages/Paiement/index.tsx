@@ -491,7 +491,7 @@ const PaiementPage = () => {
     } else {
       setNiveauName("");
     }
-  }, [OneClasse?.nom_classe!]);
+  }, [OneClasse?.nom_classe]);
 
   return (
     <React.Fragment>
