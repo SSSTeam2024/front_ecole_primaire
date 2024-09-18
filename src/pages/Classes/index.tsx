@@ -7,10 +7,11 @@ import {
   Modal,
   Form,
   Button,
+  Offcanvas,
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   useAddClasseMutation,
   useDeleteClasseMutation,
@@ -19,12 +20,15 @@ import {
 import Swal from "sweetalert2";
 import ModalEdit from "./ModalEdit";
 import { useGetNiveauxQuery } from "features/niveaux/niveauxSlice";
+import { useFetchEtudiantsByClasseIdMutation } from "features/etudiants/etudiantSlice";
 
 const Classes = () => {
   const { data = [] } = useFetchClassesQuery();
   const { data: AllNiveaux = [] } = useGetNiveauxQuery();
 
   const [deleteClasse] = useDeleteClasseMutation();
+
+  const [showClasse, setShowClasse] = useState<boolean>(false);
 
   const notifySuccess = () => {
     Swal.fire({
@@ -127,6 +131,19 @@ const Classes = () => {
     }
   };
 
+  const classLocation = useLocation();
+
+  const [students, setStudents] = useState<any[]>([]);
+
+  const [fetchEtudiantsByClasseId, { data: fetchedEtudiants }] =
+    useFetchEtudiantsByClasseIdMutation();
+
+  const handleListOfStudents = async (selectedOption: any) => {
+    const result = await fetchEtudiantsByClasseId(selectedOption._id!).unwrap();
+    setStudents(result);
+    setShowClasse(!showClasse);
+  };
+
   const columns = [
     {
       name: <span className="font-weight-bold fs-13">Niveau</span>,
@@ -144,6 +161,16 @@ const Classes = () => {
       cell: (row: any) => {
         return (
           <ul className="hstack gap-2 list-unstyled mb-0">
+            <li>
+              <Link
+                to="#"
+                className="badge badge-soft-info view-item-btn"
+                onClick={() => handleListOfStudents(row)}
+                state={row}
+              >
+                <i className="ri-eye-line"></i>
+              </Link>
+            </li>
             <li>
               <Link
                 to="#"
@@ -183,6 +210,113 @@ const Classes = () => {
                     (e.currentTarget.style.transform = "scale(1)")
                   }
                   onClick={() => AlertDelete(row._id)}
+                ></i>
+              </Link>
+            </li>
+          </ul>
+        );
+      },
+    },
+  ];
+
+  const columnEtudiants = [
+    {
+      name: <span className="font-weight-bold fs-13">Nom</span>,
+      selector: (row: any) => row.nom,
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Prénom</span>,
+      selector: (row: any) => row.prenom,
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Date de Naissance</span>,
+      selector: (row: any) => row.date_de_naissance,
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Classe</span>,
+      selector: (row: any) => row.classe?.nom_classe!,
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Parent</span>,
+      selector: (row: any) => (
+        <span>
+          {row?.parent?.nom_parent!} {row?.parent?.prenom_parent!}
+        </span>
+      ),
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Action</span>,
+      sortable: true,
+      cell: (row: any) => {
+        return (
+          <ul className="hstack gap-2 list-unstyled mb-0">
+            <li>
+              <Link
+                to="#"
+                className="badge badge-soft-info edit-item-btn"
+                // onClick={() => setShowEtudiant(!showEtudiant)}
+                // state={row}
+              >
+                <i
+                  className="ri-eye-line"
+                  style={{
+                    transition: "transform 0.3s ease-in-out",
+                    cursor: "pointer",
+                    fontSize: "1.2em",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.transform = "scale(1.3)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
+                ></i>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="#"
+                className="badge badge-soft-success edit-item-btn"
+                // onClick={() => tog_UpdateEtudiant()}
+                // state={row}
+              >
+                <i
+                  className="ri-edit-2-line"
+                  style={{
+                    transition: "transform 0.3s ease-in-out",
+                    cursor: "pointer",
+                    fontSize: "1.2em",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.transform = "scale(1.3)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
+                ></i>
+              </Link>
+            </li>
+            <li>
+              <Link to="#" className="badge badge-soft-danger remove-item-btn">
+                <i
+                  className="ri-delete-bin-2-line"
+                  style={{
+                    transition: "transform 0.3s ease-in-out",
+                    cursor: "pointer",
+                    fontSize: "1.2em",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.transform = "scale(1.3)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
+                  // onClick={() => AlertDelete(row._id)}
                 ></i>
               </Link>
             </li>
@@ -368,6 +502,19 @@ const Classes = () => {
               />
             </Modal.Body>
           </Modal>
+          <Offcanvas
+            show={showClasse}
+            onHide={() => setShowClasse(!showClasse)}
+            placement="end"
+            style={{ width: "50%" }}
+          >
+            <Offcanvas.Header closeButton>
+              <Offcanvas.Title>Liste des élèves</Offcanvas.Title>
+            </Offcanvas.Header>
+            <Offcanvas.Body>
+              <DataTable columns={columnEtudiants} data={students} pagination />
+            </Offcanvas.Body>
+          </Offcanvas>
         </Container>
       </div>
     </React.Fragment>

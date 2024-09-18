@@ -20,6 +20,13 @@ export const classeSlice = createApi({
         },
         providesTags: ["Classe"],
       }),
+      fetchClasseId: builder.query<Classe, string | void>({
+        query: (_id) => ({
+          url: `/getClasse/${_id}`,
+          method: "GET",
+        }),
+        providesTags: ["Classe"],
+      }),
       addClasse: builder.mutation<void, Classe>({
         query(payload) {
           return {
@@ -53,5 +60,6 @@ export const {
  useAddClasseMutation,
  useFetchClassesQuery,
  useDeleteClasseMutation,
- useUpdateClasseMutation
+ useUpdateClasseMutation,
+ useFetchClasseIdQuery
 } = classeSlice;

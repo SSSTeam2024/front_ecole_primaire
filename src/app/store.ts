@@ -33,6 +33,8 @@ import { evaluationsSlice } from "features/evaluations/evaluationSlice";
 import { rendezvousSlice } from "features/rendezvous/rendezvousSlice";
 import { inscriptionsSlice } from "features/inscriptions/inscriptionSlice";
 import { niveauSlice } from "features/niveaux/niveauxSlice";
+import { smSSlice } from "features/sms/smsSlice";
+import { smsEnseignantSlice } from "features/smsEnseignants/smsEnseignantSlice";
 
 export const store = configureStore({
   reducer: {
@@ -63,6 +65,8 @@ export const store = configureStore({
     [rendezvousSlice.reducerPath]: rendezvousSlice.reducer,
     [inscriptionsSlice.reducerPath]: inscriptionsSlice.reducer,
     [niveauSlice.reducerPath]: niveauSlice.reducer,
+    [smSSlice.reducerPath]: smSSlice.reducer,
+    [smsEnseignantSlice.reducerPath]: smsEnseignantSlice.reducer,
     auth: authSlice,
     Layout: LayoutReducer,
     Dashboard: DashboardReducer,
@@ -95,7 +99,9 @@ export const store = configureStore({
       evaluationsSlice.middleware,
       rendezvousSlice.middleware,
       inscriptionsSlice.middleware,
-      niveauSlice.middleware
+      niveauSlice.middleware,
+      smSSlice.middleware,
+      smsEnseignantSlice.middleware
     ]);
   },
 });

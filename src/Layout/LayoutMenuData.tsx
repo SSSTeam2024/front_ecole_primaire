@@ -167,6 +167,42 @@ const Navdata = () => {
       parentId: "invoices",
       icon: "ph ph-wallet",
     },
+    // {
+    //   id: "invoices",
+    //   label: "Sms",
+    //   link: "/sms",
+    //   parentId: "invoices",
+    //   icon: "ph ph-chat-circle-text",
+    // },
+    {
+      id: "SMS",
+      label: "SMS",
+      icon: "ph ph-chat-circle-text",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+        setIsAccounts(!isAccounts);
+        setIscurrentState("Accounts");
+        updateIconSidebar(e);
+      },
+      stateVariables: isAccounts,
+      subItems: [
+        {
+          id: "invoices",
+          label: "SMS Enseignants",
+          link: "/sms-enseignants",
+          parentId: "invoices",
+          icon: "ph ph-chats",
+        },
+        {
+          id: "invoices",
+          label: "SMS Parents",
+          link: "/sms-parents",
+          parentId: "invoices",
+          icon: "ph ph-chats-teardrop",
+        },
+      ],
+    },
     {
       id: "invoices",
       label: "Rendez-vous",
@@ -217,54 +253,69 @@ const Navdata = () => {
       icon: "ph ph-fork-knife",
     },
     {
-      id: "invoices",
-      label: "Enseignants",
-      link: "/enseignants",
-      parentId: "invoices",
-      icon: "ph ph-chalkboard-teacher",
-    },
-    {
-      id: "invoices",
-      label: "Parents",
-      link: "/parents",
-      parentId: "invoices",
-      icon: "ph ph-user",
-    },
-    {
-      id: "invoices",
-      label: "Elèves",
-      link: "/etudiants",
-      parentId: "invoices",
-      icon: "ph ph-student",
-    },
+      id: "Administration",
+      label: "Administration",
+      icon: "ph ph-gear",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+        setIsStudents(!isStudents);
+        setIscurrentState("Students");
+        updateIconSidebar(e);
+      },
+      stateVariables: isStudents,
+      subItems: [
+        {
+          id: "invoices",
+          label: "Enseignants",
+          link: "/enseignants",
+          parentId: "invoices",
+          icon: "ph ph-chalkboard-teacher",
+        },
+        {
+          id: "invoices",
+          label: "Parents",
+          link: "/parents",
+          parentId: "invoices",
+          icon: "ph ph-user",
+        },
+        {
+          id: "invoices",
+          label: "Elèves",
+          link: "/etudiants",
+          parentId: "invoices",
+          icon: "ph ph-student",
+        },
 
-    {
-      id: "profile",
-      label: "Classes",
-      link: "/classes",
-      parentId: "profile",
-      icon: "ph ph-door",
-    },
-    {
-      id: "invoices",
-      label: "Matières",
-      link: "/matieres",
-      parentId: "invoices",
-      icon: "ph ph-books",
-    },
-    {
-      id: "invoices",
-      label: "Niveaux",
-      link: "/niveaux",
-      parentId: "invoices",
-      icon: "ph ph-trend-up",
-    },
-    {
-      id: "profile",
-      label: "Salles",
-      link: "/salles",
-      parentId: "profile",
-      icon: "ph ph-buildings",
+        {
+          id: "profile",
+          label: "Classes",
+          link: "/classes",
+          parentId: "profile",
+          icon: "ph ph-door",
+        },
+        {
+          id: "invoices",
+          label: "Matières",
+          link: "/matieres",
+          parentId: "invoices",
+          icon: "ph ph-books",
+        },
+        {
+          id: "invoices",
+          label: "Niveaux",
+          link: "/niveaux",
+          parentId: "invoices",
+          icon: "ph ph-trend-up",
+        },
+        {
+          id: "profile",
+          label: "Salles",
+          link: "/salles",
+          parentId: "profile",
+          icon: "ph ph-buildings",
+        },
+      ],
     },
   ];
   return <React.Fragment>{menuItems}</React.Fragment>;

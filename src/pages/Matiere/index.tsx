@@ -14,6 +14,8 @@ import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import ModalEdit from "./ModalEdit";
 import {
+  Matiere,
+  MatieresToAdd,
   useAddMatiereMutation,
   useDeleteMatiereMutation,
   useFetchMatieresQuery,
@@ -235,8 +237,14 @@ const Matieres = () => {
     let filteredMatieres = data;
 
     if (searchTerm) {
-      filteredMatieres = filteredMatieres.filter((matiere: any) =>
-        matiere?.nom_matiere!.toLowerCase().includes(searchTerm.toLowerCase())
+      filteredMatieres = filteredMatieres.filter(
+        (matiere: any) =>
+          matiere.matieres.some((m: MatieresToAdd) =>
+            m.nom_matiere.toLowerCase().includes(searchTerm.toLowerCase())
+          ) ||
+          matiere.niveau.nom_niveau
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
 
@@ -289,8 +297,8 @@ const Matieres = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        // value={searchTerm}
-                        // onChange={handleSearchChange}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -396,7 +404,6 @@ const Matieres = () => {
                       />
                     </Col>
                     <Col lg={1} className="m-1">
-                      {/* Show the add button only in the last row */}
                       {index === matiere.matieres.length - 1 && (
                         <button
                           type="button"

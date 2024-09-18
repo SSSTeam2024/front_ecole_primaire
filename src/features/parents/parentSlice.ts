@@ -13,6 +13,7 @@ export interface Parent {
     nom: string;
     prenom: string;
     avatar: string;
+    classe?: any
   }[];
   profession: string;
 }

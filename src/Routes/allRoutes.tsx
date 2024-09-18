@@ -31,6 +31,8 @@ import Inscriptions from "pages/Inscriptions";
 import InscriptionDetails from "pages/Inscriptions/InscriptionDetails";
 import UpdateInscription from "pages/Inscriptions/UpdateInscription";
 import Niveaux from "pages/Niveaux";
+import ParentsSmses from "pages/ParentsSmses";
+import EnseignantsSmses from "pages/EnseignantsSmses";
 // import Messages from "pages/Messages";
 
 const authProtectedRoutes = [
@@ -60,6 +62,9 @@ const authProtectedRoutes = [
   { path: "/calendrier-examen", component: <Calendrier /> },
   // { path: "/evaluations", component: <Evaluations /> },
   { path: "/rendez-vous", component: <Rendezvous /> },
+  { path: "/sms-parents", component: <ParentsSmses /> },
+  { path: "/sms-enseignants", component: <EnseignantsSmses /> },
+
   { path: "/inscriptions", component: <Inscriptions /> },
   { path: "/details-inscription", component: <InscriptionDetails /> },
   { path: "/modifier-inscription", component: <UpdateInscription /> },

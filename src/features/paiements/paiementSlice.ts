@@ -8,6 +8,7 @@ export interface Paiement {
   date_paiement: string,
   period: string,
   designation: string[],
+  classe?:string,
 }
 
 export const paiementSlice = createApi({

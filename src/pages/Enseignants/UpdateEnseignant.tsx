@@ -3,6 +3,7 @@ import { Button, Col, Form, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
 import { useUpdateEnseignantMutation } from "features/enseignants/enseignantSlice";
+import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
 
 interface ChildProps {
   modal_UpdateEnseignant: boolean;
@@ -15,11 +16,16 @@ const UpdateEnseignant: React.FC<ChildProps> = ({
 }) => {
   const enseignantLocation = useLocation();
 
+  const { data: AllMatieres = [] } = useFetchMatieresQuery();
+
   const [enseignantName, setEnseignantName] = useState<string>(
     enseignantLocation?.state?.nom_enseignant ?? ""
   );
   const [enseignantLastName, setEnseignantLastName] = useState<string>(
     enseignantLocation?.state?.prenom_enseignant ?? ""
+  );
+  const [enseignantPhone, setEnseignantPhone] = useState<string>(
+    enseignantLocation?.state?.phone ?? ""
   );
   const [enseignant_id, setEnseignantId] = useState<string>(
     enseignantLocation?.state?._id! ?? ""
@@ -33,11 +39,25 @@ const UpdateEnseignant: React.FC<ChildProps> = ({
     setEnseignantLastName(e.target.value);
   };
 
+  const handleEnseignantPhone = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEnseignantPhone(e.target.value);
+  };
+
+  const [selectedMatiere, setSelectedMatiere] = useState<string>("");
+  const [showMatiere, setShowMatiere] = useState<boolean>(false);
+
+  const handleSelectMatiere = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedMatiere(value);
+  };
+
   const [updateEnseignant] = useUpdateEnseignantMutation();
 
   const initialEnseignant = {
     nom_enseignant: "",
     prenom_enseignant: "",
+    phone: "",
+    matiere: "",
   };
 
   const [enseignant, setEnseignant] = useState(initialEnseignant);
@@ -71,6 +91,8 @@ const UpdateEnseignant: React.FC<ChildProps> = ({
           enseignantName || enseignantLocation?.state?.nom_enseignant,
         prenom_enseignant:
           enseignantLastName || enseignantLocation?.state?.prenom_enseignant,
+        phone: enseignantPhone || enseignantLocation?.state?.phone!,
+        matiere: selectedMatiere || enseignantLocation?.state?.matiere!,
       };
       updateEnseignant(update_enseignant)
         .then(() => notifySuccess())
@@ -109,6 +131,68 @@ const UpdateEnseignant: React.FC<ChildProps> = ({
               value={enseignantLastName}
               onChange={handleEnseignantLastName}
             />
+          </Col>
+        </Row>
+        <Row className="mb-4">
+          <Col lg={3}>
+            <Form.Label htmlFor="enseignantPhone">N° Téléphone</Form.Label>
+          </Col>
+          <Col lg={8}>
+            <Form.Control
+              type="text"
+              id="enseignantPhone"
+              name="enseignantPhone"
+              value={enseignantPhone}
+              onChange={handleEnseignantPhone}
+            />
+          </Col>
+        </Row>
+        <Row className="mb-4">
+          <Col lg={3}>
+            <Form.Label htmlFor="matiere">Matière : </Form.Label>
+          </Col>
+          <Col lg={8}>
+            <div className="mb-3">
+              <span>{enseignantLocation?.state?.matiere!}</span>
+              <div
+                className="d-flex justify-content-start mt-n3"
+                style={{ marginLeft: "120px" }}
+              >
+                <label
+                  htmlFor="matiere"
+                  className="mb-0"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="right"
+                  title="Choisir Matière"
+                >
+                  <span
+                    className="d-inline-block"
+                    onClick={() => setShowMatiere(!showMatiere)}
+                  >
+                    <span className="text-success cursor-pointer">
+                      <i className="bi bi-pen fs-14"></i>
+                    </span>
+                  </span>
+                </label>
+              </div>
+              {showMatiere && (
+                <select
+                  className="form-select text-muted"
+                  name="matiere"
+                  id="matiere"
+                  onChange={handleSelectMatiere}
+                >
+                  <option value="">Choisir</option>
+                  {AllMatieres.map((matiere) =>
+                    matiere.matieres.map((m) => (
+                      <option value={m.nom_matiere} key={m?._id!}>
+                        {m.nom_matiere}
+                      </option>
+                    ))
+                  )}
+                </select>
+              )}
+            </div>
           </Col>
         </Row>
         <Row>

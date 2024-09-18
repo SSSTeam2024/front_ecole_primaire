@@ -138,7 +138,6 @@ const Parents = () => {
   };
 
   const [parent, setParent] = useState(initialParent);
-  const [showPassword, setShowPassword] = useState(false);
 
   const {
     cin,
@@ -158,18 +157,14 @@ const Parents = () => {
     }));
   };
 
-  const toggleShowPassword = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
-  const [randomNumber, setRandomNumber] = useState<number>(
-    generateRandom8DigitNumber()
-  );
-
   const onSubmitParent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      const lastSixDigits = phone.slice(-6);
+      const reversedLastSixDigits = lastSixDigits.split("").reverse().join("");
+
       parent["username"] = phone;
-      parent["password"] = String(randomNumber);
+      parent["password"] = reversedLastSixDigits;
       parent["fils"] = selectedColumnValues;
       createParent(parent)
         .then(() => notifySuccess())

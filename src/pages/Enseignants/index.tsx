@@ -20,9 +20,12 @@ import {
 } from "features/enseignants/enseignantSlice";
 import UpdateEnseignant from "./UpdateEnseignant";
 import { useFetchRendezvousByEnseignantIdQuery } from "features/rendezvous/rendezvousSlice";
+import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
 
 const Enseignants = () => {
   const { data = [] } = useFetchEnseignantsQuery();
+
+  const { data: AllMatieres = [] } = useFetchMatieresQuery();
 
   const [deleteEnseignant] = useDeleteEnseignantMutation();
 
@@ -97,16 +100,25 @@ const Enseignants = () => {
     setmodal_UpdateEnseignant(!modal_UpdateEnseignant);
   }
 
+  const [selectedMatiere, setSelectedMatiere] = useState<string>("");
+
+  const handleSelectMatiere = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedMatiere(value);
+  };
+
   const [createEnseignant] = useAddEnseignantMutation();
 
   const initialEnseignant = {
     nom_enseignant: "",
     prenom_enseignant: "",
+    phone: "",
+    matiere: "",
   };
 
   const [enseignant, setEnseignant] = useState(initialEnseignant);
 
-  const { nom_enseignant, prenom_enseignant } = enseignant;
+  const { nom_enseignant, prenom_enseignant, phone, matiere } = enseignant;
 
   const onChangeEnseignant = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEnseignant((prevState) => ({
@@ -118,6 +130,7 @@ const Enseignants = () => {
   const onSubmitEnseignant = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      enseignant["matiere"] = selectedMatiere;
       createEnseignant(enseignant)
         .then(() => notifySuccess())
         .then(() => setEnseignant(initialEnseignant));
@@ -135,6 +148,16 @@ const Enseignants = () => {
     {
       name: <span className="font-weight-bold fs-13">Prénom</span>,
       selector: (row: any) => row.prenom_enseignant,
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Matière</span>,
+      selector: (row: any) => row?.matiere!,
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">N° Téléphone</span>,
+      selector: (row: any) => row?.phone!,
       sortable: true,
     },
     {
@@ -230,6 +253,9 @@ const Enseignants = () => {
             .includes(searchTerm.toLowerCase()) ||
           enseignant
             ?.prenom_enseignant!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          enseignant
+            ?.phone_enseignant!.toLowerCase()
             .includes(searchTerm.toLowerCase())
       );
     }
@@ -349,6 +375,42 @@ const Enseignants = () => {
                     />
                   </Col>
                 </Row>
+                <Row className="mb-4">
+                  <Col lg={3}>
+                    <Form.Label htmlFor="phone">N° Téléphone</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <Form.Control
+                      type="text"
+                      id="phone"
+                      name="phone"
+                      onChange={onChangeEnseignant}
+                      value={enseignant.phone}
+                    />
+                  </Col>
+                </Row>
+                <Row className="mb-4">
+                  <Col lg={3}>
+                    <Form.Label htmlFor="matiere">Matière</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <select
+                      className="form-select text-muted"
+                      name="matiere"
+                      id="matiere"
+                      onChange={handleSelectMatiere}
+                    >
+                      <option value="">Choisir</option>
+                      {AllMatieres.map((matiere) =>
+                        matiere.matieres.map((m) => (
+                          <option value={m.nom_matiere} key={m?._id!}>
+                            {m.nom_matiere}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </Col>
+                </Row>
                 <Row>
                   <div className="hstack gap-2 justify-content-end">
                     <Button
@@ -383,7 +445,7 @@ const Enseignants = () => {
               tog_UpdateEnseignant();
             }}
             centered
-            size="sm"
+            size="lg"
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
@@ -422,6 +484,14 @@ const Enseignants = () => {
               </Col>
               <Col lg={9}>
                 <i>{enseignantLocation?.state?.prenom_enseignant!}</i>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col lg={3}>
+                <span className="fw-medium">N° Téléphone</span>
+              </Col>
+              <Col lg={9}>
+                <i>{enseignantLocation?.state?.phone_enseignant!}</i>
               </Col>
             </Row>
             {rendezvous.length === 0 ? (

@@ -4,6 +4,8 @@ export interface Enseignant {
   _id?: string,
   nom_enseignant: string,
   prenom_enseignant: string,
+  phone: string,
+  matiere?: string
 }
 
 export const enseignantSlice = createApi({

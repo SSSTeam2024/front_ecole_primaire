@@ -94,21 +94,6 @@ const UpdateNiveau: React.FC<ChildProps> = ({
     });
   };
 
-  const [selectedValues, setSelectedValues] = useState(
-    niveauLocation?.state?.matieres || []
-  );
-
-  const defaultClassesOptions =
-    niveauLocation?.state?.matieres?.map((item: any) => ({
-      label: `${item.nom_matiere}`,
-      value: item._id,
-    })) || [];
-
-  const handleSelectValueColumnChange = (selectedOptions: any) => {
-    const values = selectedOptions.map((option: any) => option.value);
-    setSelectedValues(values);
-  };
-
   const [newType, setNewType] = useState("");
 
   useEffect(() => {

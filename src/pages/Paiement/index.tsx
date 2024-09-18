@@ -20,10 +20,16 @@ import {
   useFetchPaiementsQuery,
 } from "features/paiements/paiementSlice";
 import {
+  Etudiant,
+  useFetchEtudiantsByClasseIdMutation,
   useFetchEtudiantsQuery,
   useUpdatePaymentStatausMutation,
 } from "features/etudiants/etudiantSlice";
 import UpdatePaiment from "./UpdatePaiment";
+import {
+  useFetchClasseIdQuery,
+  useFetchClassesQuery,
+} from "features/classes/classeSlice";
 
 const formatDate = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, "0");
@@ -62,6 +68,10 @@ const PaiementPage = () => {
 
   const [deletePaiement] = useDeletePaiementMutation();
   const [showPaiement, setShowPaiement] = useState<boolean>(false);
+
+  const handleReload = () => {
+    window.location.reload();
+  };
 
   const notifySuccess = () => {
     Swal.fire({
@@ -119,6 +129,7 @@ const PaiementPage = () => {
         }
       });
   };
+  const [filteredEtudiants, setFilteredEtudiants] = useState<Etudiant[]>([]);
 
   const [selectedEleve, setSelectedEleve] = useState<string>("");
 
@@ -130,58 +141,76 @@ const PaiementPage = () => {
   const [selectedPeriode, setSelectedPeriode] = useState<string>("");
 
   const handleSelectPeriode = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedPeriode(value);
-  };
-
-  const [selectedNiveau, setSelectedNiveau] = useState<string>("");
-
-  const handleSelectNiveau = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedNiveau(value);
+    const selectedPeriode = event.target.value;
+    setSelectedPeriode(selectedPeriode);
+    setFilteredEtudiants([]);
+    setSelectedClasse("");
+    // else {
+    //   setFilteredEtudiants(etudiants);
+    // }
   };
 
   const [isInscriptionChecked, setInscriptionChecked] = useState(false);
-  // const handleInscriptionCheckboxChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   setInscriptionChecked(event.target.checked);
-  // };
 
   const [isUniformeFilleChecked, setIsUniformeFilleChecked] = useState(false);
-  // const handleUniformeFilleCheckboxChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   setIsUniformeFilleChecked(event.target.checked);
-  // };
 
   const [isUniformeGarconChecked, setIsUniformeGarconChecked] = useState(false);
-  // const handleUniformeGarconCheckboxChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   setIsUniformeGarconChecked(event.target.checked);
-  // };
 
   const [isScolariteChecked, setIsScolariteChecked] = useState(false);
-  // const handleScolariteCheckboxChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   setIsScolariteChecked(event.target.checked);
-  // };
 
   const [isRestaurationChecked, setIsRestaurationChecked] = useState(false);
-  // const handleRestaurationCheckboxChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   setIsRestaurationChecked(event.target.checked);
-  // };
 
   const [isPanierChecked, setIsPanierChecked] = useState(false);
-  // const handlePanierCheckboxChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   setIsPanierChecked(event.target.checked);
-  // };
+
+  const { data: AllClasses = [] } = useFetchClassesQuery();
+
+  const [selectedClasse, setSelectedClasse] = useState<string>("");
+
+  const [etudiants, setEtudiants] = useState<Etudiant[]>([]);
+
+  const [fetchEtudiantsByClasseId, { data: fetchedEtudiants, isLoading }] =
+    useFetchEtudiantsByClasseIdMutation();
+
+  const handleSelectClasse = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = event.target.value;
+    setSelectedClasse(value);
+    if (value) {
+      try {
+        const result = await fetchEtudiantsByClasseId(value).unwrap();
+
+        let filteredList: any[] = [];
+        if (
+          selectedPeriode === "Annuel" ||
+          selectedPeriode === "1er Versement"
+        ) {
+          filteredList = result.filter(
+            (etudiant) => etudiant.statusPaiement === "0"
+          );
+        } else if (selectedPeriode === "2ème Versement") {
+          filteredList = result.filter(
+            (etudiant) => etudiant.statusPaiement === "1er Versement"
+          );
+        } else if (selectedPeriode === "3ème Versement") {
+          filteredList = result.filter(
+            (etudiant) => etudiant.statusPaiement === "2ème Versement"
+          );
+        }
+
+        setFilteredEtudiants(filteredList);
+
+        // setEtudiants(result);
+        // handleSelectPeriode({
+        //   target: { value: selectedPeriode },
+        // } as React.ChangeEvent<HTMLSelectElement>);
+      } catch (error) {
+        console.error("Error fetching students:", error);
+      }
+    } else {
+      setFilteredEtudiants([]);
+    }
+  };
 
   const handleCheckboxChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -277,49 +306,17 @@ const PaiementPage = () => {
 
   const onSubmitPaiement = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // if (
-    //   (selectedPeriode === "1er Versement" || selectedPeriode === "Annuel") &&
-    //   (!isInscriptionChecked ||
-    //     !isScolariteChecked ||
-    //     !isRestaurationChecked ||
-    //     !isPanierChecked)
-    // ) {
-    //   notifyCheck(
-    //     "Veuillez cocher toutes les cases requises : Inscription, Scolarité, Restauration, Panier."
-    //   );
-    //   return;
-    // }
-
-    // if (
-    //   (selectedPeriode === "1er Versement" || selectedPeriode === "Annuel") &&
-    //   !(isUniformeFilleChecked || isUniformeGarconChecked)
-    // ) {
-    //   setShowAlert(true);
-    // } else {
-    //   setShowAlert(false);
-    // }
-
     try {
       paiement["eleve"] = selectedEleve;
       paiement["annee_scolaire"] = anneeScolaire;
       paiement["date_paiement"] = formattedDate;
       paiement["period"] = selectedPeriode;
-
-      // if (selectedPeriode === "Annuel" && Number(paiement.montant) < 7700) {
-      //   notifyAnnuel();
-      // } else if (
-      //   selectedPeriode === "1er Versement" &&
-      //   Number(paiement.montant) < 3350 &&
-      //   !(isUniformeFilleChecked || isUniformeGarconChecked)
-      // ) {
-      //   setShowAlert(true);
-      // } else {
-
+      paiement["classe"] = selectedClasse;
+      console.log(paiement);
       createPaiement(paiement)
         .then(() => notifySuccess())
-        .then(() => setPaiement(initialPaiement))
-        .then(() => setSelectedPeriode(""))
-        .then(() => setSelectedNiveau(""));
+        .then(() => setPaiement(initialPaiement));
+
       if (selectedPeriode === "Annuel") {
         handleUpdateStatus("Entièrement Payé");
       }
@@ -332,7 +329,7 @@ const PaiementPage = () => {
       if (selectedPeriode === "3ème Versement") {
         handleUpdateStatus("Entièrement Payé");
       }
-      // }
+      handleReload();
     } catch (error) {
       notifyError(error);
     }
@@ -473,6 +470,29 @@ const PaiementPage = () => {
     return filteredPaiements;
   };
 
+  const { data: OneClasse } = useFetchClasseIdQuery(selectedClasse);
+
+  const [niveauName, setNiveauName] = useState("");
+  useEffect(() => {
+    if (
+      OneClasse?.nom_classe!.startsWith("7") ||
+      OneClasse?.nom_classe!.startsWith("8") ||
+      OneClasse?.nom_classe!.startsWith("9")
+    ) {
+      setNiveauName("Collège");
+    } else if (
+      OneClasse?.nom_classe!.startsWith("1") ||
+      OneClasse?.nom_classe!.startsWith("2") ||
+      OneClasse?.nom_classe!.startsWith("3") ||
+      OneClasse?.nom_classe!.startsWith("4") ||
+      OneClasse?.nom_classe!.toLowerCase() === "bac"
+    ) {
+      setNiveauName("Lycée");
+    } else {
+      setNiveauName("");
+    }
+  }, [OneClasse?.nom_classe!]);
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -542,7 +562,6 @@ const PaiementPage = () => {
             onHide={() => {
               tog_AddPaiement();
               setSelectedPeriode("");
-              setSelectedNiveau("");
             }}
             centered
           >
@@ -552,41 +571,7 @@ const PaiementPage = () => {
               </h1>
             </Modal.Header>
             <Modal.Body>
-              {/* {showAlert && (
-                <div
-                  className="alert alert-primary alert-dismissible alert-label-icon label-arrow fade show"
-                  role="alert"
-                >
-                  <i className="ri-user-smile-line label-icon"></i>
-                  <strong>Veuillez sélectionner un uniforme</strong> : Fille ou
-                  Garçon.
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"
-                    onClick={() => setShowAlert(false)}
-                  ></button>
-                </div>
-              )} */}
               <Form className="create-form" onSubmit={onSubmitPaiement}>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="niveau">Niveau</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="niveau"
-                      id="niveau"
-                      onChange={handleSelectNiveau}
-                    >
-                      <option value="">Choisir</option>
-                      <option value="Collège">Collège</option>
-                      <option value="Lycée">Lycée</option>
-                    </select>
-                  </Col>
-                </Row>
                 <Row className="mb-4">
                   <Col lg={3}>
                     <Form.Label htmlFor="period">Période</Form.Label>
@@ -608,46 +593,51 @@ const PaiementPage = () => {
                 </Row>
                 <Row className="mb-4">
                   <Col lg={3}>
-                    <Form.Label htmlFor="eleve">Elève</Form.Label>
+                    <Form.Label htmlFor="classe">Classe</Form.Label>
                   </Col>
                   <Col lg={8}>
                     <select
                       className="form-select text-muted"
-                      name="eleve"
-                      id="eleve"
-                      onChange={handleSelectEleve}
+                      name="classe"
+                      id="classe"
+                      onChange={handleSelectClasse}
+                      value={selectedClasse}
                     >
                       <option value="">Choisir</option>
-                      {selectedPeriode === "Annuel" &&
-                        eleves_fully_paid.map((eleve) => (
-                          <option value={eleve?._id!} key={eleve?._id!}>
-                            {eleve.nom} {eleve.prenom}
-                          </option>
-                        ))}
-                      {selectedPeriode === "1er Versement" &&
-                        eleves_first_part_paid.map((eleve) => (
-                          <option value={eleve?._id!} key={eleve?._id!}>
-                            {eleve.nom} {eleve.prenom}
-                          </option>
-                        ))}
-                      {selectedPeriode === "2ème Versement" &&
-                        eleves_second_part_paid.map((eleve) => (
-                          <option value={eleve?._id!} key={eleve?._id!}>
-                            {eleve.nom} {eleve.prenom}
-                          </option>
-                        ))}
-                      {selectedPeriode === "3ème Versement" &&
-                        eleves_third_part_paid.map((eleve) => (
-                          <option value={eleve?._id!} key={eleve?._id!}>
-                            {eleve.nom} {eleve.prenom}
-                          </option>
-                        ))}
+                      {AllClasses.map((classe) => (
+                        <option value={classe?._id!} key={classe?._id!}>
+                          {classe.nom_classe}
+                        </option>
+                      ))}
                     </select>
                   </Col>
                 </Row>
-                {(selectedPeriode === "Annuel" ||
-                  selectedPeriode === "1er Versement") &&
-                  selectedNiveau === "Collège" && (
+                <Row className="mb-4">
+                  <Col lg={3}>
+                    <Form.Label htmlFor="etudiant">Étudiant</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <select
+                      className="form-select text-muted"
+                      name="etudiant"
+                      id="etudiant"
+                      onChange={handleSelectEleve}
+                    >
+                      <option value="">Choisir un étudiant</option>
+                      {!isLoading && filteredEtudiants.length > 0 ? (
+                        filteredEtudiants.map((etudiant) => (
+                          <option value={etudiant?._id!} key={etudiant?._id!}>
+                            {etudiant.nom} {etudiant.prenom}
+                          </option>
+                        ))
+                      ) : (
+                        <option disabled>Aucun étudiant trouvé</option>
+                      )}
+                    </select>
+                  </Col>
+                </Row>
+                {selectedPeriode === "Annuel" && niveauName === "Collège" && (
+                  <>
                     <Row className="mb-4">
                       <Col lg={12} className="d-flex align-items-center">
                         <div className="form-check form-check-inline">
@@ -715,9 +705,6 @@ const PaiementPage = () => {
                         </div>
                       </Col>
                     </Row>
-                  )}
-                {selectedPeriode === "Annuel" &&
-                  selectedNiveau === "Collège" && (
                     <Row className="mb-4">
                       <Col lg={12} className="d-flex align-items-center">
                         <div className="form-check form-check-inline">
@@ -783,215 +770,287 @@ const PaiementPage = () => {
                         </div>
                       </Col>
                     </Row>
-                  )}
+                  </>
+                )}
                 {selectedPeriode === "1er Versement" &&
-                  selectedNiveau === "Collège" && (
-                    <Row className="mb-4">
-                      <Col lg={12} className="d-flex align-items-center">
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck1"
-                            value="optio1"
-                            checked={isScolariteChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Scolarité", 1500);
-                              setIsScolariteChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck1"
-                          >
-                            Scolarité
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck2"
-                            value="optio2"
-                            checked={isRestaurationChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(
-                                e,
-                                "Garde et restauration",
-                                800
-                              );
-                              setIsRestaurationChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck2"
-                          >
-                            Garde et restauration
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineChec2"
-                            value="opti2"
-                            checked={isPanierChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Garde et panier", 550);
-                              setIsPanierChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineChec2"
-                          >
-                            Garde et panier
-                          </label>
-                        </div>
-                      </Col>
-                    </Row>
+                  niveauName === "Collège" && (
+                    <>
+                      <Row className="mb-4">
+                        <Col lg={12} className="d-flex align-items-center">
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inscription"
+                              value="Inscription"
+                              checked={isInscriptionChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  e,
+                                  "Frais d'inscription",
+                                  300
+                                );
+                                setInscriptionChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inscription"
+                            >
+                              Frais d'inscription
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="radio"
+                              id="optionFille"
+                              name="uniforme"
+                              value="fille"
+                              checked={isUniformeFilleChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Uniforme Fille", 200);
+                                setIsUniformeFilleChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="optionFille"
+                            >
+                              Uniforme Fille
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="radio"
+                              id="optionGarcon"
+                              name="uniforme"
+                              value="garcon"
+                              checked={isUniformeGarconChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Uniforme Garçon", 150);
+                                setIsUniformeGarconChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="optionGarcon"
+                            >
+                              Uniforme Garçon
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={12} className="d-flex align-items-center">
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck1"
+                              value="optio1"
+                              checked={isScolariteChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Scolarité", 1500);
+                                setIsScolariteChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck1"
+                            >
+                              Scolarité
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck2"
+                              value="optio2"
+                              checked={isRestaurationChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  e,
+                                  "Garde et restauration",
+                                  800
+                                );
+                                setIsRestaurationChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck2"
+                            >
+                              Garde et restauration
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineChec2"
+                              value="opti2"
+                              checked={isPanierChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Garde et panier", 550);
+                                setIsPanierChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineChec2"
+                            >
+                              Garde et panier
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
+                    </>
                   )}
                 {selectedPeriode === "2ème Versement" &&
-                  selectedNiveau === "Collège" && (
-                    <Row className="mb-4">
-                      <Col lg={12} className="d-flex align-items-center">
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck1"
-                            value="optio1"
-                            checked={isScolariteChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Scolarité", 1300);
-                              setIsScolariteChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck1"
-                          >
-                            Scolarité
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck2"
-                            value="optio2"
-                            checked={isRestaurationChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(
-                                e,
-                                "Garde et restauration",
-                                500
-                              );
-                              setIsRestaurationChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck2"
-                          >
-                            Garde et restauration
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineChec2"
-                            value="opti2"
-                            checked={isPanierChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Garde et panier", 400);
-                              setIsPanierChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineChec2"
-                          >
-                            Garde et panier
-                          </label>
-                        </div>
-                      </Col>
-                    </Row>
+                  niveauName === "Collège" && (
+                    <>
+                      <Row className="mb-4">
+                        <Col lg={12} className="d-flex align-items-center">
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck1"
+                              value="optio1"
+                              checked={isScolariteChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Scolarité", 1300);
+                                setIsScolariteChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck1"
+                            >
+                              Scolarité
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck2"
+                              value="optio2"
+                              checked={isRestaurationChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  e,
+                                  "Garde et restauration",
+                                  500
+                                );
+                                setIsRestaurationChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck2"
+                            >
+                              Garde et restauration
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineChec2"
+                              value="opti2"
+                              checked={isPanierChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Garde et panier", 400);
+                                setIsPanierChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineChec2"
+                            >
+                              Garde et panier
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
+                    </>
                   )}
                 {selectedPeriode === "3ème Versement" &&
-                  selectedNiveau === "Collège" && (
-                    <Row className="mb-4">
-                      <Col lg={12} className="d-flex align-items-center">
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck1"
-                            value="optio1"
-                            checked={isScolariteChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Scolarité", 1250);
-                              setIsScolariteChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck1"
-                          >
-                            Scolarité
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck2"
-                            value="optio2"
-                            checked={isRestaurationChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(
-                                e,
-                                "Garde et restauration",
-                                500
-                              );
-                              setIsRestaurationChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck2"
-                          >
-                            Garde et restauration
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineChec2"
-                            value="opti2"
-                            checked={isPanierChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Garde et panier", 400);
-                              setIsPanierChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineChec2"
-                          >
-                            Garde et panier
-                          </label>
-                        </div>
-                      </Col>
-                    </Row>
+                  niveauName === "Collège" && (
+                    <>
+                      <Row className="mb-4">
+                        <Col lg={12} className="d-flex align-items-center">
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck1"
+                              value="optio1"
+                              checked={isScolariteChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Scolarité", 1250);
+                                setIsScolariteChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck1"
+                            >
+                              Scolarité
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck2"
+                              value="optio2"
+                              checked={isRestaurationChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  e,
+                                  "Garde et restauration",
+                                  500
+                                );
+                                setIsRestaurationChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck2"
+                            >
+                              Garde et restauration
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineChec2"
+                              value="opti2"
+                              checked={isPanierChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Garde et panier", 400);
+                                setIsPanierChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineChec2"
+                            >
+                              Garde et panier
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
+                    </>
                   )}
-
-                {(selectedPeriode === "Annuel" ||
-                  selectedPeriode === "1er Versement") &&
-                  selectedNiveau === "Lycée" && (
+                {selectedPeriode === "Annuel" && niveauName === "Lycée" && (
+                  <>
                     <Row className="mb-4">
                       <Col lg={12} className="d-flex align-items-center">
                         <div className="form-check form-check-inline">
@@ -1019,277 +1078,309 @@ const PaiementPage = () => {
                         </div>
                       </Col>
                     </Row>
-                  )}
-                {selectedPeriode === "Annuel" && selectedNiveau === "Lycée" && (
-                  <Row className="mb-4">
-                    <Col lg={12} className="d-flex align-items-center">
-                      <div className="form-check form-check-inline">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id="inlineCheck1"
-                          value="optio1"
-                          checked={isScolariteChecked}
-                          onChange={(e) => {
-                            handleCheckboxChange(e, "Scolarité", 4750);
-                            setIsScolariteChecked(e.target.checked);
-                          }}
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="inlineCheck1"
-                        >
-                          Scolarité
-                        </label>
-                      </div>
-                      <div className="form-check form-check-inline">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id="inlineCheck2"
-                          value="optio2"
-                          checked={isRestaurationChecked}
-                          onChange={(e) => {
-                            handleCheckboxChange(
-                              e,
-                              "Garde et restauration",
-                              1800
-                            );
-                            setIsRestaurationChecked(e.target.checked);
-                          }}
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="inlineCheck2"
-                        >
-                          Garde et restauration
-                        </label>
-                      </div>
-                      <div className="form-check form-check-inline">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id="inlineChec2"
-                          value="opti2"
-                          checked={isPanierChecked}
-                          onChange={(e) => {
-                            handleCheckboxChange(e, "Garde et panier", 1350);
-                            setIsPanierChecked(e.target.checked);
-                          }}
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="inlineChec2"
-                        >
-                          Garde et panier
-                        </label>
-                      </div>
-                    </Col>
-                  </Row>
+                    <Row className="mb-4">
+                      <Col lg={12} className="d-flex align-items-center">
+                        <div className="form-check form-check-inline">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="inlineCheck1"
+                            value="optio1"
+                            checked={isScolariteChecked}
+                            onChange={(e) => {
+                              handleCheckboxChange(e, "Scolarité", 4750);
+                              setIsScolariteChecked(e.target.checked);
+                            }}
+                          />
+                          <label
+                            className="form-check-label"
+                            htmlFor="inlineCheck1"
+                          >
+                            Scolarité
+                          </label>
+                        </div>
+                        <div className="form-check form-check-inline">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="inlineCheck2"
+                            value="optio2"
+                            checked={isRestaurationChecked}
+                            onChange={(e) => {
+                              handleCheckboxChange(
+                                e,
+                                "Garde et restauration",
+                                1800
+                              );
+                              setIsRestaurationChecked(e.target.checked);
+                            }}
+                          />
+                          <label
+                            className="form-check-label"
+                            htmlFor="inlineCheck2"
+                          >
+                            Garde et restauration
+                          </label>
+                        </div>
+                        <div className="form-check form-check-inline">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="inlineChec2"
+                            value="opti2"
+                            checked={isPanierChecked}
+                            onChange={(e) => {
+                              handleCheckboxChange(e, "Garde et panier", 1350);
+                              setIsPanierChecked(e.target.checked);
+                            }}
+                          />
+                          <label
+                            className="form-check-label"
+                            htmlFor="inlineChec2"
+                          >
+                            Garde et panier
+                          </label>
+                        </div>
+                      </Col>
+                    </Row>
+                  </>
                 )}
                 {selectedPeriode === "1er Versement" &&
-                  selectedNiveau === "Lycée" && (
-                    <Row className="mb-4">
-                      <Col lg={12} className="d-flex align-items-center">
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck1"
-                            value="optio1"
-                            checked={isScolariteChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Scolarité", 1750);
-                              setIsScolariteChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck1"
-                          >
-                            Scolarité
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck2"
-                            value="optio2"
-                            checked={isRestaurationChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(
-                                e,
-                                "Garde et restauration",
-                                800
-                              );
-                              setIsRestaurationChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck2"
-                          >
-                            Garde et restauration
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineChec2"
-                            value="opti2"
-                            checked={isPanierChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Garde et panier", 550);
-                              setIsPanierChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineChec2"
-                          >
-                            Garde et panier
-                          </label>
-                        </div>
-                      </Col>
-                    </Row>
+                  niveauName === "Lycée" && (
+                    <>
+                      <Row className="mb-4">
+                        <Col lg={12} className="d-flex align-items-center">
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inscription"
+                              value="Inscription"
+                              checked={isInscriptionChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  e,
+                                  "Frais d'inscription",
+                                  300
+                                );
+                                setInscriptionChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inscription"
+                            >
+                              Frais d'inscription
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={12} className="d-flex align-items-center">
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck1"
+                              value="optio1"
+                              checked={isScolariteChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Scolarité", 1750);
+                                setIsScolariteChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck1"
+                            >
+                              Scolarité
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck2"
+                              value="optio2"
+                              checked={isRestaurationChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  e,
+                                  "Garde et restauration",
+                                  800
+                                );
+                                setIsRestaurationChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck2"
+                            >
+                              Garde et restauration
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineChec2"
+                              value="opti2"
+                              checked={isPanierChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Garde et panier", 550);
+                                setIsPanierChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineChec2"
+                            >
+                              Garde et panier
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
+                    </>
                   )}
                 {selectedPeriode === "2ème Versement" &&
-                  selectedNiveau === "Lycée" && (
-                    <Row className="mb-4">
-                      <Col lg={12} className="d-flex align-items-center">
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck1"
-                            value="optio1"
-                            checked={isScolariteChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Scolarité", 1500);
-                              setIsScolariteChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck1"
-                          >
-                            Scolarité
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck2"
-                            value="optio2"
-                            checked={isRestaurationChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(
-                                e,
-                                "Garde et restauration",
-                                500
-                              );
-                              setIsRestaurationChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck2"
-                          >
-                            Garde et restauration
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineChec2"
-                            value="opti2"
-                            checked={isPanierChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Garde et panier", 400);
-                              setIsPanierChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineChec2"
-                          >
-                            Garde et panier
-                          </label>
-                        </div>
-                      </Col>
-                    </Row>
+                  niveauName === "Lycée" && (
+                    <>
+                      <Row className="mb-4">
+                        <Col lg={12} className="d-flex align-items-center">
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck1"
+                              value="optio1"
+                              checked={isScolariteChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Scolarité", 1500);
+                                setIsScolariteChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck1"
+                            >
+                              Scolarité
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck2"
+                              value="optio2"
+                              checked={isRestaurationChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  e,
+                                  "Garde et restauration",
+                                  500
+                                );
+                                setIsRestaurationChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck2"
+                            >
+                              Garde et restauration
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineChec2"
+                              value="opti2"
+                              checked={isPanierChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Garde et panier", 400);
+                                setIsPanierChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineChec2"
+                            >
+                              Garde et panier
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
+                    </>
                   )}
                 {selectedPeriode === "3ème Versement" &&
-                  selectedNiveau === "Lycée" && (
-                    <Row className="mb-4">
-                      <Col lg={12} className="d-flex align-items-center">
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck1"
-                            value="optio1"
-                            checked={isScolariteChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Scolarité", 1500);
-                              setIsScolariteChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck1"
-                          >
-                            Scolarité
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineCheck2"
-                            value="optio2"
-                            checked={isRestaurationChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(
-                                e,
-                                "Garde et restauration",
-                                500
-                              );
-                              setIsRestaurationChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineCheck2"
-                          >
-                            Garde et restauration
-                          </label>
-                        </div>
-                        <div className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="inlineChec2"
-                            value="opti2"
-                            checked={isPanierChecked}
-                            onChange={(e) => {
-                              handleCheckboxChange(e, "Garde et panier", 400);
-                              setIsPanierChecked(e.target.checked);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="inlineChec2"
-                          >
-                            Garde et panier
-                          </label>
-                        </div>
-                      </Col>
-                    </Row>
+                  niveauName === "Lycée" && (
+                    <>
+                      <Row className="mb-4">
+                        <Col lg={12} className="d-flex align-items-center">
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck1"
+                              value="optio1"
+                              checked={isScolariteChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Scolarité", 1500);
+                                setIsScolariteChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck1"
+                            >
+                              Scolarité
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineCheck2"
+                              value="optio2"
+                              checked={isRestaurationChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(
+                                  e,
+                                  "Garde et restauration",
+                                  500
+                                );
+                                setIsRestaurationChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineCheck2"
+                            >
+                              Garde et restauration
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="inlineChec2"
+                              value="opti2"
+                              checked={isPanierChecked}
+                              onChange={(e) => {
+                                handleCheckboxChange(e, "Garde et panier", 400);
+                                setIsPanierChecked(e.target.checked);
+                              }}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="inlineChec2"
+                            >
+                              Garde et panier
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
+                    </>
                   )}
                 <Row className="mb-4">
                   <Col lg={3}>

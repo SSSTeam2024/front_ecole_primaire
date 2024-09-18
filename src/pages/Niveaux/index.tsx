@@ -163,8 +163,8 @@ const Niveaux = () => {
               <Link
                 to="#"
                 className="badge badge-soft-success edit-item-btn"
-                // onClick={() => tog_UpdateNiveau()}
-                // state={row}
+                onClick={() => tog_UpdateNiveau()}
+                state={row}
               >
                 <i
                   className="ri-edit-2-line"
@@ -216,8 +216,12 @@ const Niveaux = () => {
     let filteredNiveaux = data;
 
     if (searchTerm) {
-      filteredNiveaux = filteredNiveaux.filter((niveau: any) =>
-        niveau?.nom_niveau!.toLowerCase().includes(searchTerm.toLowerCase())
+      filteredNiveaux = filteredNiveaux.filter(
+        (niveau: any) =>
+          niveau
+            ?.nom_niveau!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          niveau?.type!.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -239,8 +243,8 @@ const Niveaux = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        // value={searchTerm}
-                        // onChange={handleSearchChange}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>

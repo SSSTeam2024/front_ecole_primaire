@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
-import { useUpdateMatiereMutation } from "features/matieres/matiereSlice";
+import {
+  Matiere,
+  useFetchMatieresQuery,
+  useUpdateMatiereMutation,
+} from "features/matieres/matiereSlice";
 import Select from "react-select";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
+import { useGetNiveauxQuery } from "features/niveaux/niveauxSlice";
 
 interface ChildProps {
   modal_UpdateMatiere: boolean;
@@ -48,7 +53,11 @@ const ModalEdit: React.FC<ChildProps> = ({
   };
 
   const matiereLocation = useLocation();
+  const location = useLocation();
+  const matiereToEdit = location.state?.matiere;
 
+  const { data: AllNiveaux = [] } = useGetNiveauxQuery();
+  const { data: AllMatieres = [] } = useFetchMatieresQuery();
   const [matiereName, setMatiereName] = useState<string>(
     matiereLocation?.state?.nom_matiere ?? ""
   );
@@ -92,52 +101,126 @@ const ModalEdit: React.FC<ChildProps> = ({
     matiereLocation?.state?.classe || []
   );
 
-  const onSubmitUpdateMatiere = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const classe = {
-        _id: matiere_id || matiereLocation?.state?._id!,
-        matieres: matiereLocation?.state?.matieres,
-        niveau: matiereLocation?.state?.niveau!,
-      };
-      updateMatiere(classe)
-        .then(() => notifySuccess())
-        .then(() => setMatiere(initialMatiere));
-    } catch (error) {
-      notifyError(error);
+  const [selectedMatiere, setSelectedMatiere] = useState<Matiere>({
+    _id: "",
+    niveau: "",
+    matieres: [{ nom_matiere: "" }],
+  });
+
+  useEffect(() => {
+    if (matiereToEdit) {
+      setSelectedMatiere(matiereToEdit);
     }
+  }, [matiereToEdit]);
+
+  const handleAddMatiere = () => {
+    setSelectedMatiere((prevState) => ({
+      ...prevState,
+      matieres: [...prevState.matieres, { nom_matiere: "" }],
+    }));
+  };
+
+  const handleRemoveMatiere = (index: number) => {
+    setSelectedMatiere((prevState) => ({
+      ...prevState,
+      matieres: prevState.matieres.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSelectMatiereToUpdate = (selectedId: string) => {
+    const selectedMatiere = AllMatieres.find(
+      (matiere) => matiere._id === selectedId
+    );
+    if (selectedMatiere) {
+      setSelectedMatiere(selectedMatiere); // Populate the form with the selected matiere
+    }
+  };
+
+  const handleMatiereChange = (index: number, value: string) => {
+    const updatedMatieres = [...selectedMatiere.matieres];
+    updatedMatieres[index].nom_matiere = value;
+    setSelectedMatiere({ ...selectedMatiere, matieres: updatedMatieres });
+  };
+
+  const onSubmitMatiere = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    updateMatiere({ _id: selectedMatiere._id, ...selectedMatiere });
   };
 
   return (
     <React.Fragment>
-      <Form onSubmit={onSubmitUpdateMatiere}>
+      <Form className="create-form" onSubmit={onSubmitMatiere}>
         <Row className="mb-4">
           <Col lg={3}>
-            <Form.Label htmlFor="matiereName">Nom</Form.Label>
+            <Form.Label htmlFor="niveau">Niveau</Form.Label>
           </Col>
           <Col lg={8}>
-            <Form.Control
-              type="text"
-              id="matiereName"
-              name="matiereName"
-              value={matiereName}
-              onChange={handleMatiereName}
-            />
+            <select
+              className="form-select text-muted"
+              name="niveau"
+              id="niveau"
+              value={selectedMatiere.niveau}
+              onChange={(e) =>
+                setSelectedMatiere({
+                  ...selectedMatiere,
+                  niveau: e.target.value,
+                })
+              }
+            >
+              <option value="">Choisir</option>
+              {AllNiveaux.map((niveau: any) => (
+                <option value={niveau._id} key={niveau._id}>
+                  {niveau.nom_niveau}
+                </option>
+              ))}
+            </select>
           </Col>
         </Row>
-        <Row>
-          <div className="hstack gap-2 justify-content-center mb-2">
-            <Button
-              type="submit"
-              className="btn-soft-success"
-              onClick={() => setmodal_UpdateMatiere(!modal_UpdateMatiere)}
-              data-bs-dismiss="modal"
-            >
-              <i className="me-1 fs-18 align-middle"></i>
-              Modifier
-            </Button>
-          </div>
-        </Row>
+
+        {selectedMatiere.matieres.map((item, index) => (
+          <Row className="mb-4" key={index}>
+            <Col lg={3}>
+              <Form.Label htmlFor={`nom_matiere_${index}`}>
+                Matière {index + 1}
+              </Form.Label>
+            </Col>
+            <Col lg={6}>
+              <Form.Control
+                type="text"
+                id={`nom_matiere_${index}`}
+                name={`nom_matiere_${index}`}
+                placeholder="Matière"
+                className="w-100"
+                value={item.nom_matiere}
+                onChange={(e) => handleMatiereChange(index, e.target.value)}
+              />
+            </Col>
+            <Col lg={1} className="m-1">
+              {index === selectedMatiere.matieres.length - 1 && (
+                <button
+                  type="button"
+                  className="btn btn-soft-info btn-icon"
+                  onClick={handleAddMatiere}
+                >
+                  <i className="ri-add-line"></i>
+                </button>
+              )}
+            </Col>
+            <Col lg={1} className="m-1">
+              <button
+                type="button"
+                className="btn btn-danger btn-icon"
+                onClick={() => handleRemoveMatiere(index)}
+              >
+                <i className="ri-delete-bin-5-line"></i>
+              </button>
+            </Col>
+          </Row>
+        ))}
+
+        <Button type="submit" variant="success" id="addNew">
+          Mettre à jour
+        </Button>
       </Form>
     </React.Fragment>
   );
