@@ -11,6 +11,7 @@ export interface SmS {
   specefic_students? : string[],
   sms_par_destinataire?: string,
   total_sms?: string,
+  eleve?: string,
 }
 
 export const smSSlice = createApi({

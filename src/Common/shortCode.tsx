@@ -29,6 +29,16 @@ const shortCode = [
     name: "Nom Enseignant",
     code: "[enseignant]",
   },
+  {
+    id: 7,
+    name: "Classe",
+    code: "[classe]",
+  },
+  {
+    id: 8,
+    name: "Nom Elève",
+    code: "[nom_eleve]",
+  },
 ];
 
 export default shortCode;

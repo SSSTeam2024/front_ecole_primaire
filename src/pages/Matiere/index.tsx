@@ -7,10 +7,11 @@ import {
   Modal,
   Form,
   Button,
+  Offcanvas,
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import ModalEdit from "./ModalEdit";
 import {
@@ -20,16 +21,15 @@ import {
   useDeleteMatiereMutation,
   useFetchMatieresQuery,
 } from "features/matieres/matiereSlice";
-import * as XLSX from "xlsx";
-import { useFetchClassesQuery } from "features/classes/classeSlice";
-import Select from "react-select";
 import { useGetNiveauxQuery } from "features/niveaux/niveauxSlice";
 
 const Matieres = () => {
   const { data = [] } = useFetchMatieresQuery();
 
-  const { data: AllClasses = [] } = useFetchClassesQuery();
   const { data: AllNiveaux = [] } = useGetNiveauxQuery();
+
+  const [showMatiere, setShowMatiere] = useState<boolean>(false);
+
   const [deleteMatiere] = useDeleteMatiereMutation();
 
   const notifySuccess = () => {
@@ -181,6 +181,16 @@ const Matieres = () => {
             <li>
               <Link
                 to="#"
+                className="badge badge-soft-info view-item-btn"
+                onClick={() => setShowMatiere(!showMatiere)}
+                state={row}
+              >
+                <i className="ri-eye-line"></i>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="#"
                 className="badge badge-soft-success edit-item-btn"
                 // onClick={() => tog_UpdateMatiere()}
                 // state={row}
@@ -250,6 +260,8 @@ const Matieres = () => {
 
     return filteredMatieres;
   };
+
+  const matiereLocation = useLocation();
 
   // const submitExcelData = async (parsedData: any[]) => {
   //   try {
@@ -472,6 +484,38 @@ const Matieres = () => {
               />
             </Modal.Body>
           </Modal>
+          <Offcanvas
+            show={showMatiere}
+            onHide={() => setShowMatiere(!showMatiere)}
+            placement="end"
+            style={{ width: "25%" }}
+          >
+            <Offcanvas.Header closeButton>
+              <Offcanvas.Title>Détails Matière</Offcanvas.Title>
+            </Offcanvas.Header>
+            <Offcanvas.Body>
+              <Row className="mb-3">
+                <Col lg={3}>
+                  <span className="fw-medium">Niveau</span>
+                </Col>
+                <Col lg={9}>
+                  <i>{matiereLocation?.state?.niveau?.nom_niveau!}</i>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col lg={3}>
+                  <span className="fw-medium">Matières</span>
+                </Col>
+                <Col lg={9}>
+                  {matiereLocation?.state?.matieres?.map(
+                    (matiere: any, index: number) => (
+                      <li key={index}>{matiere.nom_matiere}</li>
+                    )
+                  )}
+                </Col>
+              </Row>
+            </Offcanvas.Body>
+          </Offcanvas>
         </Container>
       </div>
     </React.Fragment>

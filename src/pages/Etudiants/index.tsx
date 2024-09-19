@@ -328,7 +328,7 @@ const Etudiants = () => {
   };
 
   const getFilteredEtudiants = () => {
-    let filteredEtudiants = data;
+    let filteredEtudiants = [...data];
 
     if (searchTerm) {
       filteredEtudiants = filteredEtudiants.filter(
@@ -350,7 +350,7 @@ const Etudiants = () => {
       );
     }
 
-    return filteredEtudiants;
+    return filteredEtudiants.reverse();
   };
 
   return (

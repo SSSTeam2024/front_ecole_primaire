@@ -41,31 +41,6 @@ const formatDate = (date: Date): string => {
 
 const PaiementPage = () => {
   const { data = [] } = useFetchPaiementsQuery();
-  const { data: AllEleves = [] } = useFetchEtudiantsQuery();
-
-  const eleves_fully_paid = AllEleves.filter(
-    (eleve) => eleve?.statusPaiement! === "0"
-  );
-
-  const eleves_first_part_paid = AllEleves.filter(
-    (eleve) => eleve?.statusPaiement! === "0"
-  );
-
-  const eleves_second_part_paid = AllEleves.filter(
-    (eleve) =>
-      eleve?.statusPaiement! !== "Entièrement Payé" &&
-      eleve?.statusPaiement! !== "1er Versement" &&
-      eleve?.statusPaiement! !== "2ème Versement"
-  );
-
-  const eleves_third_part_paid = AllEleves.filter(
-    (eleve) =>
-      eleve?.statusPaiement! !== "Entièrement Payé" &&
-      eleve?.statusPaiement! !== "1er Versement" &&
-      eleve?.statusPaiement! !== "2ème Versement" &&
-      eleve?.statusPaiement! !== "3ème Versement"
-  );
-
   const [deletePaiement] = useDeletePaiementMutation();
   const [showPaiement, setShowPaiement] = useState<boolean>(false);
 
@@ -145,9 +120,6 @@ const PaiementPage = () => {
     setSelectedPeriode(selectedPeriode);
     setFilteredEtudiants([]);
     setSelectedClasse("");
-    // else {
-    //   setFilteredEtudiants(etudiants);
-    // }
   };
 
   const [isInscriptionChecked, setInscriptionChecked] = useState(false);
@@ -165,8 +137,6 @@ const PaiementPage = () => {
   const { data: AllClasses = [] } = useFetchClassesQuery();
 
   const [selectedClasse, setSelectedClasse] = useState<string>("");
-
-  const [etudiants, setEtudiants] = useState<Etudiant[]>([]);
 
   const [fetchEtudiantsByClasseId, { data: fetchedEtudiants, isLoading }] =
     useFetchEtudiantsByClasseIdMutation();
@@ -340,24 +310,24 @@ const PaiementPage = () => {
       name: <span className="font-weight-bold fs-13">Elève</span>,
       selector: (row: any) => (
         <span>
-          {row.eleve.nom} {row.eleve.prenom}
+          {row?.eleve?.nom!} {row?.eleve?.prenom!}
         </span>
       ),
       sortable: true,
     },
     {
       name: <span className="font-weight-bold fs-13">Période</span>,
-      selector: (row: any) => <span>{row.period}</span>,
+      selector: (row: any) => <span>{row?.period!}</span>,
       sortable: true,
     },
     {
       name: <span className="font-weight-bold fs-13">Montant</span>,
-      selector: (row: any) => <span>{row.montant} dt</span>,
+      selector: (row: any) => <span>{row?.montant!} dt</span>,
       sortable: true,
     },
     {
       name: <span className="font-weight-bold fs-13">Date</span>,
-      selector: (row: any) => row.date_paiement,
+      selector: (row: any) => row?.date_paiement!,
       sortable: true,
     },
     {

@@ -147,19 +147,35 @@ const Navdata = () => {
     //   icon: "ph ph-house-simple",
     // },
     {
-      id: "invoices",
-      label: "Calendrier Examen",
-      link: "/calendrier-examen",
-      parentId: "invoices",
-      icon: "ph ph-calendar-check",
+      id: "Planification",
+      label: "Planification",
+      icon: "ph ph-target",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+        setIsPayement(!isPayement);
+        setIscurrentState("Payement");
+        updateIconSidebar(e);
+      },
+      stateVariables: isPayement,
+      subItems: [
+        {
+          id: "invoices",
+          label: "Calendrier Examen",
+          link: "/calendrier-examen",
+          parentId: "invoices",
+          icon: "ph ph-calendar-check",
+        },
+        {
+          id: "invoices",
+          label: "Emploi",
+          link: "/emploi",
+          parentId: "invoices",
+          icon: "ph ph-calendar-blank",
+        },
+      ],
     },
-    {
-      id: "invoices",
-      label: "Emploi",
-      link: "/emploi",
-      parentId: "invoices",
-      icon: "ph ph-calendar-blank",
-    },
+
     {
       id: "invoices",
       label: "Paiement",
@@ -210,6 +226,42 @@ const Navdata = () => {
       parentId: "invoices",
       icon: "ph ph-clock",
     },
+    {
+      id: "Activity",
+      label: "Activités et Témoignages",
+      icon: "ph ph-sparkle",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+        setIsTracking(!isTracking);
+        setIscurrentState("Tracking");
+        updateIconSidebar(e);
+      },
+      stateVariables: isTracking,
+      subItems: [
+        {
+          id: "invoices",
+          label: "Gallerie",
+          link: "/gallerie",
+          parentId: "invoices",
+          icon: "ph ph-aperture",
+        },
+        {
+          id: "invoices",
+          label: "Avis",
+          link: "/avis",
+          parentId: "invoices",
+          icon: "ph ph-notebook",
+        },
+        {
+          id: "invoices",
+          label: "Evènements",
+          link: "/evènements",
+          parentId: "invoices",
+          icon: "ph ph-calendar",
+        },
+      ],
+    },
     // {
     //   id: "invoices",
     //   label: "Messages",
@@ -217,27 +269,7 @@ const Navdata = () => {
     //   parentId: "invoices",
     //   icon: "ph ph-chats-circle",
     // },
-    {
-      id: "invoices",
-      label: "Gallerie",
-      link: "/gallerie",
-      parentId: "invoices",
-      icon: "ph ph-aperture",
-    },
-    {
-      id: "invoices",
-      label: "Evènements",
-      link: "/evènements",
-      parentId: "invoices",
-      icon: "ph ph-calendar",
-    },
-    {
-      id: "invoices",
-      label: "Avis",
-      link: "/avis",
-      parentId: "invoices",
-      icon: "ph ph-notebook",
-    },
+
     {
       id: "invoices",
       label: "Documents",

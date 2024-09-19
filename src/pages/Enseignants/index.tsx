@@ -243,7 +243,7 @@ const Enseignants = () => {
   };
 
   const getFilteredEnseignants = () => {
-    let filteredEnseignants = data;
+    let filteredEnseignants = [...data];
 
     if (searchTerm) {
       filteredEnseignants = filteredEnseignants.filter(
@@ -260,7 +260,7 @@ const Enseignants = () => {
       );
     }
 
-    return filteredEnseignants;
+    return filteredEnseignants.reverse();
   };
 
   const enseignantLocation = useLocation();
@@ -491,7 +491,7 @@ const Enseignants = () => {
                 <span className="fw-medium">N° Téléphone</span>
               </Col>
               <Col lg={9}>
-                <i>{enseignantLocation?.state?.phone_enseignant!}</i>
+                <i>{enseignantLocation?.state?.phone!}</i>
               </Col>
             </Row>
             {rendezvous.length === 0 ? (

@@ -8,8 +8,6 @@ import {
   Form,
   Button,
   Offcanvas,
-  Tab,
-  Nav,
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
@@ -33,12 +31,6 @@ const EnseignantsSmses = () => {
 
   const [showDestinataire, setShowDestinataire] = useState<boolean>(false);
 
-  const [activeTab, setActiveTab] = useState("arrow-contact");
-
-  const handleSelect = (selectedKey: any) => {
-    setActiveTab(selectedKey);
-  };
-
   const notifySuccess = () => {
     Swal.fire({
       position: "center",
@@ -59,23 +51,6 @@ const EnseignantsSmses = () => {
     });
   };
 
-  const [isChecked, setIsChecked] = useState(true);
-
-  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsChecked(event.target.checked);
-    if (event.target.checked === true) {
-      setSms((prevState) => ({
-        ...prevState,
-        include_names: "1",
-      }));
-    } else {
-      setSms((prevState) => ({
-        ...prevState,
-        include_names: "0",
-      }));
-    }
-  };
-
   const [modal_AddSms, setmodal_AddSms] = useState<boolean>(false);
   function tog_AddSms() {
     setmodal_AddSms(!modal_AddSms);
@@ -85,9 +60,13 @@ const EnseignantsSmses = () => {
 
   const [sendSms, { isLoading }] = useSendSmSMutation();
 
+  const handleReload = () => {
+    window.location.reload();
+  };
+
   const handleSendSms = async () => {
     try {
-      await sendSms();
+      await sendSms().then(() => handleReload);
     } catch (error) {
       console.error("Error sending SMS:", error);
     }
@@ -104,7 +83,7 @@ const EnseignantsSmses = () => {
   };
 
   const [sms, setSms] = useState(initialSms);
-  const [students, setStudents] = useState<any[]>([]);
+
   const {
     sender,
     msg,
@@ -117,14 +96,13 @@ const EnseignantsSmses = () => {
 
   const optionEnseignant = AllEnseignants.map((enseignant: any) => ({
     value: enseignant?._id!,
-    label: `${enseignant?.prenom_enseignant!} ${enseignant?.nom_enseignant!}`,
+    label: `${enseignant?.prenom_enseignant!} ${enseignant?.nom_enseignant!} ___${" "} ${enseignant?.matiere!}`,
   }));
 
   const [selectedEnseignant, setSelectedEnseignant] = useState<any[]>([]);
 
   const handleSelectEnseignant = async (selectedOption: any) => {
     const values = selectedOption.map((option: any) => option.value);
-    console.log("Selected enseignant values:", values);
     setSelectedEnseignant(values);
   };
 
@@ -266,8 +244,6 @@ const EnseignantsSmses = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        // value={searchTerm}
-                        // onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -338,7 +314,11 @@ const EnseignantsSmses = () => {
                 </Row>
               </Card.Header>
               <Card.Body>
-                <DataTable columns={columns} data={groupedData} pagination />
+                <DataTable
+                  columns={columns}
+                  data={groupedData.reverse()}
+                  pagination
+                />
               </Card.Body>
             </Card>
           </Col>
@@ -359,37 +339,17 @@ const EnseignantsSmses = () => {
             </Modal.Header>
             <Modal.Body>
               <Form className="create-form" onSubmit={onSubmitSms}>
-                <Card>
-                  <Card.Body>
-                    <Tab.Container
+                {/* <Card>
+                  <Card.Body> */}
+                {/* <Tab.Container
                       defaultActiveKey="arrow-contact"
                       onSelect={handleSelect}
-                    >
-                      <Nav
+                    > */}
+                {/* <Nav
                         as="ul"
                         variant="pills"
                         className="arrow-navtabs nav-success bg-light mb-3"
                       >
-                        {/* <Nav.Item as="li">
-                          <Nav.Link eventKey="arrow-overview">
-                            <span className="d-block d-sm-none">
-                              <i className="mdi mdi-home-variant"></i>
-                            </span>
-                            <span className="d-none d-sm-block">
-                              Tous les groupes
-                            </span>
-                          </Nav.Link>
-                        </Nav.Item>
-                        <Nav.Item as="li">
-                          <Nav.Link eventKey="arrow-profile">
-                            <span className="d-block d-sm-none">
-                              <i className="mdi mdi-account"></i>
-                            </span>
-                            <span className="d-none d-sm-block">
-                              Groupe(s) Spécifique(s)
-                            </span>
-                          </Nav.Link>
-                        </Nav.Item> */}
                         <Nav.Item as="li">
                           <Nav.Link eventKey="arrow-contact">
                             <span className="d-block d-sm-none">
@@ -400,221 +360,65 @@ const EnseignantsSmses = () => {
                             </span>
                           </Nav.Link>
                         </Nav.Item>
-                      </Nav>
-                      <Tab.Content className="text-muted">
-                        {/* <Tab.Pane eventKey="arrow-overview">
-                          <Row className="mb-4">
-                            <Col lg={2}>
-                              <Form.Label htmlFor="msg">Message</Form.Label>
-                            </Col>
-                            <Col lg={7}>
-                              <textarea
-                                className="form-control"
-                                id="msg"
-                                name="msg"
-                                value={sms.msg}
-                                onChange={onChangeSms}
-                                ref={textareaRef}
-                                rows={9}
-                              ></textarea>
-                              <div className="mt-2 text-end">
-                                <span>
-                                  {msg.length}/ {numberOfSms} SMS
-                                </span>
-                              </div>
-                            </Col>
-                            <Col lg={2}>
-                              {shortCode.map((code) => (
-                                <Button
-                                  type="button"
-                                  variant="light"
-                                  id="addNew"
-                                  className="mb-2"
-                                  onClick={() =>
-                                    handleShortcodeClick(code.code)
-                                  }
-                                >
-                                  {code.name}
-                                </Button>
-                              ))}
-                            </Col>
-                          </Row>
-                        </Tab.Pane>
-                        <Tab.Pane eventKey="arrow-profile">
-                          <Row className="mb-4">
-                            <Col lg={2}>
-                              <Form.Label htmlFor="classe">
-                                Groupe(s)
-                              </Form.Label>
-                            </Col>
-                            <Col lg={7}>
-                              <Select
-                                closeMenuOnSelect={false}
-                                isMulti
-                                options={optionColumnsTable}
-                                onChange={handleSelectValueColumnChange}
-                                placeholder="Choisir..."
-                              />
-                            </Col>
-                          </Row>
-                          {selectedColumnValues.length === 1 ? (
-                            <Row className="mb-4">
-                              <Col lg={2}>
-                                <Form.Label htmlFor="classe">
-                                  Elève(s)
-                                </Form.Label>
-                              </Col>
-                              <Col lg={7}>
-                                <Select
-                                  closeMenuOnSelect={false}
-                                  isMulti
-                                  options={optionEleves}
-                                  onChange={handleSelectEleveChange}
-                                  placeholder="Choisir..."
-                                />
-                              </Col>
-                            </Row>
-                          ) : (
-                            ""
-                          )}
-                          <Row className="mb-4">
-                            <div className="form-check mb-2">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="formCheck1"
-                                checked={isChecked}
-                                onChange={handleCheckboxChange}
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="formCheck1"
-                              >
-                                Inclure Nom élève au début de message.
-                              </label>
-                            </div>
-                          </Row>
-                          <Row className="mb-4">
-                            <Col lg={2}>
-                              <Form.Label htmlFor="msg">Message</Form.Label>
-                            </Col>
-                            <Col lg={7}>
-                              <small className="text-muted">
-                                Vous pouvez utiliser les abréviations dynamiques
-                              </small>
-                              <textarea
-                                className="form-control"
-                                id="msg"
-                                name="msg"
-                                value={sms.msg}
-                                onChange={onChangeSms}
-                                rows={8}
-                              ></textarea>
-                              <div className="mt-2 text-end">
-                                <span>
-                                  {msg.length}/ {numberOfSms} SMS
-                                </span>
-                              </div>
-                            </Col>
-                            <Col lg={2}>
-                              {shortCode.map((code) => (
-                                <Button
-                                  type="button"
-                                  variant="light"
-                                  id="addNew"
-                                  className="mb-2"
-                                >
-                                  {code.name}
-                                </Button>
-                              ))}
-                            </Col>
-                          </Row>
-                        </Tab.Pane> */}
-                        <Tab.Pane eventKey="arrow-contact">
-                          <Row className="mb-4">
-                            <Col lg={2}>
-                              <Form.Label htmlFor="enseignant">
-                                Enseignant(s)
-                              </Form.Label>
-                            </Col>
-                            <Col lg={7}>
-                              <Select
-                                closeMenuOnSelect={false}
-                                isMulti
-                                options={optionEnseignant}
-                                onChange={handleSelectEnseignant}
-                                placeholder="Choisir..."
-                              />
-                            </Col>
-                          </Row>
-                          <Row className="mb-4">
-                            <Col lg={2}>
-                              <Form.Label htmlFor="msg">Message</Form.Label>
-                            </Col>
-                            <Col lg={7}>
-                              <small className="text-muted">
-                                Vous pouvez utiliser les abréviations dynamiques
-                              </small>
-                              <textarea
-                                className="form-control"
-                                id="msg"
-                                name="msg"
-                                value={sms.msg}
-                                onChange={onChangeSms}
-                                rows={8}
-                              ></textarea>
-                              <div className="mt-2 text-end">
-                                <span>
-                                  {msg.length}/ {numberOfSms} SMS
-                                </span>
-                              </div>
-                            </Col>
-                            <Col lg={2}>
-                              {filteredShortCode.map((code) => (
-                                <Button
-                                  type="button"
-                                  variant="light"
-                                  id="addNew"
-                                  className="mb-2"
-                                >
-                                  {code.name}
-                                </Button>
-                              ))}
-                            </Col>
-                          </Row>
-                        </Tab.Pane>
-                      </Tab.Content>
-                    </Tab.Container>
-                  </Card.Body>
-                </Card>
-                {/* <Row className="mb-2">
-                  <Col className="d-flex justify-content-center">
-                    <div className="form-check form-switch form-switch-custom form-switch-primary">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        id="SwitchCheck9"
-                        checked={isTousLesParents}
-                        onChange={handleToggle}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor="SwitchCheck9"
-                      >
-                        {isTousLesParents
-                          ? "Tous les groupes"
-                          : "Groupe(s) Spécifique(s)"}
-                      </label>
+                      </Nav> */}
+                {/* <Tab.Content className="text-muted">
+                        <Tab.Pane eventKey="arrow-contact"> */}
+                <Row className="mb-4">
+                  <Col lg={2}>
+                    <Form.Label htmlFor="enseignant">Enseignant(s)</Form.Label>
+                  </Col>
+                  <Col lg={7}>
+                    <Select
+                      closeMenuOnSelect={false}
+                      isMulti
+                      options={optionEnseignant}
+                      onChange={handleSelectEnseignant}
+                      placeholder="Choisir..."
+                    />
+                  </Col>
+                </Row>
+                <Row className="mb-4">
+                  <Col lg={2}>
+                    <Form.Label htmlFor="msg">Message</Form.Label>
+                  </Col>
+                  <Col lg={7}>
+                    <small className="text-muted">
+                      Vous pouvez utiliser les abréviations dynamiques
+                    </small>
+                    <textarea
+                      className="form-control"
+                      id="msg"
+                      name="msg"
+                      value={sms.msg}
+                      onChange={onChangeSms}
+                      ref={textareaRef}
+                      rows={8}
+                    ></textarea>
+                    <div className="mt-2 text-end">
+                      <span>
+                        {msg.length}/ {numberOfSms} SMS
+                      </span>
                     </div>
                   </Col>
-                </Row> */}
-                {/* {isTousLesParents && (
-                  
-                )} */}
-                {/* {!isTousLesParents && (
-                 
-                )} */}
+                  <Col lg={2}>
+                    {filteredShortCode.map((code) => (
+                      <Button
+                        type="button"
+                        variant="light"
+                        id="addNew"
+                        className="mb-2"
+                        onClick={() => handleShortcodeClick(code.code)}
+                      >
+                        {code.name}
+                      </Button>
+                    ))}
+                  </Col>
+                </Row>
+                {/* </Tab.Pane>
+                      </Tab.Content>
+                    </Tab.Container> */}
+                {/* </Card.Body>
+                </Card> */}
                 <Row>
                   <div className="hstack gap-2 justify-content-end">
                     <Button
@@ -647,16 +451,15 @@ const EnseignantsSmses = () => {
             placement="end"
           >
             <Offcanvas.Header closeButton>
-              <Offcanvas.Title>
-                {/* Détails du  */}Destinataire(s)
-              </Offcanvas.Title>
+              <Offcanvas.Title>Destinataire(s)</Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
               {destinataireLocation?.state?.receiversCount!.map((msg: any) => (
                 <Row className="border-bottom border-bottom-dashed p-2">
                   <Col>
                     <span className="fw-medium">Nom:</span>{" "}
-                    {msg.receiver.prenom_parent} {msg.receiver.nom_parent}
+                    {msg.receiver.prenom_enseignant}{" "}
+                    {msg.receiver.nom_enseignant}
                   </Col>
                   <Col>
                     <span className="fw-medium">Tel:</span> {msg.receiver.phone}

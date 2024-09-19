@@ -17,7 +17,6 @@ import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
   useAddSmSMutation,
-  useDeleteSmSMutation,
   useFetchSmSQuery,
   useSendSmSMutation,
 } from "features/sms/smsSlice";
@@ -26,19 +25,16 @@ import Select from "react-select";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
 import { useFetchEtudiantsByClasseIdMutation } from "features/etudiants/etudiantSlice";
 import shortCode from "Common/shortCode";
-import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 
 const ParentsSmses = () => {
   const { data = [] } = useFetchSmSQuery();
   const { data: AllParents = [] } = useFetchParentsQuery();
   const { data: AllClasses = [] } = useFetchClassesQuery();
-  const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
 
   const [fetchEtudiantsByClasseId, { data: fetchedEtudiants }] =
     useFetchEtudiantsByClasseIdMutation();
 
   const pending_sms = data.filter((sms) => sms.status === "Pending");
-  const [deleteSms] = useDeleteSmSMutation();
 
   const [showDestinataire, setShowDestinataire] = useState<boolean>(false);
 
@@ -46,7 +42,6 @@ const ParentsSmses = () => {
 
   const handleSelect = (selectedKey: any) => {
     setActiveTab(selectedKey);
-    console.log("Current Tab:", selectedKey);
   };
 
   const notifySuccess = () => {
@@ -69,49 +64,7 @@ const ParentsSmses = () => {
     });
   };
 
-  const swalWithBootstrapButtons = Swal.mixin({
-    customClass: {
-      confirmButton: "btn btn-success",
-      cancelButton: "btn btn-danger",
-    },
-    buttonsStyling: false,
-  });
-
-  const AlertDelete = async (_id: any) => {
-    swalWithBootstrapButtons
-      .fire({
-        title: "Etes-vous sûr?",
-        text: "Vous ne pouvez pas revenir en arrière?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Oui, supprime-le !",
-        cancelButtonText: "Non, annuler !",
-        reverseButtons: true,
-      })
-      .then((result) => {
-        if (result.isConfirmed) {
-          deleteSms(_id);
-          swalWithBootstrapButtons.fire(
-            "Supprimé !",
-            "Message est supprimée.",
-            "success"
-          );
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          swalWithBootstrapButtons.fire(
-            "Annulé",
-            "Message est en sécurité :)",
-            "info"
-          );
-        }
-      });
-  };
-
-  // const [isTousLesParents, setIsTousLesParents] = useState(true);
   const [isChecked, setIsChecked] = useState(true);
-
-  // const handleToggle = () => {
-  //   setIsTousLesParents((prevState) => !prevState);
-  // };
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
@@ -133,13 +86,17 @@ const ParentsSmses = () => {
     setmodal_AddSms(!modal_AddSms);
   }
 
+  const handleReload = () => {
+    window.location.reload();
+  };
+
   const [createSms] = useAddSmSMutation();
 
   const [sendSms, { isLoading }] = useSendSmSMutation();
 
   const handleSendSms = async () => {
     try {
-      await sendSms();
+      await sendSms().then(() => handleReload);
     } catch (error) {
       console.error("Error sending SMS:", error);
     }
@@ -210,10 +167,22 @@ const ParentsSmses = () => {
             receivers: [""],
             specefic_students: selectedElevesValues,
           }));
+        } else {
+          setSms((prevState) => ({
+            ...prevState,
+            receivers: [""],
+            specefic_students: students,
+          }));
         }
       }
     }
-  }, [AllParents, activeTab, selectedColumnValues, selectedElevesValues]);
+  }, [
+    AllParents,
+    activeTab,
+    selectedColumnValues,
+    selectedElevesValues,
+    students,
+  ]);
 
   const onChangeSms = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -224,14 +193,28 @@ const ParentsSmses = () => {
     }));
   };
 
-  const calculateSmsCount = (messageLength: number) => {
-    return messageLength <= 157
-      ? 1
-      : Math.ceil((messageLength - 157) / 158) + 1;
+  const calculateSmsCount = (messageLength: number, isChecked: boolean) => {
+    let firstLimit = isChecked ? 127 : 157;
+    let subsequentLimit = 157; // After the first message, limit becomes 157 if isChecked
+
+    if (messageLength <= firstLimit) {
+      return 1;
+    }
+
+    // Calculate the first message
+    let smsCount = 1;
+    messageLength -= firstLimit;
+
+    // Calculate the remaining messages with the subsequent limit
+    smsCount += Math.ceil(messageLength / subsequentLimit);
+
+    return smsCount;
   };
 
-  const numberOfSms = calculateSmsCount(msg.length);
+  const numberOfSms = calculateSmsCount(msg.length, isChecked);
+
   let totalSms = numberOfSms * receivers.length;
+
   const onSubmitSms = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -280,22 +263,9 @@ const ParentsSmses = () => {
           <span>{row.receiversCount.length}</span>
         </Link>
       ),
-      // Show receiver count
       sortable: true,
       width: "10%",
     },
-    // {
-    //   name: <span className="font-weight-bold fs-13">SMS/Destinataire</span>,
-    //   selector: (row: any) => <span>{row?.sms_par_destinataire!}</span>,
-    //   sortable: true,
-    //   width: "12%",
-    // },
-    // {
-    //   name: <span className="font-weight-bold fs-13">Total SMS</span>,
-    //   selector: (row: any) => <span>{row?.total_sms!}</span>,
-    //   sortable: true,
-    //   width: "8%",
-    // },
     {
       name: <span className="font-weight-bold fs-13">Etat</span>,
       selector: (cell: any) => {
@@ -311,44 +281,22 @@ const ParentsSmses = () => {
       sortable: true,
       width: "8%",
     },
-    // {
-    //   name: <span className="font-weight-bold fs-13">Actions</span>,
-    //   sortable: true,
-    //   cell: (row: any) => (
-    //     <ul className="hstack gap-2 list-unstyled mb-0">
-    //       Add your action buttons here
-    //     </ul>
-    //   ),
-    // },
   ];
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const getFilteredSalles = () => {
-    let filteredSalles = data;
-
-    if (searchTerm) {
-      filteredSalles = filteredSalles.filter((salle: any) =>
-        salle?.nom_salle!.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    return filteredSalles;
-  };
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef1 = useRef<HTMLTextAreaElement>(null);
+  const textareaRef2 = useRef<HTMLTextAreaElement>(null);
 
   const destinataireLocation = useLocation();
 
-  const handleShortcodeClick = (code: string) => {
+  const handleShortcodeClick = (
+    code: string,
+    textareaRef: React.RefObject<HTMLTextAreaElement>
+  ) => {
     if (textareaRef.current) {
       const textarea = textareaRef.current;
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
-      const newText = msg.slice(0, start) + code + msg.slice(end);
+      const newText = sms.msg.slice(0, start) + code + sms.msg.slice(end);
 
       setSms((prevState) => ({
         ...prevState,
@@ -361,12 +309,6 @@ const ParentsSmses = () => {
       }, 0);
     }
   };
-
-  const filteredShortCode = shortCode.filter(
-    (item) =>
-      item.name.toLowerCase().includes("enseignant") ||
-      item.code.toLowerCase().includes("enseignant")
-  );
 
   return (
     <React.Fragment>
@@ -383,8 +325,6 @@ const ParentsSmses = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        // value={searchTerm}
-                        // onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -455,7 +395,11 @@ const ParentsSmses = () => {
                 </Row>
               </Card.Header>
               <Card.Body>
-                <DataTable columns={columns} data={groupedData} pagination />
+                <DataTable
+                  columns={columns}
+                  data={groupedData.reverse()}
+                  pagination
+                />
               </Card.Body>
             </Card>
           </Col>
@@ -471,7 +415,7 @@ const ParentsSmses = () => {
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Message
+                Ajouter Message(s)
               </h1>
             </Modal.Header>
             <Modal.Body>
@@ -507,19 +451,26 @@ const ParentsSmses = () => {
                             </span>
                           </Nav.Link>
                         </Nav.Item>
-                        {/* <Nav.Item as="li">
-                          <Nav.Link eventKey="arrow-contact">
-                            <span className="d-block d-sm-none">
-                              <i className="mdi mdi-email"></i>
-                            </span>
-                            <span className="d-none d-sm-block">
-                              Enseignant(s)
-                            </span>
-                          </Nav.Link>
-                        </Nav.Item> */}
                       </Nav>
                       <Tab.Content className="text-muted">
                         <Tab.Pane eventKey="arrow-overview">
+                          <Row className="mb-4">
+                            <div className="form-check mb-2">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="formCheck1"
+                                checked={isChecked}
+                                onChange={handleCheckboxChange}
+                              />
+                              <label
+                                className="form-check-label"
+                                htmlFor="formCheck1"
+                              >
+                                Inclure Nom élève au début de message.
+                              </label>
+                            </div>
+                          </Row>
                           <Row className="mb-4">
                             <Col lg={2}>
                               <Form.Label htmlFor="msg">Message</Form.Label>
@@ -531,7 +482,7 @@ const ParentsSmses = () => {
                                 name="msg"
                                 value={sms.msg}
                                 onChange={onChangeSms}
-                                ref={textareaRef}
+                                ref={textareaRef1}
                                 rows={9}
                               ></textarea>
                               <div className="mt-2 text-end">
@@ -540,15 +491,18 @@ const ParentsSmses = () => {
                                 </span>
                               </div>
                             </Col>
-                            <Col lg={2}>
+                            <Col lg={3}>
                               {shortCode.map((code) => (
                                 <Button
                                   type="button"
                                   variant="light"
                                   id="addNew"
-                                  className="mb-2"
+                                  className="m-1"
                                   onClick={() =>
-                                    handleShortcodeClick(code.code)
+                                    handleShortcodeClick(
+                                      code.code,
+                                      textareaRef1
+                                    )
                                   }
                                 >
                                   {code.name}
@@ -625,6 +579,7 @@ const ParentsSmses = () => {
                                 name="msg"
                                 value={sms.msg}
                                 onChange={onChangeSms}
+                                ref={textareaRef2}
                                 rows={8}
                               ></textarea>
                               <div className="mt-2 text-end">
@@ -640,6 +595,12 @@ const ParentsSmses = () => {
                                   variant="light"
                                   id="addNew"
                                   className="mb-2"
+                                  onClick={() =>
+                                    handleShortcodeClick(
+                                      code.code,
+                                      textareaRef2
+                                    )
+                                  }
                                 >
                                   {code.name}
                                 </Button>
@@ -651,34 +612,6 @@ const ParentsSmses = () => {
                     </Tab.Container>
                   </Card.Body>
                 </Card>
-                {/* <Row className="mb-2">
-                  <Col className="d-flex justify-content-center">
-                    <div className="form-check form-switch form-switch-custom form-switch-primary">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        id="SwitchCheck9"
-                        checked={isTousLesParents}
-                        onChange={handleToggle}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor="SwitchCheck9"
-                      >
-                        {isTousLesParents
-                          ? "Tous les groupes"
-                          : "Groupe(s) Spécifique(s)"}
-                      </label>
-                    </div>
-                  </Col>
-                </Row> */}
-                {/* {isTousLesParents && (
-                  
-                )} */}
-                {/* {!isTousLesParents && (
-                 
-                )} */}
                 <Row>
                   <div className="hstack gap-2 justify-content-end">
                     <Button
@@ -709,21 +642,25 @@ const ParentsSmses = () => {
             show={showDestinataire}
             onHide={() => setShowDestinataire(!showDestinataire)}
             placement="end"
+            style={{ width: "40%" }}
           >
             <Offcanvas.Header closeButton>
-              <Offcanvas.Title>
-                {/* Détails du  */}Destinataire(s)
-              </Offcanvas.Title>
+              <Offcanvas.Title>Destinataire(s)</Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
               {destinataireLocation?.state?.receiversCount!.map((msg: any) => (
                 <Row className="border-bottom border-bottom-dashed p-2">
-                  <Col>
+                  <Col lg={5}>
                     <span className="fw-medium">Nom:</span>{" "}
-                    {msg.receiver.prenom_parent} {msg.receiver.nom_parent}
+                    {msg?.eleve?.prenom!} {msg?.eleve?.nom!}
                   </Col>
-                  <Col>
-                    <span className="fw-medium">Tel:</span> {msg.receiver.phone}
+                  <Col lg={4}>
+                    <span className="fw-medium">Classe:</span>{" "}
+                    {msg?.eleve?.classe?.nom_classe!}
+                  </Col>
+                  <Col lg={3}>
+                    <span className="fw-medium">Tel:</span>{" "}
+                    {msg?.receiver?.phone!}
                   </Col>
                 </Row>
               ))}
