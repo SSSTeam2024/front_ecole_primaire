@@ -21,7 +21,7 @@ import {
   useDeleteDisciplineMutation,
   useFetchDisciplinesQuery,
 } from "features/disciplines/disciplineSlice";
-import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
+import { useFetchEtudiantsByClasseIdMutation } from "features/etudiants/etudiantSlice";
 
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate } from "helpers/data_time_format";
@@ -31,7 +31,9 @@ const Discipline = () => {
   const { data = [] } = useFetchDisciplinesQuery();
   const { data: AllClasses = [] } = useFetchClassesQuery();
   const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
-  const { data: AllEtudiants = [] } = useFetchEtudiantsQuery();
+
+  const [fetchEtudiantsByClasseId, { data: fetchedEtudiants }] =
+    useFetchEtudiantsByClasseIdMutation();
 
   const [deleteDiscipline] = useDeleteDisciplineMutation();
   const [showObservation, setShowObservation] = useState<boolean>(false);
@@ -98,10 +100,16 @@ const Discipline = () => {
       });
   };
 
+  const [students, setStudents] = useState<any[]>([]);
+
   const [selectedClasse, setSelectedClasse] = useState<string>("");
 
-  const handleSelectClasse = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectClasse = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const value = event.target.value;
+    const result = await fetchEtudiantsByClasseId(value).unwrap();
+    setStudents(result);
     setSelectedClasse(value);
   };
 
@@ -110,6 +118,13 @@ const Discipline = () => {
   const handleSelectPar = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
     setSelectedPar(value);
+  };
+
+  const [selectedEleve, setSelectedEleve] = useState<string>("");
+
+  const handleSelectEleve = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedEleve(value);
   };
 
   const [selectedType, setSelectedType] = useState<string>("");
@@ -182,7 +197,7 @@ const Discipline = () => {
     e.preventDefault();
     try {
       observation["date"] = formatDate(selectedDate);
-      observation["eleve"] = selectedClasse;
+      observation["eleve"] = selectedEleve;
       observation["type"] = selectedType;
       observation["editeur"] = selectedPar;
       createObservation(observation)
@@ -306,7 +321,7 @@ const Discipline = () => {
 
   const handleButtonClick = () => {
     const fileUrl = `${process.env.REACT_APP_BASE_URL}/disciplineFiles/${observationLocation.state.fichier}`;
-    const fileName = "sample.pdf";
+    const fileName = "discipline.pdf";
 
     openFileInNewTab(fileUrl, fileName);
   };
@@ -385,7 +400,7 @@ const Discipline = () => {
               <Form className="create-form" onSubmit={onSubmitObservation}>
                 <Row className="mb-4">
                   <Col lg={3}>
-                    <Form.Label htmlFor="classe">Elève</Form.Label>
+                    <Form.Label htmlFor="classe">Classe</Form.Label>
                   </Col>
                   <Col lg={8}>
                     <select
@@ -395,7 +410,27 @@ const Discipline = () => {
                       onChange={handleSelectClasse}
                     >
                       <option value="">Choisir</option>
-                      {AllEtudiants.map((etudiant) => (
+                      {AllClasses.map((classe) => (
+                        <option value={classe?._id!} key={classe?._id!}>
+                          {classe.nom_classe}
+                        </option>
+                      ))}
+                    </select>
+                  </Col>
+                </Row>
+                <Row className="mb-4">
+                  <Col lg={3}>
+                    <Form.Label htmlFor="eleve">Elève</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <select
+                      className="form-select text-muted"
+                      name="eleve"
+                      id="eleve"
+                      onChange={handleSelectEleve}
+                    >
+                      <option value="">Choisir</option>
+                      {students.map((etudiant) => (
                         <option value={etudiant?._id!} key={etudiant?._id!}>
                           {etudiant.nom} {etudiant.prenom}
                         </option>
@@ -438,17 +473,17 @@ const Discipline = () => {
                 </Row>
                 <Row className="mb-4">
                   <Col lg={3}>
-                    <Form.Label htmlFor="classe">Type</Form.Label>
+                    <Form.Label htmlFor="type">Type</Form.Label>
                   </Col>
                   <Col lg={8}>
                     <select
                       className="form-select text-muted"
-                      name="classe"
-                      id="classe"
+                      name="type"
+                      id="type"
                       onChange={handleSelectType}
                     >
                       <option value="">Choisir</option>
-                      <option value="Honneur">Honneur</option>
+                      {/* <option value="Honneur">Honneur</option> */}
                       <option value="Leçon">Leçon</option>
                       <option value="Exclu">Exclu</option>
                     </select>

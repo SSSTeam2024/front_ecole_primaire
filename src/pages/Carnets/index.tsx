@@ -11,7 +11,7 @@ import {
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
@@ -110,99 +110,26 @@ const Carnets = () => {
     setSelectedEleve(value);
   };
 
+  const navigate = useNavigate();
   const [modal_AddCarnet, setmodal_AddCarnet] = useState<boolean>(false);
   function tog_AddCarnet() {
-    setmodal_AddCarnet(!modal_AddCarnet);
+    navigate("/nouveau-bulletin");
   }
-
-  const [createCarnet] = useAddCarnetMutation();
-
-  const initialCarnet = {
-    eleve: "",
-    trimestre: "",
-    note: "",
-    date: "",
-    fichier_base64_string: "",
-    fichier_extension: "",
-    fichier: "",
-  };
-
-  const [carnet, setCarnet] = useState(initialCarnet);
-
-  const {
-    eleve,
-    trimestre,
-    note,
-    date,
-    fichier_base64_string,
-    fichier_extension,
-    fichier,
-  } = carnet;
-
-  const onChangeCarnet = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setCarnet((prevState) => ({
-      ...prevState,
-      [e.target.id]: e.target.value,
-    }));
-  };
-
-  const handleFileUploadFile = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = (
-      document.getElementById("fichier_base64_string") as HTMLFormElement
-    ).files[0];
-    if (file) {
-      const { base64Data, extension } = await convertToBase64(file);
-      const file_carnet = base64Data + "." + extension;
-      setCarnet({
-        ...carnet,
-        fichier: file_carnet,
-        fichier_base64_string: base64Data,
-        fichier_extension: extension,
-      });
-    }
-  };
-
-  const onSubmitCarnet = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      carnet["date"] = formatDate(selectedDate);
-      carnet["eleve"] = selectedEleve;
-      carnet["trimestre"] = selectedTrimestre;
-      createCarnet(carnet)
-        .then(() => notifySuccess())
-        .then(() => setCarnet(initialCarnet));
-    } catch (error) {
-      notifyError(error);
-    }
-  };
 
   const columns = [
     {
-      name: <span className="font-weight-bold fs-13">Elève</span>,
-      selector: (row: any) => (
-        <span>
-          {row?.eleve?.nom!} {row?.eleve?.prenom!}
-        </span>
-      ),
-      sortable: true,
-    },
-    {
-      name: <span className="font-weight-bold fs-13">Note Trimestriel</span>,
-      selector: (row: any) => row.note,
+      name: <span className="font-weight-bold fs-13">Classe</span>,
+      selector: (row: any) => <span>{row?.classe?.nom_classe!}</span>,
       sortable: true,
     },
     {
       name: <span className="font-weight-bold fs-13">Trimestre</span>,
-      selector: (row: any) => row.trimestre,
+      selector: (row: any) => row?.trimestre!,
       sortable: true,
     },
     {
       name: <span className="font-weight-bold fs-13">Date de création</span>,
-      selector: (row: any) => row.date,
+      selector: (row: any) => row?.date!,
       sortable: true,
     },
     {
@@ -279,7 +206,7 @@ const Carnets = () => {
 
   const observationLocation = useLocation();
 
-  const openFileInNewTab = (fileUrl: string, fileName: string) => {
+  const handleButtonClick = (fileUrl: string, fileName: string) => {
     const link = document.createElement("a");
     link.href = fileUrl;
     link.target = "_blank";
@@ -290,12 +217,12 @@ const Carnets = () => {
     document.body.removeChild(link);
   };
 
-  const handleButtonClick = () => {
-    const fileUrl = `${process.env.REACT_APP_BASE_URL}/carnetFiles/${observationLocation.state.fichier}`;
-    const fileName = "sample.pdf";
+  // const handleButtonClick = () => {
+  //   const fileUrl = `${process.env.REACT_APP_BASE_URL}/carnetFiles/${observationLocation.state.fichier}`;
+  //   const fileName = "bulletin.pdf";
 
-    openFileInNewTab(fileUrl, fileName);
-  };
+  //   openFileInNewTab(fileUrl, fileName);
+  // };
 
   return (
     <React.Fragment>
@@ -353,134 +280,6 @@ const Carnets = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Modal
-            className="fade"
-            id="createModal"
-            show={modal_AddCarnet}
-            onHide={() => {
-              tog_AddCarnet();
-            }}
-            centered
-          >
-            <Modal.Header closeButton>
-              <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Bulletin
-              </h1>
-            </Modal.Header>
-            <Modal.Body>
-              <Form className="create-form" onSubmit={onSubmitCarnet}>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="eleve">Elève</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="eleve"
-                      id="eleve"
-                      onChange={handleSelectEleve}
-                    >
-                      <option value="">Choisir</option>
-                      {AllEleves.map((eleve) => (
-                        <option value={eleve?._id!} key={eleve?._id!}>
-                          {eleve.nom} {eleve.prenom}
-                        </option>
-                      ))}
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="description">Trimestre</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="trimestre"
-                      id="trimestre"
-                      onChange={handleSelectTrimestre}
-                    >
-                      <option value="">Choisir</option>
-                      <option value="1er trimestre">1er trimestre</option>
-                      <option value="2ème trimestre">2ème trimestre</option>
-                      <option value="3ème trimestre">3ème trimestre</option>
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="note">Note</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="note"
-                      name="note"
-                      onChange={onChangeCarnet}
-                      value={carnet.note}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="date">Date</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Flatpickr
-                      className="form-control flatpickr-input"
-                      placeholder="Date création"
-                      onChange={handleDateChange}
-                      options={{
-                        dateFormat: "d M, Y",
-                        locale: French,
-                      }}
-                      id="date"
-                      name="date"
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="fichier_base64_string">
-                      Fichier
-                    </Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <input
-                      className="form-control mb-2"
-                      type="file"
-                      id="fichier_base64_string"
-                      name="fichier_base64_string"
-                      onChange={(e) => handleFileUploadFile(e)}
-                    />
-                  </Col>
-                </Row>
-                <Row>
-                  <div className="hstack gap-2 justify-content-end">
-                    <Button
-                      variant="light"
-                      onClick={() => {
-                        tog_AddCarnet();
-                        setCarnet(initialCarnet);
-                      }}
-                    >
-                      Close
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        tog_AddCarnet();
-                      }}
-                      type="submit"
-                      variant="success"
-                      id="addNew"
-                    >
-                      Ajouter
-                    </Button>
-                  </div>
-                </Row>
-              </Form>
-            </Modal.Body>
-          </Modal>
         </Container>
         <Offcanvas
           show={showObservation}
@@ -494,21 +293,10 @@ const Carnets = () => {
           <Offcanvas.Body>
             <Row className="mb-3">
               <Col lg={3}>
-                <span className="fw-medium">Elève</span>
+                <span className="fw-medium">Classe</span>
               </Col>
               <Col lg={9}>
-                <i>
-                  {observationLocation?.state?.eleve?.nom!}{" "}
-                  {observationLocation?.state?.eleve?.prenom!}
-                </i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Note</span>
-              </Col>
-              <Col lg={9}>
-                <i>{observationLocation?.state?.note!}</i>
+                <i>{observationLocation?.state?.classe?.nom_classe!}</i>
               </Col>
             </Row>
             <Row className="mb-3">
@@ -528,13 +316,49 @@ const Carnets = () => {
               </Col>
             </Row>
             <Row>
-              <Col lg={3}>
-                <span className="fw-medium">Fichier</span>
-              </Col>
-              <Col lg={9}>
-                <Button variant="soft-danger" onClick={handleButtonClick}>
-                  <i className="bi bi-filetype-pdf align-middle fs-22"></i>
-                </Button>
+              <Col lg={8}>
+                <Row>
+                  <Col lg={6}>
+                    <Form.Label>Elève</Form.Label>
+                  </Col>
+                  <Col lg={3}>
+                    <Form.Label>Note</Form.Label>
+                  </Col>
+                  <Col lg={3}>
+                    <Form.Label>Fichier</Form.Label>
+                  </Col>
+                </Row>
+                {observationLocation?.state?.eleves!.length > 0 ? (
+                  observationLocation?.state?.eleves!.map((eleve: any) => (
+                    <Row key={eleve.eleve._id}>
+                      <Col lg={6} className="mb-1">
+                        {eleve?.eleve?.prenom!} {eleve?.eleve?.nom!}
+                      </Col>
+                      <Col lg={3} className="mb-1">
+                        {eleve.note}
+                      </Col>
+                      <Col lg={3} className="mb-1">
+                        <Button
+                          variant="soft-info"
+                          onClick={() =>
+                            handleButtonClick(
+                              `${process.env.REACT_APP_BASE_URL}/carnetFiles/${eleve.fichier}`, // Dynamic file URL for each student
+                              "bulletin.pdf"
+                            )
+                          }
+                        >
+                          <i className="bi bi-journal-text align-middle fs-16"></i>
+                        </Button>
+                      </Col>
+                    </Row>
+                  ))
+                ) : (
+                  <Row>
+                    <Col>
+                      <p>Aucun Absence pour le classe</p>
+                    </Col>
+                  </Row>
+                )}
               </Col>
             </Row>
           </Offcanvas.Body>

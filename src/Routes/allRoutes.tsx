@@ -35,6 +35,7 @@ import ParentsSmses from "pages/ParentsSmses";
 import EnseignantsSmses from "pages/EnseignantsSmses";
 import CreateNote from "pages/Notes/CreateNote";
 import CreateAbsence from "pages/Absence/CreateAbsence";
+import CreateCarnet from "pages/Carnets/CreateCarnet";
 // import Messages from "pages/Messages";
 
 const authProtectedRoutes = [
@@ -77,6 +78,10 @@ const authProtectedRoutes = [
   // Absence Section
   { path: "/absence", component: <Absence /> },
   { path: "/nouveau-absence", component: <CreateAbsence /> },
+
+  // Carnet Section
+  { path: "/bulletins", component: <Carnets /> },
+  { path: "/nouveau-bulletin", component: <CreateCarnet /> },
 
   { path: "/", exact: true, component: <Navigate to="/dashboard" /> },
   { path: "*", component: <Navigate to="/dashboard" /> },

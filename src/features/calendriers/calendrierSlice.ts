@@ -9,7 +9,8 @@ export interface Calendrier {
   date: string;
   matiere: string;
   classe: string;
-  enseignant: string;
+  enseignant?: string;
+  type?: string
 }
 
 export const calendrierSlice = createApi({

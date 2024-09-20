@@ -1,14 +1,19 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+interface EleveData {
+  eleve: string;
+  note: string;
+  fichier: string;
+  fichier_base64_string: string,
+  fichier_extension: string,
+}
+
 export interface Carnet {
   _id?: string;
-  eleve: string;
+  classe: string;
   trimestre: string;
-  note: string;
   date: string;
-  fichier_base64_string: string;
-  fichier_extension: string;
-  fichier: string;
+  eleves: EleveData[]
 }
 
 export const carnetSlice = createApi({
