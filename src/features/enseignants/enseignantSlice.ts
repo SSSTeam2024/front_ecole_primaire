@@ -22,6 +22,13 @@ export const enseignantSlice = createApi({
         },
         providesTags: ["Enseignant"],
       }),
+      fetchEnseignantId: builder.query<Enseignant, string | void>({
+        query: (_id) => ({
+          url: `/getEnseignant/${_id}`,
+          method: "GET",
+        }),
+        providesTags: ["Enseignant"],
+      }),
       addEnseignant: builder.mutation<void, Enseignant>({
         query(payload) {
           return {
@@ -55,5 +62,6 @@ export const {
  useAddEnseignantMutation,
  useFetchEnseignantsQuery,
  useDeleteEnseignantMutation,
- useUpdateEnseignantMutation
+ useUpdateEnseignantMutation,
+ useFetchEnseignantIdQuery
 } = enseignantSlice;

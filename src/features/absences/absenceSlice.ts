@@ -2,12 +2,13 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Absence {
   _id?: string;
-  eleve: string;
+  classe: string;
   matiere: string;
   enseignant: string;
-  type: string;
+  eleves: { eleve: string; typeAbsent: string }[];
   heure: string;
   date: string;
+  trimestre: string
 }
 
 export const absenceSlice = createApi({

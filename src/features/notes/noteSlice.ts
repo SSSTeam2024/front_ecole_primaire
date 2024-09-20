@@ -2,11 +2,11 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Note {
   _id?: string;
-  eleve: string;
+  classe: string;
+  eleves: any[];
   matiere: string;
   trimestre: string;
   type: string;
-  note: string;
   date: string;
 }
 

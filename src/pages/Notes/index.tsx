@@ -11,7 +11,7 @@ import {
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import {
@@ -41,6 +41,7 @@ const Notes = () => {
     setSelectedDate(selectedDates[0]);
   };
 
+  const navigate = useNavigate();
   const notifySuccess = () => {
     Swal.fire({
       position: "center",
@@ -130,7 +131,7 @@ const Notes = () => {
 
   const [modal_AddNote, setmodal_AddNote] = useState<boolean>(false);
   function tog_AddNote() {
-    setmodal_AddNote(!modal_AddNote);
+    navigate("/nouveau-note");
   }
 
   const [modal_UpdateNote, setmodal_UpdateNote] = useState<boolean>(false);
@@ -138,64 +139,15 @@ const Notes = () => {
     setmodal_UpdateNote(!modal_UpdateNote);
   }
 
-  const [createNote] = useAddNoteMutation();
-
-  const initialNote = {
-    eleve: "",
-    matiere: "",
-    trimestre: "",
-    type: "",
-    note: "",
-    date: "",
-  };
-
-  const [notes, setNotes] = useState(initialNote);
-
-  const { eleve, matiere, trimestre, type, note, date } = notes;
-
-  const onChangeNotes = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setNotes((prevState) => ({
-      ...prevState,
-      [e.target.id]: e.target.value,
-    }));
-  };
-
-  const onSubmitNotes = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      notes["date"] = formatDate(selectedDate);
-      notes["type"] = selectedType;
-      notes["matiere"] = selectedMatiere;
-      notes["eleve"] = selectedEleve;
-      notes["trimestre"] = selectedTrimestre;
-      createNote(notes)
-        .then(() => notifySuccess())
-        .then(() => setNotes(initialNote));
-    } catch (error) {
-      notifyError(error);
-    }
-  };
-
   const columns = [
     {
-      name: <span className="font-weight-bold fs-13">Elève</span>,
-      selector: (row: any) => (
-        <span>
-          {row?.eleve?.nom!} {row?.eleve?.prenom!}
-        </span>
-      ),
+      name: <span className="font-weight-bold fs-13">Classe</span>,
+      selector: (row: any) => <span>{row?.classe?.nom_classe!}</span>,
       sortable: true,
     },
     {
       name: <span className="font-weight-bold fs-13">Matière</span>,
       selector: (row: any) => row?.matiere!,
-      sortable: true,
-    },
-    {
-      name: <span className="font-weight-bold fs-13">Note</span>,
-      selector: (row: any) => row.note,
       sortable: true,
     },
     {
@@ -246,8 +198,8 @@ const Notes = () => {
               <Link
                 to="#"
                 className="badge badge-soft-success edit-item-btn"
-                onClick={() => tog_UpdateNote()}
-                state={row}
+                // onClick={() => tog_UpdateNote()}
+                // state={row}
               >
                 <i
                   className="ri-edit-2-line"
@@ -336,8 +288,8 @@ const Notes = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        value={searchTerm}
-                        onChange={handleSearchChange}
+                        // value={searchTerm}
+                        // onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -352,7 +304,7 @@ const Notes = () => {
                       <button
                         type="button"
                         className="btn btn-primary"
-                        onClick={() => tog_AddNote()}
+                        onClick={tog_AddNote}
                       >
                         <i
                           className="ri-add-fill align-middle"
@@ -383,157 +335,6 @@ const Notes = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Modal
-            className="fade"
-            id="createModal"
-            show={modal_AddNote}
-            onHide={() => {
-              tog_AddNote();
-            }}
-            centered
-          >
-            <Modal.Header closeButton>
-              <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Note
-              </h1>
-            </Modal.Header>
-            <Modal.Body>
-              <Form className="create-form" onSubmit={onSubmitNotes}>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="eleve">Elève</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="eleve"
-                      id="eleve"
-                      onChange={handleSelectEleve}
-                    >
-                      <option value="">Choisir</option>
-                      {AllEleves.map((eleve) => (
-                        <option value={eleve?._id!} key={eleve?._id!}>
-                          {eleve.nom} {eleve.prenom}
-                        </option>
-                      ))}
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="matiere">Matière</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="matiere"
-                      id="matiere"
-                      onChange={handleSelectMatiere}
-                    >
-                      <option value="">Choisir</option>
-                      {allMatieresByEtudiantId.map((matiere) =>
-                        matiere.matieres.map((m) => (
-                          <option value={m.nom_matiere} key={m?._id!}>
-                            {m.nom_matiere}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="type">Type</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="type"
-                      id="type"
-                      onChange={handleSelectType}
-                    >
-                      <option value="">Choisir</option>
-                      <option value="Contrôle">Contrôle</option>
-                      <option value="Synthèse">Synthèse</option>
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="note">Note</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="note"
-                      name="note"
-                      onChange={onChangeNotes}
-                      value={notes.note}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="trimestre">Trimestre</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="trimestre"
-                      id="trimestre"
-                      onChange={handleSelectTrimestre}
-                    >
-                      <option value="">Choisir</option>
-                      <option value="1er trimestre">1er trimestre</option>
-                      <option value="2ème trimestre">2ème trimestre</option>
-                      <option value="3ème trimestre">3ème trimestre</option>
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="date">Date</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Flatpickr
-                      className="form-control flatpickr-input"
-                      placeholder="Date création"
-                      onChange={handleDateChange}
-                      options={{
-                        dateFormat: "d M, Y",
-                        locale: French,
-                      }}
-                      id="date"
-                      name="date"
-                    />
-                  </Col>
-                </Row>
-                <Row>
-                  <div className="hstack gap-2 justify-content-end">
-                    <Button
-                      variant="light"
-                      onClick={() => {
-                        tog_AddNote();
-                        setNotes(initialNote);
-                      }}
-                    >
-                      Close
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        tog_AddNote();
-                      }}
-                      type="submit"
-                      variant="success"
-                      id="addNew"
-                    >
-                      Ajouter
-                    </Button>
-                  </div>
-                </Row>
-              </Form>
-            </Modal.Body>
-          </Modal>
           <Modal
             className="fade"
             id="createModal"
@@ -569,13 +370,10 @@ const Notes = () => {
           <Offcanvas.Body>
             <Row className="mb-3">
               <Col lg={3}>
-                <span className="fw-medium">Elève</span>
+                <span className="fw-medium">Classe</span>
               </Col>
               <Col lg={9}>
-                <i>
-                  {observationLocation?.state?.eleve?.nom!}{" "}
-                  {observationLocation?.state?.eleve?.prenom!}
-                </i>
+                <i>{observationLocation?.state?.classe?.nom_classe!} </i>
               </Col>
             </Row>
             <Row className="mb-3">
@@ -584,14 +382,6 @@ const Notes = () => {
               </Col>
               <Col lg={9}>
                 <i>{observationLocation?.state?.matiere!}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Note</span>
-              </Col>
-              <Col lg={9}>
-                <i>{observationLocation?.state?.note!}</i>
               </Col>
             </Row>
             <Row className="mb-3">
@@ -616,6 +406,38 @@ const Notes = () => {
               </Col>
               <Col lg={9}>
                 <i>{observationLocation?.state?.trimestre!}</i>
+              </Col>
+            </Row>
+            <Row>
+              <Col lg={8}>
+                {/* Header for the table of students and notes */}
+                <Row>
+                  <Col lg={5}>
+                    <Form.Label>Elève</Form.Label>
+                  </Col>
+                  <Col lg={3}>
+                    <Form.Label>Note</Form.Label>
+                  </Col>
+                </Row>
+
+                {observationLocation?.state?.eleves!.length > 0 ? (
+                  observationLocation?.state?.eleves!.map((eleve: any) => (
+                    <Row key={eleve.eleve._id}>
+                      <Col lg={5} className="mb-1">
+                        {eleve?.eleve?.prenom!} {eleve?.eleve?.nom!}
+                      </Col>
+                      <Col lg={3} className="mb-1">
+                        {eleve?.note!}
+                      </Col>
+                    </Row>
+                  ))
+                ) : (
+                  <Row>
+                    <Col>
+                      <p>Aucun Note pour le classe</p>
+                    </Col>
+                  </Row>
+                )}
               </Col>
             </Row>
           </Offcanvas.Body>

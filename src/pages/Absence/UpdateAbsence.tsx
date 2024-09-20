@@ -117,238 +117,53 @@ const UpdateAbsence: React.FC<ChildProps> = ({
     });
   };
 
-  const onSubmitUpdateAbsence = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const update_absence = {
-        _id: absence_id || absenceLocation?.state?._id!,
-        matiere: selectedMatiere || absenceLocation?.state?.matiere,
-        enseignant: selectedEnseignant || absenceLocation?.state?.enseignant,
-        heure: formatTime(selectedTime) || absenceLocation?.state?.heure,
-        type: selectedType || absenceLocation?.state?.type,
-        date: formatDate(selectedDate) || absenceLocation?.state?.date,
-        eleve: selectedEleve || absenceLocation?.state?.eleve!,
-      };
-      updateAbsence(update_absence)
-        .then(() => notifySuccess())
-        .then(() => setAbsence(initialAbsence));
-    } catch (error) {
-      notifyError(error);
-    }
-  };
+  // const onSubmitUpdateAbsence = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   try {
+  //     const update_absence = {
+  //       _id: absence_id || absenceLocation?.state?._id!,
+  //       matiere: selectedMatiere || absenceLocation?.state?.matiere,
+  //       enseignant: selectedEnseignant || absenceLocation?.state?.enseignant,
+  //       heure: formatTime(selectedTime) || absenceLocation?.state?.heure,
+  //       type: selectedType || absenceLocation?.state?.type,
+  //       date: formatDate(selectedDate) || absenceLocation?.state?.date,
+  //       eleve: selectedEleve || absenceLocation?.state?.eleve!,
+  //     };
+  //     updateAbsence(update_absence)
+  //       .then(() => notifySuccess())
+  //       .then(() => setAbsence(initialAbsence));
+  //   } catch (error) {
+  //     notifyError(error);
+  //   }
+  // };
 
   return (
     <React.Fragment>
-      <Form onSubmit={onSubmitUpdateAbsence}>
-        <Row className="mb-4">
-          <Col lg={3}>
-            <Form.Label htmlFor="eleve">Elève : </Form.Label>
-          </Col>
-          <Col lg={8}>
-            <div className="mb-3">
-              <span>
-                {absenceLocation?.state?.eleve?.nom!}{" "}
-                {absenceLocation?.state?.eleve?.prenom!}
-              </span>
-              <div
-                className="d-flex justify-content-start mt-n3"
-                style={{ marginLeft: "140px" }}
-              >
-                <label
-                  htmlFor="id_file"
-                  className="mb-0"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="right"
-                  title="Choisir Elève"
-                >
-                  <span
-                    className="d-inline-block"
-                    onClick={() => setShowEleve(!showEleve)}
-                  >
-                    <span className="text-success cursor-pointer">
-                      <i className="bi bi-pen fs-14"></i>
-                    </span>
-                  </span>
-                </label>
-              </div>
-              {showEleve && (
-                <select
-                  className="form-select text-muted"
-                  name="eleve"
-                  id="eleve"
-                  onChange={handleSelectEleve}
-                >
-                  <option value="">Choisir</option>
-                  {data.map((eleve) => (
-                    <option value={eleve._id!} key={eleve?._id!}>
-                      {eleve.nom} {eleve.prenom}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </Col>
-        </Row>
-        <Row className="mb-4">
-          <Col lg={3}>
-            <Form.Label htmlFor="matiere">Matière : </Form.Label>
-          </Col>
-          <Col lg={8}>
-            <div className="mb-3">
-              <span>{absenceLocation?.state?.matiere!} </span>
-              <div
-                className="d-flex justify-content-start mt-n3"
-                style={{ marginLeft: "140px" }}
-              >
-                <label
-                  htmlFor="id_file"
-                  className="mb-0"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="right"
-                  title="Choisir Matière"
-                >
-                  <span
-                    className="d-inline-block"
-                    onClick={() => setShowMatiere(!showMatiere)}
-                  >
-                    <span className="text-success cursor-pointer">
-                      <i className="bi bi-pen fs-14"></i>
-                    </span>
-                  </span>
-                </label>
-              </div>
-              {showMatiere && (
-                <select
-                  className="form-select text-muted"
-                  name="matiere"
-                  id="matiere"
-                  onChange={handleSelectMatiere}
-                >
-                  <option value="">Choisir</option>
-                  {AllMatieres.map((matiere) =>
-                    matiere.matieres.map((m) => (
-                      <option value={m.nom_matiere} key={m?._id!}>
-                        {m.nom_matiere}
-                      </option>
-                    ))
-                  )}
-                </select>
-              )}
-            </div>
-          </Col>
-        </Row>
-        <Row className="mb-4">
-          <Col lg={3}>
-            <Form.Label htmlFor="enseignant">Enseignant : </Form.Label>
-          </Col>
-          <Col lg={8}>
-            <div className="mb-3">
-              <span>
-                {absenceLocation?.state?.enseignant?.nom_enseignant!}{" "}
-                {absenceLocation?.state?.enseignant?.prenom_enseignant!}
-              </span>
-              <div
-                className="d-flex justify-content-start mt-n3"
-                style={{ marginLeft: "140px" }}
-              >
-                <label
-                  htmlFor="id_file"
-                  className="mb-0"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="right"
-                  title="Choisir Enseignant"
-                >
-                  <span
-                    className="d-inline-block"
-                    onClick={() => setShowTrimestre(!showTrimestre)}
-                  >
-                    <span className="text-success cursor-pointer">
-                      <i className="bi bi-pen fs-14"></i>
-                    </span>
-                  </span>
-                </label>
-              </div>
-              {showTrimestre && (
-                <select
-                  className="form-select text-muted"
-                  name="enseignant"
-                  id="enseignant"
-                  onChange={handleSelectEnseignant}
-                >
-                  <option value="">Choisir</option>
-                  {AllEnseignants.map((enseignant) => (
-                    <option value={enseignant._id!} key={enseignant?._id!}>
-                      {enseignant.nom_enseignant} {enseignant.prenom_enseignant}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </Col>
-        </Row>
-        <Row className="mb-4">
-          <Col lg={3}>
-            <Form.Label htmlFor="type">Type : </Form.Label>
-          </Col>
-          <Col lg={8}>
-            <div className="mb-3">
-              <span>{absenceLocation?.state?.type!}</span>
-              <div
-                className="d-flex justify-content-start mt-n3"
-                style={{ marginLeft: "140px" }}
-              >
-                <label
-                  htmlFor="id_file"
-                  className="mb-0"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="right"
-                  title="Choisir Type"
-                >
-                  <span
-                    className="d-inline-block"
-                    onClick={() => setShowType(!showType)}
-                  >
-                    <span className="text-success cursor-pointer">
-                      <i className="bi bi-pen fs-14"></i>
-                    </span>
-                  </span>
-                </label>
-              </div>
-              {showType && (
-                <select
-                  className="form-select text-muted"
-                  name="type"
-                  id="type"
-                  onChange={handleSelectType}
-                >
-                  <option value="">Choisir</option>
-                  <option value="Absence">Absence</option>
-                  <option value="Retard">Retard</option>
-                </select>
-              )}
-            </div>
-          </Col>
-        </Row>
-        <Row className="mb-4">
-          <Col lg={3}>
-            <Form.Label htmlFor="date">Date</Form.Label>
-          </Col>
-          <Col lg={8}>
-            <span>{absenceLocation.state.date}</span>
+      {/* <Form onSubmit={onSubmitUpdateAbsence}> */}
+      <Row className="mb-4">
+        <Col lg={3}>
+          <Form.Label htmlFor="eleve">Elève : </Form.Label>
+        </Col>
+        <Col lg={8}>
+          <div className="mb-3">
+            <span>
+              {absenceLocation?.state?.eleve?.nom!}{" "}
+              {absenceLocation?.state?.eleve?.prenom!}
+            </span>
             <div
               className="d-flex justify-content-start mt-n3"
-              style={{ marginLeft: "230px" }}
+              style={{ marginLeft: "140px" }}
             >
               <label
-                htmlFor="date"
+                htmlFor="id_file"
                 className="mb-0"
                 data-bs-toggle="tooltip"
                 data-bs-placement="right"
-                title="Choisir Date"
+                title="Choisir Elève"
               >
                 <span
                   className="d-inline-block"
-                  onClick={() => setShowDate(!showDate)}
+                  onClick={() => setShowEleve(!showEleve)}
                 >
                   <span className="text-success cursor-pointer">
                     <i className="bi bi-pen fs-14"></i>
@@ -356,74 +171,259 @@ const UpdateAbsence: React.FC<ChildProps> = ({
                 </span>
               </label>
             </div>
-            {showDate && (
-              <Flatpickr
-                className="form-control flatpickr-input"
-                placeholder="Choisir Date"
-                options={{
-                  dateFormat: "d M, Y",
-                  locale: French,
-                }}
-                onChange={handleDateChange}
-              />
-            )}
-          </Col>
-        </Row>
-        <Row className="mb-4">
-          <Col lg={3}>
-            <Form.Label htmlFor="heure">Heure</Form.Label>
-          </Col>
-          <Col lg={8}>
-            <span>{absenceLocation.state.heure}</span>
-            <div
-              className="d-flex justify-content-start mt-n3"
-              style={{ marginLeft: "230px" }}
-            >
-              <label
-                htmlFor="date"
-                className="mb-0"
-                data-bs-toggle="tooltip"
-                data-bs-placement="right"
-                title="Choisir Heure"
+            {showEleve && (
+              <select
+                className="form-select text-muted"
+                name="eleve"
+                id="eleve"
+                onChange={handleSelectEleve}
               >
-                <span
-                  className="d-inline-block"
-                  onClick={() => setShowHeure(!showHeure)}
-                >
-                  <span className="text-success cursor-pointer">
-                    <i className="bi bi-pen fs-14"></i>
-                  </span>
-                </span>
-              </label>
-            </div>
-            {showHeure && (
-              <Flatpickr
-                className="form-control"
-                options={{
-                  enableTime: true,
-                  noCalendar: true,
-                  dateFormat: "H:i",
-                  time_24hr: true,
-                }}
-                onChange={handleTimeChange}
-              />
+                <option value="">Choisir</option>
+                {data.map((eleve) => (
+                  <option value={eleve._id!} key={eleve?._id!}>
+                    {eleve.nom} {eleve.prenom}
+                  </option>
+                ))}
+              </select>
             )}
-          </Col>
-        </Row>
-        <Row>
-          <div className="hstack gap-2 justify-content-center mb-2">
-            <Button
-              type="submit"
-              className="btn-soft-success"
-              onClick={() => setmodal_UpdateAbsence(!modal_UpdateAbsence)}
-              data-bs-dismiss="modal"
-            >
-              <i className="me-1 fs-18 align-middle"></i>
-              Modifier
-            </Button>
           </div>
-        </Row>
-      </Form>
+        </Col>
+      </Row>
+      <Row className="mb-4">
+        <Col lg={3}>
+          <Form.Label htmlFor="matiere">Matière : </Form.Label>
+        </Col>
+        <Col lg={8}>
+          <div className="mb-3">
+            <span>{absenceLocation?.state?.matiere!} </span>
+            <div
+              className="d-flex justify-content-start mt-n3"
+              style={{ marginLeft: "140px" }}
+            >
+              <label
+                htmlFor="id_file"
+                className="mb-0"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Choisir Matière"
+              >
+                <span
+                  className="d-inline-block"
+                  onClick={() => setShowMatiere(!showMatiere)}
+                >
+                  <span className="text-success cursor-pointer">
+                    <i className="bi bi-pen fs-14"></i>
+                  </span>
+                </span>
+              </label>
+            </div>
+            {showMatiere && (
+              <select
+                className="form-select text-muted"
+                name="matiere"
+                id="matiere"
+                onChange={handleSelectMatiere}
+              >
+                <option value="">Choisir</option>
+                {AllMatieres.map((matiere) =>
+                  matiere.matieres.map((m) => (
+                    <option value={m.nom_matiere} key={m?._id!}>
+                      {m.nom_matiere}
+                    </option>
+                  ))
+                )}
+              </select>
+            )}
+          </div>
+        </Col>
+      </Row>
+      <Row className="mb-4">
+        <Col lg={3}>
+          <Form.Label htmlFor="enseignant">Enseignant : </Form.Label>
+        </Col>
+        <Col lg={8}>
+          <div className="mb-3">
+            <span>
+              {absenceLocation?.state?.enseignant?.nom_enseignant!}{" "}
+              {absenceLocation?.state?.enseignant?.prenom_enseignant!}
+            </span>
+            <div
+              className="d-flex justify-content-start mt-n3"
+              style={{ marginLeft: "140px" }}
+            >
+              <label
+                htmlFor="id_file"
+                className="mb-0"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Choisir Enseignant"
+              >
+                <span
+                  className="d-inline-block"
+                  onClick={() => setShowTrimestre(!showTrimestre)}
+                >
+                  <span className="text-success cursor-pointer">
+                    <i className="bi bi-pen fs-14"></i>
+                  </span>
+                </span>
+              </label>
+            </div>
+            {showTrimestre && (
+              <select
+                className="form-select text-muted"
+                name="enseignant"
+                id="enseignant"
+                onChange={handleSelectEnseignant}
+              >
+                <option value="">Choisir</option>
+                {AllEnseignants.map((enseignant) => (
+                  <option value={enseignant._id!} key={enseignant?._id!}>
+                    {enseignant.nom_enseignant} {enseignant.prenom_enseignant}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </Col>
+      </Row>
+      <Row className="mb-4">
+        <Col lg={3}>
+          <Form.Label htmlFor="type">Type : </Form.Label>
+        </Col>
+        <Col lg={8}>
+          <div className="mb-3">
+            <span>{absenceLocation?.state?.type!}</span>
+            <div
+              className="d-flex justify-content-start mt-n3"
+              style={{ marginLeft: "140px" }}
+            >
+              <label
+                htmlFor="id_file"
+                className="mb-0"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Choisir Type"
+              >
+                <span
+                  className="d-inline-block"
+                  onClick={() => setShowType(!showType)}
+                >
+                  <span className="text-success cursor-pointer">
+                    <i className="bi bi-pen fs-14"></i>
+                  </span>
+                </span>
+              </label>
+            </div>
+            {showType && (
+              <select
+                className="form-select text-muted"
+                name="type"
+                id="type"
+                onChange={handleSelectType}
+              >
+                <option value="">Choisir</option>
+                <option value="Absence">Absence</option>
+                <option value="Retard">Retard</option>
+              </select>
+            )}
+          </div>
+        </Col>
+      </Row>
+      <Row className="mb-4">
+        <Col lg={3}>
+          <Form.Label htmlFor="date">Date</Form.Label>
+        </Col>
+        <Col lg={8}>
+          <span>{absenceLocation.state.date}</span>
+          <div
+            className="d-flex justify-content-start mt-n3"
+            style={{ marginLeft: "230px" }}
+          >
+            <label
+              htmlFor="date"
+              className="mb-0"
+              data-bs-toggle="tooltip"
+              data-bs-placement="right"
+              title="Choisir Date"
+            >
+              <span
+                className="d-inline-block"
+                onClick={() => setShowDate(!showDate)}
+              >
+                <span className="text-success cursor-pointer">
+                  <i className="bi bi-pen fs-14"></i>
+                </span>
+              </span>
+            </label>
+          </div>
+          {showDate && (
+            <Flatpickr
+              className="form-control flatpickr-input"
+              placeholder="Choisir Date"
+              options={{
+                dateFormat: "d M, Y",
+                locale: French,
+              }}
+              onChange={handleDateChange}
+            />
+          )}
+        </Col>
+      </Row>
+      <Row className="mb-4">
+        <Col lg={3}>
+          <Form.Label htmlFor="heure">Heure</Form.Label>
+        </Col>
+        <Col lg={8}>
+          <span>{absenceLocation.state.heure}</span>
+          <div
+            className="d-flex justify-content-start mt-n3"
+            style={{ marginLeft: "230px" }}
+          >
+            <label
+              htmlFor="date"
+              className="mb-0"
+              data-bs-toggle="tooltip"
+              data-bs-placement="right"
+              title="Choisir Heure"
+            >
+              <span
+                className="d-inline-block"
+                onClick={() => setShowHeure(!showHeure)}
+              >
+                <span className="text-success cursor-pointer">
+                  <i className="bi bi-pen fs-14"></i>
+                </span>
+              </span>
+            </label>
+          </div>
+          {showHeure && (
+            <Flatpickr
+              className="form-control"
+              options={{
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+              }}
+              onChange={handleTimeChange}
+            />
+          )}
+        </Col>
+      </Row>
+      <Row>
+        <div className="hstack gap-2 justify-content-center mb-2">
+          <Button
+            type="submit"
+            className="btn-soft-success"
+            onClick={() => setmodal_UpdateAbsence(!modal_UpdateAbsence)}
+            data-bs-dismiss="modal"
+          >
+            <i className="me-1 fs-18 align-middle"></i>
+            Modifier
+          </Button>
+        </div>
+      </Row>
+      {/* </Form> */}
     </React.Fragment>
   );
 };

@@ -11,7 +11,7 @@ import {
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
@@ -142,8 +142,11 @@ const Absence = () => {
   };
 
   const [modal_AddAbsence, setmodal_AddAbsence] = useState<boolean>(false);
+
+  const navigate = useNavigate();
+
   function tog_AddAbsence() {
-    setmodal_AddAbsence(!modal_AddAbsence);
+    navigate("/nouveau-absence");
   }
 
   const [modal_UpdateAbsence, setmodal_UpdateAbsence] =
@@ -176,32 +179,10 @@ const Absence = () => {
     }));
   };
 
-  const onSubmitAbsence = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      absence["date"] = formatDate(selectedDate);
-      absence["eleve"] = selectedEleve;
-      absence["enseignant"] = selectedEnseignant;
-      absence["matiere"] = selectedMatiere;
-      absence["type"] = selectedType;
-      absence["heure"] = formatTime(selectedTime);
-
-      createAbsence(absence)
-        .then(() => notifySuccess())
-        .then(() => setAbsence(initialAbsence));
-    } catch (error) {
-      notifyError(error);
-    }
-  };
-
   const columns = [
     {
-      name: <span className="font-weight-bold fs-13">Elève</span>,
-      selector: (row: any) => (
-        <span>
-          {row?.eleve?.nom!} {row?.eleve?.prenom!}
-        </span>
-      ),
+      name: <span className="font-weight-bold fs-13">Classe</span>,
+      selector: (row: any) => <span>{row?.classe?.nom_classe!}</span>,
       sortable: true,
     },
     {
@@ -223,14 +204,10 @@ const Absence = () => {
       name: <span className="font-weight-bold fs-13">Enseignant</span>,
       selector: (row: any) => (
         <span>
-          {row.enseignant.nom_enseignant} {row.enseignant.prenom_enseignant}
+          {row?.enseignant?.nom_enseignant!}{" "}
+          {row?.enseignant?.prenom_enseignant!}
         </span>
       ),
-      sortable: true,
-    },
-    {
-      name: <span className="font-weight-bold fs-13">Type</span>,
-      selector: (row: any) => row.type,
       sortable: true,
     },
     {
@@ -266,8 +243,8 @@ const Absence = () => {
               <Link
                 to="#"
                 className="badge badge-soft-success edit-item-btn"
-                onClick={() => tog_UpdateAbsence()}
-                state={row}
+                // onClick={() => tog_UpdateAbsence()}
+                // state={row}
               >
                 <i
                   className="ri-edit-2-line"
@@ -365,8 +342,8 @@ const Absence = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        value={searchTerm}
-                        onChange={handleSearchChange}
+                        // value={searchTerm}
+                        // onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -415,164 +392,6 @@ const Absence = () => {
           <Modal
             className="fade"
             id="createModal"
-            show={modal_AddAbsence}
-            onHide={() => {
-              tog_AddAbsence();
-            }}
-            centered
-          >
-            <Modal.Header closeButton>
-              <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Absence
-              </h1>
-            </Modal.Header>
-            <Modal.Body>
-              <Form className="create-form" onSubmit={onSubmitAbsence}>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="eleve">Elève</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="eleve"
-                      id="eleve"
-                      onChange={handleSelectEleve}
-                    >
-                      <option value="">Choisir</option>
-                      {AllEleves.map((eleve) => (
-                        <option value={eleve?._id!} key={eleve?._id!}>
-                          {eleve.nom} {eleve.prenom}
-                        </option>
-                      ))}
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="description">Matière</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="eleve"
-                      id="eleve"
-                      onChange={handleSelectMatiere}
-                    >
-                      <option value="">Choisir</option>
-                      {allMatieresByEtudiantId.map((matiere) =>
-                        matiere.matieres.map((m) => (
-                          <option value={m.nom_matiere} key={m?._id!}>
-                            {m.nom_matiere}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="enseignant">Enseignant</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="enseignant"
-                      id="enseignant"
-                      onChange={handleSelectEnseignant}
-                    >
-                      <option value="">Select</option>
-                      {AllEnseignants.map((enseignant) => (
-                        <option value={enseignant?._id!} key={enseignant?._id!}>
-                          {enseignant.nom_enseignant}{" "}
-                          {enseignant.prenom_enseignant}
-                        </option>
-                      ))}
-                    </select>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="date">Date</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Flatpickr
-                      className="form-control flatpickr-input"
-                      placeholder="Date d'absence"
-                      onChange={handleDateChange}
-                      options={{
-                        dateFormat: "d M, Y",
-                        locale: French,
-                      }}
-                      id="date"
-                      name="date"
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="date">Heure</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Flatpickr
-                      className="form-control"
-                      options={{
-                        enableTime: true,
-                        noCalendar: true,
-                        dateFormat: "H:i",
-                        time_24hr: true,
-                      }}
-                      onChange={handleTimeChange}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="par">Type</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="par"
-                      id="par"
-                      onChange={handleSelectType}
-                    >
-                      <option value="">Choisir</option>
-                      <option value="Absence">Absence</option>
-                      <option value="Retard">Retard</option>
-                    </select>
-                  </Col>
-                </Row>
-
-                <Row>
-                  <div className="hstack gap-2 justify-content-end">
-                    <Button
-                      variant="light"
-                      onClick={() => {
-                        tog_AddAbsence();
-                        setAbsence(initialAbsence);
-                      }}
-                    >
-                      Close
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        tog_AddAbsence();
-                      }}
-                      type="submit"
-                      variant="success"
-                      id="addNew"
-                    >
-                      Ajouter
-                    </Button>
-                  </div>
-                </Row>
-              </Form>
-            </Modal.Body>
-          </Modal>
-          <Modal
-            className="fade"
-            id="createModal"
             show={modal_UpdateAbsence}
             onHide={() => {
               tog_UpdateAbsence();
@@ -605,13 +424,10 @@ const Absence = () => {
           <Offcanvas.Body>
             <Row className="mb-3">
               <Col lg={3}>
-                <span className="fw-medium">Elève</span>
+                <span className="fw-medium">Classe</span>
               </Col>
               <Col lg={9}>
-                <i>
-                  {observationLocation?.state?.eleve?.nom!}{" "}
-                  {observationLocation?.state?.eleve?.prenom!}
-                </i>
+                <i>{observationLocation?.state?.classe?.nom_classe!} </i>
               </Col>
             </Row>
             <Row className="mb-3">
@@ -640,14 +456,6 @@ const Absence = () => {
             </Row>
             <Row className="mb-3">
               <Col lg={3}>
-                <span className="fw-medium">Type</span>
-              </Col>
-              <Col lg={9}>
-                <i>{observationLocation?.state?.type!}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
                 <span className="fw-medium">Enseignant</span>
               </Col>
               <Col lg={9}>
@@ -655,6 +463,37 @@ const Absence = () => {
                   {observationLocation?.state?.enseignant?.nom_enseignant}{" "}
                   {observationLocation?.state?.enseignant?.prenom_enseignant}
                 </i>
+              </Col>
+            </Row>
+            <Row>
+              <Col lg={8}>
+                <Row>
+                  <Col lg={5}>
+                    <Form.Label>Elève</Form.Label>
+                  </Col>
+                  <Col lg={3}>
+                    <Form.Label>Type</Form.Label>
+                  </Col>
+                </Row>
+
+                {observationLocation?.state?.eleves!.length > 0 ? (
+                  observationLocation?.state?.eleves!.map((eleve: any) => (
+                    <Row key={eleve.eleve._id}>
+                      <Col lg={5} className="mb-1">
+                        {eleve?.eleve?.prenom!} {eleve?.eleve?.nom!}
+                      </Col>
+                      <Col lg={3} className="mb-1">
+                        {eleve.typeAbsent}
+                      </Col>
+                    </Row>
+                  ))
+                ) : (
+                  <Row>
+                    <Col>
+                      <p>Aucun Absence pour le classe</p>
+                    </Col>
+                  </Row>
+                )}
               </Col>
             </Row>
           </Offcanvas.Body>

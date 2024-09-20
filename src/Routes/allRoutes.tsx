@@ -33,6 +33,8 @@ import UpdateInscription from "pages/Inscriptions/UpdateInscription";
 import Niveaux from "pages/Niveaux";
 import ParentsSmses from "pages/ParentsSmses";
 import EnseignantsSmses from "pages/EnseignantsSmses";
+import CreateNote from "pages/Notes/CreateNote";
+import CreateAbsence from "pages/Absence/CreateAbsence";
 // import Messages from "pages/Messages";
 
 const authProtectedRoutes = [
@@ -47,11 +49,11 @@ const authProtectedRoutes = [
   { path: "/discipline", component: <Discipline /> },
   { path: "/avis", component: <Avis /> },
   { path: "/documents", component: <Documents /> },
-  { path: "/notes", component: <Notes /> },
+
   { path: "/bulletins", component: <Carnets /> },
   { path: "/evènements", component: <Evenements /> },
   { path: "/gallerie", component: <Gallerie /> },
-  { path: "/absence", component: <Absence /> },
+
   { path: "/paiement", component: <Paiement /> },
   { path: "/compte_rendu", component: <CompteRendu /> },
   { path: "/matieres", component: <Matieres /> },
@@ -68,6 +70,13 @@ const authProtectedRoutes = [
   { path: "/inscriptions", component: <Inscriptions /> },
   { path: "/details-inscription", component: <InscriptionDetails /> },
   { path: "/modifier-inscription", component: <UpdateInscription /> },
+
+  // Note Section
+  { path: "/notes", component: <Notes /> },
+  { path: "/nouveau-note", component: <CreateNote /> },
+  // Absence Section
+  { path: "/absence", component: <Absence /> },
+  { path: "/nouveau-absence", component: <CreateAbsence /> },
 
   { path: "/", exact: true, component: <Navigate to="/dashboard" /> },
   { path: "*", component: <Navigate to="/dashboard" /> },
