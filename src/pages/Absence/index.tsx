@@ -416,7 +416,7 @@ const Absence = () => {
           show={showObservation}
           onHide={() => setShowObservation(!showObservation)}
           placement="end"
-          style={{ width: "40%" }}
+          style={{ width: "30%" }}
         >
           <Offcanvas.Header closeButton>
             <Offcanvas.Title>Détails Absence</Offcanvas.Title>
@@ -452,6 +452,14 @@ const Absence = () => {
               </Col>
               <Col lg={9}>
                 <i>{observationLocation?.state?.heure!}</i>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col lg={3}>
+                <span className="fw-medium">Trimèstre</span>
+              </Col>
+              <Col lg={9}>
+                <i>{observationLocation?.state?.trimestre!}</i>
               </Col>
             </Row>
             <Row className="mb-3">

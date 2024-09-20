@@ -237,8 +237,8 @@ const CreateAbsence = () => {
       //   Submit to the backend
       createAbsence(absenceData)
         .then(() => notifySuccess())
-        .then(() => setAbsence(initialAbsence))
-        .then(() => tog_AllAbsences);
+        .then(() => setAbsence(initialAbsence));
+      tog_AllAbsences();
     } catch (error) {
       notifyError(error); // Handle errors
     }

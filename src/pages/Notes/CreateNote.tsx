@@ -176,8 +176,8 @@ const CreateNote = () => {
         .then(() => {
           setNotes(initialNote);
           setStudentNotes({});
-        })
-        .then(() => tog_AllNotes);
+        });
+      tog_AllNotes();
     } catch (error) {
       notifyError(error);
     }
