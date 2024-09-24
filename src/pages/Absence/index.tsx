@@ -1,64 +1,32 @@
-import React, { useState } from "react";
-import {
-  Container,
-  Row,
-  Card,
-  Col,
-  Modal,
-  Form,
-  Button,
-  Offcanvas,
-} from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Container, Row, Card, Col, Form, Offcanvas } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Flatpickr from "react-flatpickr";
-import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 import {
-  useAddAbsenceMutation,
   useDeleteAbsenceMutation,
   useFetchAbsencesQuery,
 } from "features/absences/absenceSlice";
-import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
 import {
-  useFetchMatieresByEtudiantIdQuery,
-  useFetchMatieresQuery,
-} from "features/matieres/matiereSlice";
-import UpdateAbsence from "./UpdateAbsence";
-import { French } from "flatpickr/dist/l10n/fr";
-import { formatDate, formatTime } from "helpers/data_time_format";
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const Absence = () => {
   const { data = [] } = useFetchAbsencesQuery();
 
-  const { data: AllEleves = [] } = useFetchEtudiantsQuery();
-
-  const { data: AllMatieres = [] } = useFetchMatieresQuery();
-
-  const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
+  const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
 
   const [deleteAbsence] = useDeleteAbsenceMutation();
 
   const [showObservation, setShowObservation] = useState<boolean>(false);
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const handleDateChange = (selectedDates: Date[]) => {
-    setSelectedDate(selectedDates[0]);
-  };
-
-  const [selectedTime, setSelectedTime] = useState<Date | null>(null);
-
-  const handleTimeChange = (selectedDates: Date[]) => {
-    const time = selectedDates[0];
-    setSelectedTime(time);
-  };
-
   const notifySuccess = () => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "L'absence a été créée avec succès",
+      title: "Paramètre Absence SMS a été modifié avec succès",
       showConfirmButton: false,
       timer: 2500,
     });
@@ -111,72 +79,44 @@ const Absence = () => {
       });
   };
 
-  const [selectedEleve, setSelectedEleve] = useState<string>("");
-
-  const handleSelectEleve = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedEleve(value);
-  };
-
-  const [selectedEnseignant, setSelectedEnseignant] = useState<string>("");
-
-  const handleSelectEnseignant = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = event.target.value;
-    setSelectedEnseignant(value);
-  };
-
-  const [selectedMatiere, setSelectedMatiere] = useState<string>("");
-
-  const handleSelectMatiere = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedMatiere(value);
-  };
-
-  const [selectedType, setSelectedType] = useState<string>("");
-
-  const handleSelectType = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedType(value);
-  };
-
-  const [modal_AddAbsence, setmodal_AddAbsence] = useState<boolean>(false);
-
   const navigate = useNavigate();
 
   function tog_AddAbsence() {
     navigate("/nouveau-absence");
   }
 
-  const [modal_UpdateAbsence, setmodal_UpdateAbsence] =
-    useState<boolean>(false);
-  function tog_UpdateAbsence() {
-    setmodal_UpdateAbsence(!modal_UpdateAbsence);
-  }
+  const [updateAbsenceSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
 
-  const [createAbsence] = useAddAbsenceMutation();
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && isLoading === false) {
+      const absence_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Absences"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: absence_sms_setting[0]?._id!,
+        status: absence_sms_setting[0].sms_status,
+      }));
+    }
+  }, [AllSmsSettings, isLoading]);
 
-  const initialAbsence = {
-    eleve: "",
-    matiere: "",
-    enseignant: "",
-    type: "",
-    heure: "",
-    date: "",
-  };
-
-  const [absence, setAbsence] = useState(initialAbsence);
-
-  const { eleve, matiere, enseignant, type, heure, date } = absence;
-
-  const onChangeAbsence = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setAbsence((prevState) => ({
-      ...prevState,
-      [e.target.id]: e.target.value,
-    }));
+  const onChangeAbsenceSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAbsenceSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() => notifySuccess());
   };
 
   const columns = [
@@ -324,9 +264,6 @@ const Absence = () => {
     return filteredAbsences;
   };
 
-  const { data: allMatieresByEtudiantId = [] } =
-    useFetchMatieresByEtudiantIdQuery(selectedEleve);
-
   return (
     <React.Fragment>
       <div className="page-content">
@@ -348,7 +285,35 @@ const Absence = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={2}>
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeAbsenceSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"
@@ -389,28 +354,6 @@ const Absence = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Modal
-            className="fade"
-            id="createModal"
-            show={modal_UpdateAbsence}
-            onHide={() => {
-              tog_UpdateAbsence();
-            }}
-            centered
-            size="lg"
-          >
-            <Modal.Header closeButton>
-              <h1 className="modal-title fs-5" id="createModalLabel">
-                Modifier Absence
-              </h1>
-            </Modal.Header>
-            <Modal.Body>
-              <UpdateAbsence
-                modal_UpdateAbsence={modal_UpdateAbsence}
-                setmodal_UpdateAbsence={setmodal_UpdateAbsence}
-              />
-            </Modal.Body>
-          </Modal>
         </Container>
         <Offcanvas
           show={showObservation}

@@ -9,6 +9,7 @@ export interface Rendezvous {
   heure: string;
   matiere?: string;
   administration: string;
+  createdBy: string
 }
 
 export const rendezvousSlice = createApi({

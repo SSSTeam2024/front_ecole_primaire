@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -25,10 +25,18 @@ import { convertToBase64 } from "helpers/base64_convert";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate } from "helpers/data_time_format";
 
+import Select from "react-select";
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
+
 const Observations = () => {
   const { data = [] } = useFetchObservationsQuery();
   const { data: AllClasses = [] } = useFetchClassesQuery();
   const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
+  const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
+
   const [deleteObservation] = useDeleteObservationMutation();
   const [showObservation, setShowObservation] = useState<boolean>(false);
 
@@ -37,11 +45,23 @@ const Observations = () => {
     setSelectedDate(selectedDates[0]);
   };
 
-  const notifySuccess = () => {
+  const optionColumnsTable = AllClasses.map((classe: any) => ({
+    value: classe?._id!,
+    label: classe?.nom_classe!,
+  }));
+
+  const [selectedColumnValues, setSelectedColumnValues] = useState<any[]>([]);
+
+  const handleSelectValueColumnChange = (selectedOption: any) => {
+    const values = selectedOption.map((option: any) => option.value);
+    setSelectedColumnValues(values);
+  };
+
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "L'observation a été créée avec succès",
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -114,13 +134,49 @@ const Observations = () => {
     setmodal_AddObservation(!modal_AddObservation);
   }
 
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
+
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && isLoading === false) {
+      const devoir_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Observations"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: devoir_sms_setting[0]?._id!,
+        status: devoir_sms_setting[0]?.sms_status!,
+      }));
+    }
+  }, [AllSmsSettings, isLoading]);
+
+  const onChangeDocumentSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Observations SMS a été modifié avec succès")
+      );
+  };
+
   const [createObservation] = useAddObservationMutation();
 
   const initialObservation = {
     titre: "",
     date: "",
     description: "",
-    classe: "",
+    classe: [""],
     fichier_base64_string: "",
     fichier_extension: "",
     fichier: "",
@@ -171,10 +227,10 @@ const Observations = () => {
     e.preventDefault();
     try {
       observation["date"] = formatDate(selectedDate);
-      observation["classe"] = selectedClasse;
+      observation["classe"] = selectedColumnValues;
       observation["par"] = selectedPar;
       createObservation(observation)
-        .then(() => notifySuccess())
+        .then(() => notifySuccess("L'observation a été créée avec succès"))
         .then(() => setObservation(initialObservation));
     } catch (error) {
       notifyError(error);
@@ -194,7 +250,13 @@ const Observations = () => {
     },
     {
       name: <span className="font-weight-bold fs-13">Classe(s)</span>,
-      selector: (row: any) => row.classe.nom_classe,
+      selector: (row: any) => (
+        <ul className="vstack gap-2 list-unstyled mb-0">
+          {row.classe?.map((classe: any) => (
+            <li key={classe._id}>{classe.nom_classe}</li>
+          ))}
+        </ul>
+      ),
       sortable: true,
     },
     {
@@ -312,7 +374,35 @@ const Observations = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={3} className="text-center">
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeDocumentSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"
@@ -417,19 +507,13 @@ const Observations = () => {
                     <Form.Label htmlFor="classe">Classe</Form.Label>
                   </Col>
                   <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="classe"
-                      id="classe"
-                      onChange={handleSelectClasse}
-                    >
-                      <option value="">Select</option>
-                      {AllClasses.map((classe) => (
-                        <option value={classe?._id!} key={classe?._id!}>
-                          {classe.nom_classe}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      closeMenuOnSelect={false}
+                      isMulti
+                      options={optionColumnsTable}
+                      onChange={handleSelectValueColumnChange}
+                      placeholder="Choisir..."
+                    />
                   </Col>
                 </Row>
                 <Row className="mb-4">
@@ -539,7 +623,11 @@ const Observations = () => {
                 <span className="fw-medium">Classe(s)</span>
               </Col>
               <Col lg={9}>
-                <i>{observationLocation?.state?.classe?.nom_classe!}</i>
+                <i>
+                  {observationLocation?.state?.classe
+                    ?.map((c: any) => c.nom_classe)
+                    .join(" / ")}
+                </i>
               </Col>
             </Row>
             <Row className="mb-3">

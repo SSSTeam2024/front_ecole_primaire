@@ -125,6 +125,7 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
     description: "",
     parents: [""],
     heure: "",
+    createdBy: "",
   };
 
   const [rendezvous, setRendezvous] = useState(initialRendezvous);
@@ -160,7 +161,8 @@ const UpdateRendezvous: React.FC<ChildProps> = ({
         date: formatDate(selectedDate) || rendezvousLocation?.state?.date,
         heure: formatTime(selectedTime) || rendezvousLocation?.state?.heure!,
         parents: selectedValues || rendezvousLocation?.state?.parents!,
-        administration: "false",
+        administration: "true",
+        createdBy: "administration",
       };
       updateRendezvous(update_rendezvous)
         .then(() => notifySuccess())

@@ -5,7 +5,7 @@ export interface Observation {
   titre: string,
   date: string,
   description: string,
-  classe: string,
+  classe: string[],
   fichier_base64_string: string,
   fichier_extension: string,
   fichier: string,

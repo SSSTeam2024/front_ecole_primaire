@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -25,21 +25,28 @@ import UpdateRendezvous from "./UpdateRendezvous";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate, formatTime } from "helpers/data_time_format";
 import { useFetchParentsQuery } from "features/parents/parentSlice";
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const Rendezvous = () => {
   const { data = [] } = useFetchRendezvousQuery();
 
   const { data: AllParents = [] } = useFetchParentsQuery();
 
+  const { data: AllSmsSettings, isLoading: smsSettingsLoadStatus = [] } =
+    useFetchSmsSettingsQuery();
+
   const [deleteRendezvous] = useDeleteRendezvousMutation();
 
   const [showRendezvous, setShowRendezvous] = useState<boolean>(false);
 
-  const notifySuccess = () => {
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "Le rendez-vous a été créé avec succès",
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -128,6 +135,42 @@ const Rendezvous = () => {
     setmodal_UpdateRendezvous(!modal_UpdateRendezvous);
   }
 
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
+
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && smsSettingsLoadStatus === false) {
+      const devoir_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Rendez-vous"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: devoir_sms_setting[0]?._id!,
+        status: devoir_sms_setting[0]?.sms_status!,
+      }));
+    }
+  }, [AllSmsSettings, smsSettingsLoadStatus]);
+
+  const onChangeDocumentSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Rendez-vous SMS a été modifié avec succès")
+      );
+  };
+
   const [createRendezvous] = useAddRendezvousMutation();
 
   const initialRendezvous = {
@@ -137,12 +180,20 @@ const Rendezvous = () => {
     parents: [""],
     heure: "",
     administration: "",
+    createdBy: "",
   };
 
   const [rendezvous, setRendezvous] = useState(initialRendezvous);
 
-  const { titre, date, description, parents, heure, administration } =
-    rendezvous;
+  const {
+    titre,
+    date,
+    description,
+    parents,
+    heure,
+    administration,
+    createdBy,
+  } = rendezvous;
 
   const onChangeRendezvous = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -158,10 +209,11 @@ const Rendezvous = () => {
     try {
       rendezvous["date"] = formatDate(selectedDate);
       rendezvous["parents"] = selectedColumnValues;
-      rendezvous["administration"] = "false";
+      rendezvous["administration"] = "true";
+      rendezvous["createdBy"] = "administration";
       rendezvous["heure"] = formatTime(selectedTime);
       createRendezvous(rendezvous)
-        .then(() => notifySuccess())
+        .then(() => notifySuccess("Le rendez-vous a été créé avec succès"))
         .then(() => setRendezvous(initialRendezvous));
     } catch (error) {
       notifyError(error);
@@ -346,7 +398,35 @@ const Rendezvous = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={3} className="text-center">
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeDocumentSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"

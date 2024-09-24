@@ -9,6 +9,7 @@ export interface Paiement {
   period: string,
   designation: string[],
   classe?:string,
+  service_sms: string
 }
 
 export const paiementSlice = createApi({

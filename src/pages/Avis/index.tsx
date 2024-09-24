@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -25,11 +25,17 @@ import UpdateAvis from "./UpdateAvis";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate } from "helpers/data_time_format";
 import { convertToBase64 } from "helpers/base64_convert";
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const Avis = () => {
   const { data = [] } = useFetchAvisQuery();
 
   const { data: AllClasses = [] } = useFetchClassesQuery();
+
+  const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
 
   const [deleteAvis] = useDeleteAvisMutation();
 
@@ -40,14 +46,16 @@ const Avis = () => {
   const handleDateChange = (selectedDates: Date[]) => {
     setSelectedDate(selectedDates[0]);
   };
+
   const handleBadgeDateChange = (selectedDates: Date[]) => {
     setSelectedBadgeDate(selectedDates[0]);
   };
-  const notifySuccess = () => {
+
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "L'avis a été créée avec succès",
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -122,6 +130,42 @@ const Avis = () => {
     setSelectedColumnValues(values);
   };
 
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
+
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && isLoading === false) {
+      const avis_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Avis"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: avis_sms_setting[0]?._id!,
+        status: avis_sms_setting[0].sms_status,
+      }));
+    }
+  }, [AllSmsSettings, isLoading]);
+
+  const onChangeAvisSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Avis SMS a été modifié avec succès")
+      );
+  };
+
   const [createAvis] = useAddAvisMutation();
 
   const initialAvis = {
@@ -182,7 +226,7 @@ const Avis = () => {
       avis["classes"] = selectedColumnValues;
       avis["editeur"] = "Administration";
       createAvis(avis)
-        .then(() => notifySuccess())
+        .then(() => notifySuccess("L'avis a été créée avec succès"))
         .then(() => setAvis(initialAvis));
     } catch (error) {
       notifyError(error);
@@ -345,7 +389,35 @@ const Avis = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={2}>
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeAvisSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -24,9 +24,15 @@ import UpdateCantine from "./UpdateCantine";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate, formatTime } from "helpers/data_time_format";
 import { convertToBase64 } from "helpers/base64_convert";
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const Cantines = () => {
   const { data = [] } = useFetchCantinesQuery();
+
+  const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
 
   const [showCantine, setShowCantine] = useState<boolean>(false);
 
@@ -38,11 +44,11 @@ const Cantines = () => {
     setSelectedDate(selectedDates[0]);
   };
 
-  const notifySuccess = () => {
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "La cantine a été créée avec succès",
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -164,13 +170,49 @@ const Cantines = () => {
     }
   };
 
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
+
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && isLoading === false) {
+      const cantine_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Cantine"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: cantine_sms_setting[0]?._id!,
+        status: cantine_sms_setting[0].sms_status,
+      }));
+    }
+  }, [AllSmsSettings, isLoading]);
+
+  const onChangeCantineSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Cantine SMS a été modifié avec succès")
+      );
+  };
+
   const onSubmitCantine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       cantine["creation_date"] = formatDate(selectedDate);
       cantine["jour"] = selectedJour;
       createCantine(cantine)
-        .then(() => notifySuccess())
+        .then(() => notifySuccess("La cantine a été créée avec succès"))
         .then(() => setCantine(initialCantine));
     } catch (error) {
       notifyError(error);
@@ -311,7 +353,35 @@ const Cantines = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={2}>
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeCantineSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"

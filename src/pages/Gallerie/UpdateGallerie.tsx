@@ -343,27 +343,28 @@ const UpdateGallerie: React.FC<ChildProps> = ({
             <div className="d-flex justify-content-center flex-wrap">
               {allImages.length > 0 ? (
                 allImages.map((image, index) => (
-                  <div key={index} className="image-wrapper">
+                  <div key={index} className="image-wrapper p-3">
                     <Image
                       src={
                         image.startsWith("data:image")
                           ? image
-                          : `http//localhost:3000/gallerieFiles/${image}`
+                          : `${process.env.REACT_APP_BASE_URL}/gallerieFiles/${image}`
                       }
                       alt={`Gallerie Image ${index + 1}`}
-                      className="img-thumbnail p-1 bg-body mt-n3"
+                      className="img-thumbnail bg-body mt-n3 p-3"
+                      width={200}
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index)}
                       className="btn btn-danger btn-sm"
                     >
-                      Remove
+                      Supprimer
                     </button>
                   </div>
                 ))
               ) : (
-                <p>No images available</p>
+                <p>Aucun images disponible</p>
               )}
             </div>
             <div className="d-flex justify-content-center mt-n2">

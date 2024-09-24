@@ -30,6 +30,10 @@ import {
   useFetchClasseIdQuery,
   useFetchClassesQuery,
 } from "features/classes/classeSlice";
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const formatDate = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, "0");
@@ -42,17 +46,27 @@ const formatDate = (date: Date): string => {
 const PaiementPage = () => {
   const { data = [] } = useFetchPaiementsQuery();
   const [deletePaiement] = useDeletePaiementMutation();
+
+  const { data: AllSmsSettings, isLoading: smsSettingsLoadStatus = [] } =
+    useFetchSmsSettingsQuery();
+
   const [showPaiement, setShowPaiement] = useState<boolean>(false);
+
+  const [isActive, setIsActive] = useState(true);
+
+  const handleClick = () => {
+    setIsActive(!isActive);
+  };
 
   const handleReload = () => {
     window.location.reload();
   };
 
-  const notifySuccess = () => {
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "Le Paiement a été créé avec succès",
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -224,6 +238,42 @@ const PaiementPage = () => {
     setmodal_UpdatePaiement(!modal_UpdatePaiement);
   }
 
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
+
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && smsSettingsLoadStatus === false) {
+      const devoir_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Paiements"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: devoir_sms_setting[0]?._id!,
+        status: devoir_sms_setting[0]?.sms_status!,
+      }));
+    }
+  }, [AllSmsSettings, smsSettingsLoadStatus]);
+
+  const onChangeDocumentSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Paiements SMS a été modifié avec succès")
+      );
+  };
+
   const [createPaiement] = useAddPaiementMutation();
 
   const initialPaiement: Paiement = {
@@ -233,12 +283,20 @@ const PaiementPage = () => {
     date_paiement: "",
     period: "",
     designation: [] as string[],
+    service_sms: "",
   };
 
   const [paiement, setPaiement] = useState(initialPaiement);
 
-  const { eleve, annee_scolaire, montant, date_paiement, period, designation } =
-    paiement;
+  const {
+    eleve,
+    annee_scolaire,
+    montant,
+    date_paiement,
+    period,
+    designation,
+    service_sms,
+  } = paiement;
 
   const onChangePaiement = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -282,9 +340,10 @@ const PaiementPage = () => {
       paiement["date_paiement"] = formattedDate;
       paiement["period"] = selectedPeriode;
       paiement["classe"] = selectedClasse;
+      paiement["service_sms"] = String(isActive);
       console.log(paiement);
       createPaiement(paiement)
-        .then(() => notifySuccess())
+        .then(() => notifySuccess("Le Paiement a été créé avec succès"))
         .then(() => setPaiement(initialPaiement));
 
       if (selectedPeriode === "Annuel") {
@@ -484,7 +543,35 @@ const PaiementPage = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={3} className="text-center">
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeDocumentSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"

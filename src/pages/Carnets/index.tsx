@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
   Card,
   Col,
-  Modal,
   Form,
   Button,
   Offcanvas,
@@ -13,45 +12,30 @@ import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Flatpickr from "react-flatpickr";
-import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
 import {
-  useAddCarnetMutation,
   useDeleteCarnetMutation,
   useFetchCarnetsQuery,
 } from "features/carnets/carnetSlice";
-import { convertToBase64 } from "helpers/base64_convert";
-import { French } from "flatpickr/dist/l10n/fr";
-import { formatDate, formatTime } from "helpers/data_time_format";
+
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const Carnets = () => {
   const { data = [] } = useFetchCarnetsQuery();
-  const { data: AllEleves = [] } = useFetchEtudiantsQuery();
+
+  const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
 
   const [deleteCarnet] = useDeleteCarnetMutation();
 
   const [showObservation, setShowObservation] = useState<boolean>(false);
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const handleDateChange = (selectedDates: Date[]) => {
-    setSelectedDate(selectedDates[0]);
-  };
-
-  const notifySuccess = () => {
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "Le carnet a été créé avec succès",
-      showConfirmButton: false,
-      timer: 2500,
-    });
-  };
-
-  const notifyError = (err: any) => {
-    Swal.fire({
-      position: "center",
-      icon: "error",
-      title: `Sothing Wrong, ${err}`,
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -94,24 +78,44 @@ const Carnets = () => {
       });
   };
 
-  const [selectedTrimestre, setSelectedTrimestre] = useState<string>("");
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
 
-  const handleSelectTrimestre = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = event.target.value;
-    setSelectedTrimestre(value);
-  };
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && isLoading === false) {
+      const devoir_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Bulletins"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: devoir_sms_setting[0]?._id!,
+        status: devoir_sms_setting[0]?.sms_status!,
+      }));
+    }
+  }, [AllSmsSettings, isLoading]);
 
-  const [selectedEleve, setSelectedEleve] = useState<string>("");
-
-  const handleSelectEleve = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedEleve(value);
+  const onChangeBulletinSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Bulletins SMS a été modifié avec succès")
+      );
   };
 
   const navigate = useNavigate();
-  const [modal_AddCarnet, setmodal_AddCarnet] = useState<boolean>(false);
+
   function tog_AddCarnet() {
     navigate("/nouveau-bulletin");
   }
@@ -217,13 +221,6 @@ const Carnets = () => {
     document.body.removeChild(link);
   };
 
-  // const handleButtonClick = () => {
-  //   const fileUrl = `${process.env.REACT_APP_BASE_URL}/carnetFiles/${observationLocation.state.fichier}`;
-  //   const fileName = "bulletin.pdf";
-
-  //   openFileInNewTab(fileUrl, fileName);
-  // };
-
   return (
     <React.Fragment>
       <div className="page-content">
@@ -243,7 +240,35 @@ const Carnets = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={3} className="text-center">
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeBulletinSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"
@@ -342,7 +367,7 @@ const Carnets = () => {
                           variant="soft-info"
                           onClick={() =>
                             handleButtonClick(
-                              `${process.env.REACT_APP_BASE_URL}/carnetFiles/${eleve.fichier}`, // Dynamic file URL for each student
+                              `${process.env.REACT_APP_BASE_URL}/carnetFiles/${eleve.fichier}`,
                               "bulletin.pdf"
                             )
                           }

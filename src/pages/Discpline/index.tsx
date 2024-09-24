@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -26,11 +26,17 @@ import { useFetchEtudiantsByClasseIdMutation } from "features/etudiants/etudiant
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate } from "helpers/data_time_format";
 import { convertToBase64 } from "helpers/base64_convert";
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const Discipline = () => {
   const { data = [] } = useFetchDisciplinesQuery();
   const { data: AllClasses = [] } = useFetchClassesQuery();
   const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
+
+  const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
 
   const [fetchEtudiantsByClasseId, { data: fetchedEtudiants }] =
     useFetchEtudiantsByClasseIdMutation();
@@ -43,11 +49,11 @@ const Discipline = () => {
     setSelectedDate(selectedDates[0]);
   };
 
-  const notifySuccess = () => {
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "La discipline a été créée avec succès",
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -140,6 +146,42 @@ const Discipline = () => {
     setmodal_AddObservation(!modal_AddObservation);
   }
 
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
+
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && isLoading === false) {
+      const devoir_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Disciplines"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: devoir_sms_setting[0]?._id!,
+        status: devoir_sms_setting[0]?.sms_status!,
+      }));
+    }
+  }, [AllSmsSettings, isLoading]);
+
+  const onChangeDisciplineSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Disciplines SMS a été modifié avec succès")
+      );
+  };
+
   const [createObservation] = useAddDisciplineMutation();
 
   const initialObservation = {
@@ -201,7 +243,7 @@ const Discipline = () => {
       observation["type"] = selectedType;
       observation["editeur"] = selectedPar;
       createObservation(observation)
-        .then(() => notifySuccess())
+        .then(() => notifySuccess("La discipline a été créée avec succès"))
         .then(() => setObservation(initialObservation));
     } catch (error) {
       notifyError(error);
@@ -345,7 +387,35 @@ const Discipline = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={3} className="text-center">
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeDisciplineSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"

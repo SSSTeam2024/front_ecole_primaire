@@ -35,6 +35,7 @@ import { inscriptionsSlice } from "features/inscriptions/inscriptionSlice";
 import { niveauSlice } from "features/niveaux/niveauxSlice";
 import { smSSlice } from "features/sms/smsSlice";
 import { smsEnseignantSlice } from "features/smsEnseignants/smsEnseignantSlice";
+import { smsSettingSlice } from "features/smsSettings/smsSettings";
 
 export const store = configureStore({
   reducer: {
@@ -67,6 +68,7 @@ export const store = configureStore({
     [niveauSlice.reducerPath]: niveauSlice.reducer,
     [smSSlice.reducerPath]: smSSlice.reducer,
     [smsEnseignantSlice.reducerPath]: smsEnseignantSlice.reducer,
+    [smsSettingSlice.reducerPath]: smsSettingSlice.reducer,
     auth: authSlice,
     Layout: LayoutReducer,
     Dashboard: DashboardReducer,
@@ -101,7 +103,8 @@ export const store = configureStore({
       inscriptionsSlice.middleware,
       niveauSlice.middleware,
       smSSlice.middleware,
-      smsEnseignantSlice.middleware
+      smsEnseignantSlice.middleware,
+      smsSettingSlice.middleware
     ]);
   },
 });

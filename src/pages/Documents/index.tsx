@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -25,11 +25,17 @@ import UpdateDocument from "./UpdateDocument";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate } from "helpers/data_time_format";
 import { convertToBase64 } from "helpers/base64_convert";
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const Documents = () => {
   const { data = [] } = useFetchDocumentQuery();
 
   const { data: AllClasses = [] } = useFetchClassesQuery();
+
+  const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
 
   const [deleteDocument] = useDeleteDocumentMutation();
 
@@ -40,11 +46,11 @@ const Documents = () => {
     setSelectedDate(selectedDates[0]);
   };
 
-  const notifySuccess = () => {
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "Le document a été créé avec succès",
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -120,6 +126,42 @@ const Documents = () => {
     setSelectedColumnValues(values);
   };
 
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
+
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && isLoading === false) {
+      const devoir_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Documents"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: devoir_sms_setting[0]?._id!,
+        status: devoir_sms_setting[0]?.sms_status!,
+      }));
+    }
+  }, [AllSmsSettings, isLoading]);
+
+  const onChangeDocumentSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Documents SMS a été modifié avec succès")
+      );
+  };
+
   const [createDocument] = useAddDocumentMutation();
 
   const initialDocument = {
@@ -177,7 +219,7 @@ const Documents = () => {
       documents["creation_date"] = formatDate(selectedDate);
       documents["classes"] = selectedColumnValues;
       createDocument(documents)
-        .then(() => notifySuccess())
+        .then(() => notifySuccess("Le document a été créé avec succès"))
         .then(() => setDocuments(initialDocument));
     } catch (error) {
       notifyError(error);
@@ -357,7 +399,35 @@ const Documents = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={3} className="text-center">
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeDocumentSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -36,11 +36,17 @@ import UpdateGallerie from "./UpdateGallerie";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate, formatTime } from "helpers/data_time_format";
 import { convertToBase64 } from "helpers/base64_convert";
+import {
+  useFetchSmsSettingsQuery,
+  useUpdateSmsSettingByIdMutation,
+} from "features/smsSettings/smsSettings";
 
 const Gallerie = () => {
   const { data = [] } = useFetchGallerieQuery();
 
   const { data: AllClasses = [] } = useFetchClassesQuery();
+
+  const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
 
   const [deleteGallerie] = useDeleteGallerieMutation();
 
@@ -52,11 +58,11 @@ const Gallerie = () => {
     setSelectedDate(selectedDates[0]);
   };
 
-  const notifySuccess = () => {
+  const notifySuccess = (msg: string) => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "La gallerie a été crée avec succès",
+      title: msg,
       showConfirmButton: false,
       timer: 2500,
     });
@@ -96,13 +102,13 @@ const Gallerie = () => {
           deleteGallerie(_id);
           swalWithBootstrapButtons.fire(
             "Supprimé !",
-            "La gallerie est supprimée.",
+            "La galerie est supprimée.",
             "success"
           );
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           swalWithBootstrapButtons.fire(
             "Annulé",
-            "La gallerie est en sécurité :)",
+            "La galerie est en sécurité :)",
             "info"
           );
         }
@@ -130,6 +136,42 @@ const Gallerie = () => {
   const handleSelectValueColumnChange = (selectedOption: any) => {
     const values = selectedOption.map((option: any) => option.value);
     setSelectedColumnValues(values);
+  };
+
+  const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
+  const [formData, setFormData] = useState({
+    id: "",
+    status: "",
+  });
+
+  useEffect(() => {
+    if (AllSmsSettings !== undefined && isLoading === false) {
+      const devoir_sms_setting = AllSmsSettings?.filter(
+        (parametre) => parametre.service_name === "Galeries"
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        id: devoir_sms_setting[0]?._id!,
+        status: devoir_sms_setting[0]?.sms_status!,
+      }));
+    }
+  }, [AllSmsSettings, isLoading]);
+
+  const onChangeDocumentSmsSetting = () => {
+    let updateData = {
+      id: formData.id,
+      status: formData.status === "1" ? "0" : "1",
+    };
+    updateAvisSmsSetting(updateData)
+      .then(() =>
+        setFormData((prevState) => ({
+          ...prevState,
+          status: formData.status === "1" ? "0" : "1",
+        }))
+      )
+      .then(() =>
+        notifySuccess("Paramètre Galeries SMS a été modifié avec succès")
+      );
   };
 
   const [createGallerie] = useAddGallerieMutation();
@@ -214,7 +256,7 @@ const Gallerie = () => {
       gallerie["creation_date"] = formatDate(selectedDate);
       gallerie["classes"] = selectedColumnValues;
       createGallerie(gallerie)
-        .then(() => notifySuccess())
+        .then(() => notifySuccess("La galerie a été crée avec succès"))
         .then(() => setGallerie(initialGallerie));
     } catch (error) {
       notifyError(error);
@@ -360,7 +402,7 @@ const Gallerie = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumb title="Gallerie" pageTitle="Tableau de bord" />
+          <Breadcrumb title="Galerie" pageTitle="Tableau de bord" />
           <Col lg={12}>
             <Card id="shipmentsList">
               <Card.Header className="border-bottom-dashed">
@@ -375,7 +417,35 @@ const Gallerie = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={6}></Col>
+                  <Col lg={6}>
+                    <Row>
+                      <Col lg={3} className="text-center">
+                        <Form.Label>Status SMS: </Form.Label>
+                      </Col>
+                      <Col lg={2}>
+                        <div className="form-check form-switch">
+                          <input
+                            key={formData?.id!}
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id={formData.id}
+                            checked={formData.status === "1"}
+                            onChange={() => onChangeDocumentSmsSetting()}
+                          />
+                          {formData.status === "0" ? (
+                            <span className="badge bg-warning-subtle text-warning badge-border">
+                              Désactivé
+                            </span>
+                          ) : (
+                            <span className="badge bg-info-subtle text-info badge-border">
+                              Activé
+                            </span>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+                  </Col>
                   <Col lg={3} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"
@@ -401,7 +471,7 @@ const Gallerie = () => {
                             (e.currentTarget.style.transform = "scale(1)")
                           }
                         ></i>{" "}
-                        <span>Ajouter Gallerie</span>
+                        <span>Ajouter Galerie</span>
                       </button>
                     </div>
                   </Col>
@@ -423,7 +493,7 @@ const Gallerie = () => {
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Gallerie
+                Ajouter Galerie
               </h1>
             </Modal.Header>
             <Modal.Body>
@@ -550,7 +620,7 @@ const Gallerie = () => {
                         setGallerie(initialGallerie);
                       }}
                     >
-                      Close
+                      Fermer
                     </Button>
                     <Button
                       onClick={() => {
@@ -579,7 +649,7 @@ const Gallerie = () => {
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
-                Modifier Evènement
+                Modifier Galerie
               </h1>
             </Modal.Header>
             <Modal.Body>
@@ -597,7 +667,7 @@ const Gallerie = () => {
           style={{ width: "40%" }}
         >
           <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Détails du Gallerie</Offcanvas.Title>
+            <Offcanvas.Title>Détails du Galerie</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
             <Row className="mb-3">

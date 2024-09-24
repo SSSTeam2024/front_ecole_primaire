@@ -64,6 +64,43 @@ const ParentsSmses = () => {
     });
   };
 
+  const swalWithBootstrapButtons = Swal.mixin({
+    customClass: {
+      confirmButton: "btn btn-success",
+      cancelButton: "btn btn-danger",
+    },
+    buttonsStyling: false,
+  });
+
+  const AlertDelete = async (_id: any) => {
+    swalWithBootstrapButtons
+      .fire({
+        title: "Etes-vous sûr?",
+        text: "Vous ne pouvez pas revenir en arrière?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprime-le !",
+        cancelButtonText: "Non, annuler !",
+        reverseButtons: true,
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          // deleteSms(_id);
+          swalWithBootstrapButtons.fire(
+            "Supprimé !",
+            "Le parent est supprimé.",
+            "success"
+          );
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Annulé",
+            "Le parent est en sécurité :)",
+            "info"
+          );
+        }
+      });
+  };
+
   const [isChecked, setIsChecked] = useState(true);
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,17 +232,13 @@ const ParentsSmses = () => {
 
   const calculateSmsCount = (messageLength: number, isChecked: boolean) => {
     let firstLimit = isChecked ? 127 : 157;
-    let subsequentLimit = 157; // After the first message, limit becomes 157 if isChecked
+    let subsequentLimit = 157;
 
     if (messageLength <= firstLimit) {
       return 1;
     }
-
-    // Calculate the first message
     let smsCount = 1;
     messageLength -= firstLimit;
-
-    // Calculate the remaining messages with the subsequent limit
     smsCount += Math.ceil(messageLength / subsequentLimit);
 
     return smsCount;
@@ -267,6 +300,18 @@ const ParentsSmses = () => {
       width: "10%",
     },
     {
+      name: <span className="font-weight-bold fs-13">SMS/Destinataire</span>,
+      selector: (row: any) => row.sms_par_destinataire,
+      sortable: true,
+      width: "10%",
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Total SMS</span>,
+      selector: (row: any) => row.total_sms,
+      sortable: true,
+      width: "8%",
+    },
+    {
       name: <span className="font-weight-bold fs-13">Etat</span>,
       selector: (cell: any) => {
         switch (cell.status) {
@@ -279,6 +324,27 @@ const ParentsSmses = () => {
         }
       },
       sortable: true,
+      width: "8%",
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Action</span>,
+      sortable: true,
+      cell: (row: any) => {
+        return row.status === "Pending" ? (
+          <ul className="hstack gap-2 list-unstyled mb-0">
+            <li>
+              <Link to="#" className="badge badge-soft-danger remove-item-btn">
+                <i
+                  className="ri-delete-bin-2-line"
+                  // onClick={() => AlertDelete(row._id)}
+                ></i>
+              </Link>
+            </li>
+          </ul>
+        ) : (
+          ""
+        );
+      },
       width: "8%",
     },
   ];

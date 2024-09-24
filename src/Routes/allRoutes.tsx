@@ -36,6 +36,9 @@ import EnseignantsSmses from "pages/EnseignantsSmses";
 import CreateNote from "pages/Notes/CreateNote";
 import CreateAbsence from "pages/Absence/CreateAbsence";
 import CreateCarnet from "pages/Carnets/CreateCarnet";
+import DevoirControle from "pages/Calendrier/DevoirControle";
+import DevoirSynthese from "pages/Calendrier/DevoirSynthese";
+import Parametres from "pages/Parametres";
 // import Messages from "pages/Messages";
 
 const authProtectedRoutes = [
@@ -62,15 +65,17 @@ const authProtectedRoutes = [
   // { path: "/messages", component: <Messages /> },
   { path: "/cantines", component: <Cantines /> },
   { path: "/salles", component: <Salles /> },
-  { path: "/calendrier-examen", component: <Calendrier /> },
+
   // { path: "/evaluations", component: <Evaluations /> },
   { path: "/rendez-vous", component: <Rendezvous /> },
-  { path: "/sms-parents", component: <ParentsSmses /> },
-  { path: "/sms-enseignants", component: <EnseignantsSmses /> },
 
   { path: "/inscriptions", component: <Inscriptions /> },
   { path: "/details-inscription", component: <InscriptionDetails /> },
   { path: "/modifier-inscription", component: <UpdateInscription /> },
+
+  // Calendrier Section
+  { path: "/calendrier-examen-contrôle", component: <DevoirControle /> },
+  { path: "/calendrier-examen-synthèse", component: <DevoirSynthese /> },
 
   // Note Section
   { path: "/notes", component: <Notes /> },
@@ -82,6 +87,11 @@ const authProtectedRoutes = [
   // Carnet Section
   { path: "/bulletins", component: <Carnets /> },
   { path: "/nouveau-bulletin", component: <CreateCarnet /> },
+
+  // Sms Section
+  { path: "/sms-parents", component: <ParentsSmses /> },
+  { path: "/sms-enseignants", component: <EnseignantsSmses /> },
+  { path: "/paremètres-sms", component: <Parametres /> },
 
   { path: "/", exact: true, component: <Navigate to="/dashboard" /> },
   { path: "*", component: <Navigate to="/dashboard" /> },

@@ -11,6 +11,7 @@ const Navdata = () => {
   const [isAccounts, setIsAccounts] = useState(false);
   const [isTools, setIsTools] = useState(false);
   const [isHelp, setIsHelp] = useState(false);
+  const [isMultiLevel, setIsMultiLevel] = useState(false);
 
   // Multi Level
   const [isLevel1, setIsLevel1] = useState(false);
@@ -60,6 +61,9 @@ const Navdata = () => {
     if (iscurrentState !== "Help") {
       setIsHelp(false);
     }
+    if (iscurrentState !== "MuliLevel") {
+      setIsMultiLevel(false);
+    }
   }, [
     iscurrentState,
     isTracking,
@@ -70,6 +74,7 @@ const Navdata = () => {
     isAccounts,
     isTools,
     isHelp,
+    isMultiLevel,
   ]);
 
   const menuItems: any = [
@@ -146,26 +151,48 @@ const Navdata = () => {
     //   parentId: "invoices",
     //   icon: "ph ph-house-simple",
     // },
+    // {
+    //   id: "Planification",
+    //   label: "Planification",
+    //   icon: "ph ph-target",
+    //   link: "/#",
+    //   click: function (e: any) {
+    //     e.preventDefault();
+    //     setIsPayement(!isPayement);
+    //     setIscurrentState("Payement");
+    //     updateIconSidebar(e);
+    //   },
+    //   stateVariables: isPayement,
+    //   subItems: [
+    //     {
+    //       id: "invoices",
+    //       label: "Calendrier Examen",
+    //       link: "/calendrier-examen",
+    //       parentId: "invoices",
+    //       icon: "ph ph-calendar-check",
+    //     },
+    //     {
+    //       id: "invoices",
+    //       label: "Emploi",
+    //       link: "/emploi",
+    //       parentId: "invoices",
+    //       icon: "ph ph-calendar-blank",
+    //     },
+    //   ],
+    // },
     {
-      id: "Planification",
+      id: "multilevel",
       label: "Planification",
       icon: "ph ph-target",
       link: "/#",
       click: function (e: any) {
         e.preventDefault();
-        setIsPayement(!isPayement);
-        setIscurrentState("Payement");
+        setIsMultiLevel(!isMultiLevel);
+        setIscurrentState("MuliLevel");
         updateIconSidebar(e);
       },
-      stateVariables: isPayement,
+      stateVariables: isMultiLevel,
       subItems: [
-        {
-          id: "invoices",
-          label: "Calendrier Examen",
-          link: "/calendrier-examen",
-          parentId: "invoices",
-          icon: "ph ph-calendar-check",
-        },
         {
           id: "invoices",
           label: "Emploi",
@@ -173,9 +200,34 @@ const Navdata = () => {
           parentId: "invoices",
           icon: "ph ph-calendar-blank",
         },
+        {
+          id: "level1.2",
+          label: "Calendrier Examen",
+          link: "/#",
+          icon: "ph ph-calendar-check",
+          isChildItem: true,
+          click: function (e: any) {
+            e.preventDefault();
+            setIsLevel1(!isLevel1);
+          },
+          stateVariables: isLevel1,
+          childItems: [
+            {
+              id: 1,
+              label: "Devoirs Contrôle",
+              link: "/calendrier-examen-contrôle",
+              icon: "ph ph-calendar",
+            },
+            {
+              id: 2,
+              label: "Devoirs Synthèse",
+              link: "/calendrier-examen-synthèse",
+              icon: "ph ph-calendar-plus",
+            },
+          ],
+        },
       ],
     },
-
     {
       id: "invoices",
       label: "Paiement",
@@ -216,6 +268,13 @@ const Navdata = () => {
           link: "/sms-parents",
           parentId: "invoices",
           icon: "ph ph-chats-teardrop",
+        },
+        {
+          id: "invoices",
+          label: "Paramètres",
+          link: "/paremètres-sms",
+          parentId: "invoices",
+          icon: "ph ph-toggle-right",
         },
       ],
     },
