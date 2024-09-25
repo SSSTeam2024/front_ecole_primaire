@@ -146,7 +146,7 @@ const ParentsSmses = () => {
     window.location.reload();
   };
 
-  const [createSms] = useAddSmSMutation();
+  const [createSms, { isLoading: loadingCreateSms }] = useAddSmSMutation();
 
   const [sendSms, { isLoading }] = useSendSmSMutation();
 
@@ -192,8 +192,15 @@ const ParentsSmses = () => {
   const handleSelectValueColumnChange = async (selectedOption: any) => {
     const values = selectedOption.map((option: any) => option.value);
     setSelectedColumnValues(values);
-    const result = await fetchEtudiantsByClasseId(values[0]).unwrap();
-    setStudents(result);
+    let apiStudents = [];
+    for (const classID of values) {
+      const result = await fetchEtudiantsByClasseId(classID).unwrap();
+      for (const eleve of result) {
+        apiStudents.push(eleve);
+      }
+    }
+
+    setStudents(apiStudents);
   };
 
   const optionEleves = students.map((eleve: any) => ({
@@ -274,6 +281,7 @@ const ParentsSmses = () => {
       sms["status"] = "Pending";
       sms["total_sms"] = totalSms.toString();
       sms["sms_par_destinataire"] = numberOfSms.toString();
+      // console.log(sms);
       createSms(sms)
         .then(() => notifySuccess())
         .then(() => setSms(initialSms));
@@ -457,27 +465,40 @@ const ParentsSmses = () => {
                       role="group"
                       aria-label="Basic example"
                     >
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => tog_AddSms()}
-                      >
-                        <i
-                          className="ri-add-fill align-middle"
-                          style={{
-                            transition: "transform 0.3s ease-in-out",
-                            cursor: "pointer",
-                            fontSize: "1.5em",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.transform = "scale(1.3)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.transform = "scale(1)")
-                          }
-                        ></i>{" "}
-                        <span>Ajouter Message(s)</span>
-                      </button>
+                      {loadingCreateSms ? (
+                        <button
+                          className="btn btn-outline-primary btn-load d-flex align-items-center"
+                          disabled
+                        >
+                          <span
+                            className="spinner-border flex-shrink-0"
+                            role="status"
+                          />
+                          <span className="flex-grow-1 ms-2">En Cours...</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={() => tog_AddSms()}
+                        >
+                          <i
+                            className="ri-add-fill align-middle"
+                            style={{
+                              transition: "transform 0.3s ease-in-out",
+                              cursor: "pointer",
+                              fontSize: "1.5em",
+                            }}
+                            onMouseEnter={(e) =>
+                              (e.currentTarget.style.transform = "scale(1.3)")
+                            }
+                            onMouseLeave={(e) =>
+                              (e.currentTarget.style.transform = "scale(1)")
+                            }
+                          ></i>{" "}
+                          <span>Ajouter Message(s)</span>
+                        </button>
+                      )}
                     </div>
                   </Col>
                 </Row>
