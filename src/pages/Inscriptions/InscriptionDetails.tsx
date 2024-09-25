@@ -112,7 +112,9 @@ const InscriptionDetails = () => {
   };
 
   const handleButtonClick = () => {
-    const fileUrl = `http://localhost:3000/inscriptionFiles/${details?.copie_bulletin!}`;
+    const fileUrl = `${
+      process.env.REACT_APP_BASE_URL
+    }/inscriptionFiles/${details?.copie_bulletin!}`;
     const fileName = "copie bulletin.pdf";
 
     openFileInNewTab(fileUrl, fileName);
@@ -150,7 +152,9 @@ const InscriptionDetails = () => {
               <Card.Body>
                 <div className="mt-n5">
                   <Image
-                    src={`http://localhost:3000/inscriptionFiles/${details?.photoProfil!}`}
+                    src={`${
+                      process.env.REACT_APP_BASE_URL
+                    }/inscriptionFiles/${details?.photoProfil!}`}
                     alt=""
                     className="avatar-xl rounded-circle bg-body mt-n5"
                   />

@@ -233,7 +233,7 @@ const CreateCarnet = () => {
                         <Col lg={3}>
                           <Form.Label>Note</Form.Label>
                         </Col>
-                        <Col lg={3}>
+                        <Col lg={6}>
                           <Form.Label>Fichier</Form.Label>
                         </Col>
                       </Row>
@@ -251,7 +251,7 @@ const CreateCarnet = () => {
                               }
                             />
                           </Col>
-                          <Col lg={3}>
+                          <Col lg={6}>
                             <input
                               className="form-control mb-2"
                               type="file"
