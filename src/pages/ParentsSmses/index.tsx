@@ -30,7 +30,7 @@ const ParentsSmses = () => {
   const { data = [] } = useFetchSmSQuery();
   const { data: AllParents = [] } = useFetchParentsQuery();
   const { data: AllClasses = [] } = useFetchClassesQuery();
-
+  const filteredShortCode = shortCode.filter((item) => item.id !== 6);
   const [fetchEtudiantsByClasseId, { data: fetchedEtudiants }] =
     useFetchEtudiantsByClasseIdMutation();
 
@@ -558,7 +558,7 @@ const ParentsSmses = () => {
                               </div>
                             </Col>
                             <Col lg={3}>
-                              {shortCode.map((code) => (
+                              {filteredShortCode.map((code) => (
                                 <Button
                                   type="button"
                                   variant="light"
@@ -655,7 +655,7 @@ const ParentsSmses = () => {
                               </div>
                             </Col>
                             <Col lg={2}>
-                              {shortCode.map((code) => (
+                              {filteredShortCode.map((code) => (
                                 <Button
                                   type="button"
                                   variant="light"
