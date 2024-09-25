@@ -17,6 +17,7 @@ import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
   useAddSmSMutation,
+  useDeleteSmSMutation,
   useFetchSmSQuery,
   useSendSmSMutation,
 } from "features/sms/smsSlice";
@@ -33,6 +34,8 @@ const ParentsSmses = () => {
   const filteredShortCode = shortCode.filter((item) => item.id !== 6);
   const [fetchEtudiantsByClasseId, { data: fetchedEtudiants }] =
     useFetchEtudiantsByClasseIdMutation();
+
+  const [deleteSms] = useDeleteSmSMutation();
 
   const pending_sms = data.filter((sms) => sms.status === "Pending");
 
@@ -72,33 +75,49 @@ const ParentsSmses = () => {
     buttonsStyling: false,
   });
 
-  const AlertDelete = async (_id: any) => {
+  const AlertDelete = async (ids: string[]) => {
     swalWithBootstrapButtons
       .fire({
         title: "Etes-vous sûr?",
-        text: "Vous ne pouvez pas revenir en arrière?",
+        text: "Vous ne pouvez pas revenir en arrière!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Oui, supprime-le !",
+        confirmButtonText: "Oui, supprime-les !",
         cancelButtonText: "Non, annuler !",
         reverseButtons: true,
       })
       .then((result) => {
         if (result.isConfirmed) {
-          // deleteSms(_id);
+          deleteSms(ids); // Pass the array of IDs
           swalWithBootstrapButtons.fire(
             "Supprimé !",
-            "Le parent est supprimé.",
+            "Les messages sélectionnés ont été supprimés.",
             "success"
           );
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           swalWithBootstrapButtons.fire(
             "Annulé",
-            "Le parent est en sécurité :)",
+            "Les messages sont en sécurité :)",
             "info"
           );
         }
       });
+  };
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Function to handle checkbox selection
+  const handleCheckChange = (id: string) => {
+    setSelectedIds((prevSelectedIds) =>
+      prevSelectedIds.includes(id)
+        ? prevSelectedIds.filter((selectedId) => selectedId !== id)
+        : [...prevSelectedIds, id]
+    );
+  };
+
+  // Function to clear selection
+  const clearSelection = () => {
+    setSelectedIds([]);
   };
 
   const [isChecked, setIsChecked] = useState(true);
@@ -330,13 +349,16 @@ const ParentsSmses = () => {
       name: <span className="font-weight-bold fs-13">Action</span>,
       sortable: true,
       cell: (row: any) => {
+        // Retrieve the IDs of all SMS messages that share the same `msg`
+        const idsToDelete = row.receiversCount.map((sms: any) => sms._id);
+
         return row.status === "Pending" ? (
           <ul className="hstack gap-2 list-unstyled mb-0">
             <li>
               <Link to="#" className="badge badge-soft-danger remove-item-btn">
                 <i
                   className="ri-delete-bin-2-line"
-                  // onClick={() => AlertDelete(row._id)}
+                  onClick={() => AlertDelete(idsToDelete)} // Pass multiple IDs for deletion
                 ></i>
               </Link>
             </li>

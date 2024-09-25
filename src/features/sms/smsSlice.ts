@@ -55,13 +55,15 @@ export const smSSlice = createApi({
         }),
         invalidatesTags: ["SmS"],
       }),
-      deleteSmS: builder.mutation<void, SmS>({
-        query: (_id) => ({
-          url: `/deleteSms/${_id}`,
-          method: "Delete",
+      deleteSmS: builder.mutation<void, string[]>({
+        query: (ids) => ({
+          url: `/deleteSms`,
+          method: "DELETE",
+          body: { ids },  // Send an array of IDs in the body
         }),
         invalidatesTags: ["SmS"],
       }),
+      
     };
   },
 });
