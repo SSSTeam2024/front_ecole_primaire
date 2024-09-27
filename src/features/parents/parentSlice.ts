@@ -8,7 +8,7 @@ export interface Parent {
   phone: string;
   username: string;
   password?: string;
-  fils: {
+  fils?: {
     _id: string;
     nom: string;
     prenom: string;
@@ -31,6 +31,13 @@ export const parentSlice = createApi({
           return `/getAllParents`;
         },
         providesTags: ["Parent"],
+      }),
+      fetchParentById: builder.mutation<Parent, string | void>({
+        query: (_id) => ({
+          url: `/getParent/${_id}`,
+          method: "GET",
+        }),
+        invalidatesTags: ["Parent"],
       }),
       addParent: builder.mutation<void, Parent>({
         query(payload) {
@@ -66,4 +73,5 @@ export const {
   useFetchParentsQuery,
   useDeleteParentMutation,
   useUpdateParentMutation,
+  useFetchParentByIdMutation
 } = parentSlice;

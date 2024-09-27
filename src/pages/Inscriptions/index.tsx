@@ -23,6 +23,14 @@ import { useFetchClassesQuery } from "features/classes/classeSlice";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
+import {
+  useAddEtudiantMutation,
+  useUpdateEleveClasseMutation,
+} from "features/etudiants/etudiantSlice";
+import {
+  useAddParentMutation,
+  useFetchParentsQuery,
+} from "features/parents/parentSlice";
 
 interface InscriptionRow {
   _id: string;
@@ -65,6 +73,7 @@ const Inscriptions = () => {
   const { data = [] } = useGetAllInscriptionsQuery();
 
   const { data: AllClasses = [] } = useFetchClassesQuery();
+  const { data: AllParents = [] } = useFetchParentsQuery();
 
   const [deleteInscription] = useRemoveInscriptionMutation();
 
@@ -142,10 +151,10 @@ const Inscriptions = () => {
       });
   };
 
-  const [updateStatus] = useUpdateInscriptionStatausMutation();
+  const [updateStatus, { isSuccess }] = useUpdateInscriptionStatausMutation();
 
   const [updateGroupe] = useUpdateInscriptionGroupeMutation();
-
+  const [updateEleveClasse] = useUpdateEleveClasseMutation();
   const [selectedRow, setSelectedRow] = useState<InscriptionRow | null>(null);
 
   const [showModal, setShowModal] = useState(false);
@@ -181,11 +190,70 @@ const Inscriptions = () => {
     });
   };
 
-  const handleUpdateStatus = (status: any) => {
+  const notifySuccessAcceptInscription = () => {
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "L'inscription a été acceptée avec succès",
+      showConfirmButton: false,
+      timer: 2500,
+    });
+  };
+
+  const [createEleve] = useAddEtudiantMutation();
+  const [createParent] = useAddParentMutation();
+  const handleUpdateStatus = async (status: any) => {
     if (selectedRow) {
-      updateStatus({ _id: selectedRow._id, status }).then(() => {
-        handleCloseModal();
-      });
+      updateStatus({ _id: selectedRow._id, status })
+        .then(() => {
+          handleCloseModal();
+        })
+        .then(() => notifySuccessAcceptInscription())
+        .then(() =>
+          createEleve({
+            nom: selectedRow.nom_eleve,
+            prenom: selectedRow.prenom_eleve,
+            date_de_naissance: selectedRow.date_naissance,
+            genre: selectedRow.sexe,
+            avatar: selectedRow.photoProfil,
+            statusPaiement: "0",
+            lieu_naissance: selectedRow.lieu_naissance,
+            adresse_eleve: selectedRow.adresse_eleve,
+            ville: "",
+            nationalite: selectedRow.nationalite,
+            annee_scolaire: selectedRow.annee_scolaire,
+            etablissement_frequente: selectedRow.etablissement_frequente,
+            moyenne_trimestre_1: selectedRow.moyenne_trimestre_1,
+            moyenne_trimestre_2: selectedRow.moyenne_trimestre_2,
+            moyenne_trimestre_3: selectedRow.moyenne_trimestre_3,
+            moyenne_annuelle: selectedRow.moyenne_annuelle,
+            moyenne_concours_6: selectedRow.moyenne_concours_6,
+            numero_convocation_concours:
+              selectedRow.numero_convocation_concours,
+          })
+        );
+      const phoneExistsInParents = AllParents.some(
+        (parent) => parent.phone === selectedRow.phone
+      );
+
+      if (phoneExistsInParents) {
+        console.log("Phone number exists in the parents list.");
+      } else {
+        const lastSixDigits = selectedRow.phone.slice(-6);
+        const reversedLastSixDigits = lastSixDigits
+          .split("")
+          .reverse()
+          .join("");
+        createParent({
+          cin: "",
+          nom_parent: selectedRow.nom_parent,
+          prenom_parent: selectedRow.prenom_parent,
+          phone: selectedRow.phone,
+          username: selectedRow.phone,
+          password: reversedLastSixDigits,
+          profession: selectedRow.profession,
+        });
+      }
     }
   };
 
@@ -198,6 +266,12 @@ const Inscriptions = () => {
         .then(() => {
           notifySuccess();
         });
+      // .then(() => {
+      //   updateEleveClasse({
+      //     _id: "",
+      //     classe: groupe,
+      //   });
+      // });
     }
   };
 
@@ -213,7 +287,7 @@ const Inscriptions = () => {
         row.groupe === "" || row.groupe === undefined ? (
           <span>--</span>
         ) : (
-          <span>{row.groupe}</span>
+          <span>{row?.groupe}</span>
         ),
       sortable: true,
     },
@@ -535,9 +609,14 @@ const Inscriptions = () => {
 
   const selectedClasse = selectedRow?.classe!;
 
-  const matchedClasses = AllClasses.filter((classe) =>
-    classe.nom_classe.startsWith(selectedClasse)
-  );
+  const selectedClasseNumber = selectedClasse?.match(/\d+/)?.[0]; // Extracts the number from "7 ème", "8 ème", etc.
+
+  const matchedClasses = AllClasses.filter((classe) => {
+    const classeNumber = classe.nom_classe?.match(/\d+/)?.[0]; // Extracts the number from "7B1", "8B1", etc.
+
+    // Compare the numeric parts
+    return classeNumber === selectedClasseNumber;
+  });
 
   if (matchedClasses.length > 0) {
     console.log("Found class:", matchedClasses);

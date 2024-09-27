@@ -8,7 +8,6 @@ import {
   Form,
   Button,
   Offcanvas,
-  InputGroup,
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
@@ -20,12 +19,8 @@ import {
   useFetchParentsQuery,
 } from "features/parents/parentSlice";
 import Select from "react-select";
-import {
-  Etudiant,
-  useFetchEtudiantsQuery,
-} from "features/etudiants/etudiantSlice";
+import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
 import UpdateParent from "./UpdateParent";
-import { generateRandom8DigitNumber } from "helpers/generate_numbers";
 
 const Parents = () => {
   const { data = [] } = useFetchParentsQuery();

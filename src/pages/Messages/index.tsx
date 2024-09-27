@@ -1,67 +1,42 @@
-import React, { useState } from "react";
-import {
-  Container,
-  Row,
-  Card,
-  Col,
-  Modal,
-  Form,
-  Button,
-  Offcanvas,
-  Image,
-} from "react-bootstrap";
-import DataTable from "react-data-table-component";
+import React, { useEffect, useState } from "react";
+import { Container, Row, Card, Col, Form } from "react-bootstrap";
+
 import Breadcrumb from "Common/BreadCrumb";
-import { Link, useLocation } from "react-router-dom";
+
 import Swal from "sweetalert2";
-import Flatpickr from "react-flatpickr";
-import { useFetchClassesQuery } from "features/classes/classeSlice";
-import Select from "react-select";
-import {
-  useAddGallerieMutation,
-  useDeleteGallerieMutation,
-  useFetchGallerieQuery,
-} from "features/galleries/gallerieSlice";
-import Dropzone from "react-dropzone";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
-import "swiper/css/scrollbar";
-import "swiper/css/effect-fade";
-import "swiper/css/effect-flip";
-import { Pagination } from "swiper/modules";
-import { Autoplay } from "swiper/modules";
+
 import {
   useDeleteMessagerieMutation,
+  useGetMessageriesByParentIdMutation,
   useGetMessageriesQuery,
   useNewMessagerieMutation,
 } from "features/messageries/messagerieSlice";
-
-function convertToBase64(
-  file: File
-): Promise<{ base64Data: string; extension: string }> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      const base64String = fileReader.result as string;
-      const [, base64Data] = base64String.split(",");
-      const extension = file.name.split(".").pop() ?? "";
-      resolve({ base64Data, extension });
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
-    fileReader.readAsDataURL(file);
-  });
-}
+import { useFetchParentsQuery } from "features/parents/parentSlice";
+import { formatDate, formatTime } from "helpers/data_time_format";
+import avatar from "assets/images/3607444.png";
+import "./searchBox.css";
+import { convertToBase64 } from "helpers/base64_convert";
 
 const Messages = () => {
   const { data = [] } = useGetMessageriesQuery();
+  const { data: AllParents = [] } = useFetchParentsQuery();
 
-  const [deleteMessages] = useDeleteMessagerieMutation();
+  const [deleteMessage] = useDeleteMessagerieMutation();
 
-  const [showMessages, setShowMessages] = useState<boolean>(false);
+  const [selectedMessages, setSelectedMessages] = useState<any[]>([]);
+  const [getMessageriesByParentId] = useGetMessageriesByParentIdMutation();
+  const [selectedParent, setSelectedParent] = useState<string>("");
+  const [selectedParentId, setSelectedParentId] = useState(null);
+  const handleParentClick = async (parentId: any) => {
+    try {
+      const response = await getMessageriesByParentId(parentId).unwrap();
+      setSelectedMessages(response);
+      setSelectedParent(parentId);
+      setSelectedParentId(parentId);
+    } catch (error) {
+      console.error("Error fetching messages", error);
+    }
+  };
 
   const notifySuccess = () => {
     Swal.fire({
@@ -90,40 +65,6 @@ const Messages = () => {
     },
     buttonsStyling: false,
   });
-
-  const AlertDelete = async (_id: any) => {
-    swalWithBootstrapButtons
-      .fire({
-        title: "Etes-vous sûr?",
-        text: "Vous ne pouvez pas revenir en arrière?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Oui, supprime-le !",
-        cancelButtonText: "Non, annuler !",
-        reverseButtons: true,
-      })
-      .then((result) => {
-        if (result.isConfirmed) {
-          deleteMessages(_id);
-          swalWithBootstrapButtons.fire(
-            "Supprimé !",
-            "Le message est supprimée.",
-            "success"
-          );
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          swalWithBootstrapButtons.fire(
-            "Annulé",
-            "Le message est en sécurité :)",
-            "info"
-          );
-        }
-      });
-  };
-
-  const [modal_AddMessage, setmodal_AddMessage] = useState<boolean>(false);
-  function tog_AddMessage() {
-    setmodal_AddMessage(!modal_AddMessage);
-  }
 
   const [createMessage] = useNewMessagerieMutation();
 
@@ -164,7 +105,7 @@ const Messages = () => {
     const base64Files = await Promise.all(
       files.map(async (file: File) => {
         const { base64Data, extension } = await convertToBase64(file);
-        const mimeType = file.type; // Get the MIME type of the file
+        const mimeType = file.type;
         return {
           base64Data,
           extension,
@@ -184,30 +125,13 @@ const Messages = () => {
     }));
   };
 
-  const handleDeleteFile = (indexToRemove: number) => {
-    setMessage((prevData) => {
-      const newGallery = prevData.fichiers?.filter(
-        (_, index) => index !== indexToRemove
-      );
-      const newGalleryBase64Strings = prevData.fichier_base64_string?.filter(
-        (_, index) => index !== indexToRemove
-      );
-      const newGalleryExtension = prevData.fichier_extension?.filter(
-        (_, index) => index !== indexToRemove
-      );
-
-      return {
-        ...prevData,
-        fichiers: newGallery,
-        fichier_base64_string: newGalleryBase64Strings,
-        fichier_extension: newGalleryExtension,
-      };
-    });
-  };
-
-  const onSubmitMessage = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const currentDate = new Date();
+  const onSubmitMessage = () => {
     try {
+      message["date"] = formatDate(currentDate);
+      message["heure"] = formatTime(currentDate);
+      message["sender"] = "administration";
+      message["receiver"] = selectedParent;
       createMessage(message)
         .then(() => notifySuccess())
         .then(() => setMessage(initialMessage));
@@ -215,392 +139,352 @@ const Messages = () => {
       notifyError(error);
     }
   };
+  const isArabic = (text: string) => {
+    const arabicPattern = /[\u0600-\u06FF\u0750-\u077F]/;
+    return arabicPattern.test(text);
+  };
+  const [isFocused, setIsFocused] = useState(false);
 
-  const columns = [
-    {
-      name: <span className="font-weight-bold fs-13">Titre</span>,
-      selector: (row: any) => row.titre,
-      sortable: true,
-    },
-    {
-      name: <span className="font-weight-bold fs-13">Classe(s)</span>,
-      selector: (row: any) => {
-        return (
-          <ul className="vstack gap-2 list-unstyled mb-0">
-            {row.classes?.map((classe: any) => (
-              <li key={classe._id}>{classe.nom_classe}</li>
-            ))}
-          </ul>
-        );
-      },
-      sortable: true,
-    },
-    {
-      name: <span className="font-weight-bold fs-13">Date de création</span>,
-      selector: (row: any) => row.creation_date,
-      sortable: true,
-    },
-    {
-      name: <span className="font-weight-bold fs-13">Action</span>,
-      sortable: true,
-      cell: (row: any) => {
-        return (
-          <ul className="hstack gap-2 list-unstyled mb-0">
-            <li>
-              <Link
-                to="#"
-                className="badge badge-soft-info edit-item-btn"
-                onClick={() => setShowMessages(!showMessages)}
-                state={row}
-              >
-                <i
-                  className="ri-eye-line"
-                  style={{
-                    transition: "transform 0.3s ease-in-out",
-                    cursor: "pointer",
-                    fontSize: "1.2em",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.3)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
-                ></i>
-              </Link>
-            </li>
-            <li>
-              <Link to="#" className="badge badge-soft-success edit-item-btn">
-                <i
-                  className="ri-edit-2-line"
-                  style={{
-                    transition: "transform 0.3s ease-in-out",
-                    cursor: "pointer",
-                    fontSize: "1.2em",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.3)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
-                ></i>
-              </Link>
-            </li>
-            <li>
-              <Link to="#" className="badge badge-soft-danger remove-item-btn">
-                <i
-                  className="ri-delete-bin-2-line"
-                  style={{
-                    transition: "transform 0.3s ease-in-out",
-                    cursor: "pointer",
-                    fontSize: "1.2em",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.3)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
-                  onClick={() => AlertDelete(row._id)}
-                ></i>
-              </Link>
-            </li>
-          </ul>
-        );
-      },
-    },
-  ];
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
 
-  const gallerieLocation = useLocation();
+  const handleBlur = () => {
+    if (!searchTerm) {
+      setIsFocused(false);
+    }
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const getFilteredParents = () => {
+    let filteredParents = AllParents;
+
+    if (searchTerm) {
+      filteredParents = filteredParents.filter(
+        (parent: any) =>
+          parent
+            ?.prenom_parent!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          parent?.phone!.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredParents;
+  };
 
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
           <Breadcrumb title="Messages" pageTitle="Tableau de bord" />
-          <Col lg={12}>
-            <Card id="shipmentsList">
-              <Card.Header className="border-bottom-dashed">
-                <Row className="g-3">
-                  <Col lg={3}>
-                    <div className="search-box">
-                      <input
-                        type="text"
-                        className="form-control search"
-                        placeholder="Rechercher ..."
-                      />
-                      <i className="ri-search-line search-icon"></i>
-                    </div>
-                  </Col>
-                  <Col lg={6}></Col>
-                  <Col lg={3} className="d-flex justify-content-end">
-                    <div
-                      className="btn-group btn-group-sm"
-                      role="group"
-                      aria-label="Basic example"
-                    >
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => tog_AddMessage()}
+          <Row>
+            <Col lg={4}>
+              <Card>
+                <Card.Header>
+                  <Row className="g-3">
+                    <Col lg={7}>
+                      <Form.Label>Parents</Form.Label>
+                    </Col>
+                    <Col lg={5}>
+                      <div
+                        className={`searching-box ${isFocused ? "active" : ""}`}
                       >
                         <i
-                          className="ri-add-fill align-middle"
-                          style={{
-                            transition: "transform 0.3s ease-in-out",
-                            cursor: "pointer",
-                            fontSize: "1.5em",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.transform = "scale(1.3)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.transform = "scale(1)")
-                          }
-                        ></i>{" "}
-                        <span>Ajouter Gallerie</span>
-                      </button>
-                    </div>
-                  </Col>
-                </Row>
-              </Card.Header>
-              <Card.Body>
-                <DataTable columns={columns} data={data} pagination />
-              </Card.Body>
-            </Card>
-          </Col>
-          {/* <Modal
-            className="fade"
-            id="createModal"
-            show={modal_AddMessage}
-            onHide={() => {
-              tog_AddMessage();
-            }}
-            centered
-          >
-            <Modal.Header closeButton>
-              <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Gallerie
-              </h1>
-            </Modal.Header>
-            <Modal.Body>
-              <Form className="create-form" onSubmit={onSubmitMessage}>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="titre">Titre</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="titre"
-                      name="titre"
-                      onChange={onChangeGallerie}
-                      value={gallerie.titre}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="classe">Classe(s)</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Select
-                      closeMenuOnSelect={false}
-                      isMulti
-                      options={optionColumnsTable}
-                      onChange={handleSelectValueColumnChange}
-                      placeholder="Choisir..."
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="desc">Description</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <textarea
-                      className="form-control"
-                      id="desc"
-                      name="desc"
-                      value={gallerie.desc}
-                      onChange={onChangeGallerie}
-                      rows={3}
-                    ></textarea>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="date">Date Création</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Flatpickr
-                      className="form-control flatpickr-input"
-                      placeholder="Date Création"
-                      onChange={handleDateChange}
-                      options={{
-                        dateFormat: "d M, Y",
-                      }}
-                      id="date"
-                      name="date"
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="fichier_base64_string">
-                      Fichier
-                    </Form.Label>
-                  </Col>
-                  <Col lg={6}>
-                    <Dropzone
-                      onDrop={(acceptedFiles) =>
-                        handleFileUploadFile(acceptedFiles)
-                      }
-                    >
-                      {({ getRootProps, getInputProps }) => (
-                        <div
-                          className="dropzone dz-clickable text-center"
-                          {...getRootProps()}
-                        >
-                          <div className="dz-message needsclick">
-                            <div className="mb-3">
-                              <i className="display-4 text-muted ri-upload-cloud-2-fill" />
-                            </div>
-                            <h5>
-                              Déposez des photos ici ou cliquez pour
-                              télécharger.
-                            </h5>
-                          </div>
-                          <input {...getInputProps()} />
-                        </div>
-                      )}
-                    </Dropzone>
-                  </Col>
-                  <Col lg={3}>
-                    <div className="mt-3">
-                      {gallerie.fichiers?.map((image, index) => (
-                        <div key={index} className="image-preview">
-                          <img
-                            src={image}
-                            alt={`Image ${index + 1}`}
-                            className="img-thumbnail"
-                          />
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeleteFile(index)}
-                          >
-                            Supprimer
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </Col>
-                </Row>
-                <Row>
-                  <div className="hstack gap-2 justify-content-end">
-                    <Button
-                      variant="light"
-                      onClick={() => {
-                        tog_AddGallerie();
-                        setGallerie(initialGallerie);
-                      }}
-                    >
-                      Close
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        tog_AddGallerie();
-                      }}
-                      type="submit"
-                      variant="success"
-                      id="addNew"
-                    >
-                      Ajouter
-                    </Button>
-                  </div>
-                </Row>
-              </Form>
-            </Modal.Body>
-          </Modal>
-        
-        <Offcanvas
-          show={showGallerie}
-          onHide={() => setShowGallerie(!showGallerie)}
-          placement="end"
-          style={{ width: "40%" }}
-        >
-          <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Détails du Gallerie</Offcanvas.Title>
-          </Offcanvas.Header>
-          <Offcanvas.Body>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Titre</span>
-              </Col>
-              <Col lg={9}>
-                <i>{gallerieLocation?.state?.titre!}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Description</span>
-              </Col>
-              <Col lg={9}>
-                <i>{gallerieLocation?.state?.desc!}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Date création</span>
-              </Col>
-              <Col lg={9}>
-                <i>{gallerieLocation?.state?.creation_date!}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Classe(s)</span>
-              </Col>
-              <Col lg={9}>
-                <i>
-                  {gallerieLocation?.state?.classes
-                    ?.map((c: any) => c.nom_classe)
-                    .join(" / ")}
-                </i>
-              </Col>
-            </Row>
-            <Row>
-              <Col lg={3}>
-                <span className="fw-medium">Fichiers</span>
-              </Col>
-              <Col lg={9}>
-                <Swiper
-                  direction={"vertical"}
-                  pagination={{ clickable: true }}
-                  modules={[Pagination, Autoplay]}
-                  loop={true}
-                  autoplay={{ delay: 2500, disableOnInteraction: false }}
-                  className="mySwiper swiper vertical-swiper rounded"
-                  style={{ height: "324px" }}
-                >
-                  {gallerieLocation?.state?.fichiers!.map((image: any) => (
-                    <div className="swiper-wrapper">
-                      <SwiperSlide>
-                        <Image
-                          src={`${process.env.REACT_APP_BASE_URL}/gallerieFiles/${image}`}
-                          alt=""
-                          className="img-fluid"
+                          className="ri-search-line searching-icon"
+                          onClick={() => setIsFocused(true)}
+                        ></i>
+                        <input
+                          type="text"
+                          className="form-control form-control-sm searching-input-text"
+                          placeholder="Rechercher ..."
+                          value={searchTerm}
+                          onChange={handleSearchChange}
+                          onFocus={handleFocus}
+                          onBlur={handleBlur}
                         />
-                      </SwiperSlide>
-                    </div>
-                  ))}
-                </Swiper>
-              </Col>
-            </Row>
-          </Offcanvas.Body>
-        </Offcanvas> */}
+                      </div>
+                    </Col>
+                  </Row>
+                </Card.Header>
+                <Card.Body style={{ overflowY: "scroll", maxHeight: "686px" }}>
+                  <ul className="list-group">
+                    {getFilteredParents().map((parent) => (
+                      <li
+                        key={parent._id}
+                        className="list-group-item"
+                        aria-disabled="true"
+                        onClick={() => handleParentClick(parent._id)}
+                        style={{
+                          cursor: "pointer",
+                          backgroundColor:
+                            selectedParentId === parent._id ? "#f0f0f0" : "",
+                        }}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div className="flex-shrink-0">
+                            <img
+                              src={avatar}
+                              alt=""
+                              className="avatar-xs rounded-circle"
+                            />
+                          </div>
+                          <div className="flex-grow-1 ms-2">
+                            {parent?.prenom_parent!} : {parent?.phone!}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col lg={7}>
+              <Card>
+                <Card.Header>Messages</Card.Header>
+                <Card.Body style={{ overflowY: "scroll", maxHeight: "604px" }}>
+                  <ul className="list-group">
+                    {selectedMessages.length > 0 ? (
+                      selectedMessages.map((message, index) =>
+                        message.sender === "administration" ? (
+                          <li key={index} className="list-group-item border-0">
+                            <div className="d-flex flex-column">
+                              <Card
+                                className="card-body bg-light d-flex justify-content-end w-50 ms-auto border-0 rounded-top-5"
+                                style={{
+                                  borderBottomRightRadius: "0",
+                                  borderBottomLeftRadius: "30px",
+                                }}
+                              >
+                                <div
+                                  className={`message-content ${
+                                    isArabic(message.msg)
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                >
+                                  <div className="d-flex align-items-center">
+                                    <div className="flex-grow-1 ms-2">
+                                      <p className="text-muted mb-0">
+                                        {message.msg}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                                {message.fichiers.length > 0 ? (
+                                  <div className="file-list">
+                                    {message.fichiers?.map(
+                                      (fichier: any, fileIndex: number) => {
+                                        const extension = fichier
+                                          .substring(
+                                            fichier.lastIndexOf(".") + 1
+                                          )
+                                          .toLowerCase();
+                                        const isImage = extension?.match(
+                                          /(jpg|jpeg|png|gif|jfif|avif)$/i
+                                        );
+                                        return (
+                                          <div
+                                            key={fileIndex}
+                                            className="file-item mt-3"
+                                          >
+                                            {isImage ? (
+                                              <img
+                                                src={`${
+                                                  process.env.REACT_APP_BASE_URL
+                                                }/msgFiles/${fichier!}`}
+                                                alt="fichier"
+                                                className="img-fluid rounded"
+                                                style={{
+                                                  maxWidth: "150px",
+                                                  maxHeight: "150px",
+                                                }}
+                                              />
+                                            ) : (
+                                              <a
+                                                href={`${
+                                                  process.env.REACT_APP_BASE_URL
+                                                }/msgFiles/${fichier!}`}
+                                                download={`file-${fileIndex}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="file-icon text-info"
+                                              >
+                                                <i
+                                                  className="bi bi-file-earmark"
+                                                  style={{ fontSize: "1.4rem" }}
+                                                ></i>
+                                              </a>
+                                            )}
+                                          </div>
+                                        );
+                                      }
+                                    )}
+                                  </div>
+                                ) : (
+                                  ""
+                                )}
+                              </Card>
+                              {/* Date and time container */}
+                              <div
+                                className={`message-info ${
+                                  isArabic(message.msg)
+                                    ? "text-end"
+                                    : "text-center"
+                                }`}
+                              >
+                                <small className="text-dark">
+                                  {message.date}
+                                </small>{" "}
+                                <small className="fw-medium text-dark">
+                                  {message.heure}
+                                </small>
+                              </div>
+                            </div>
+                          </li>
+                        ) : (
+                          <li
+                            key={index}
+                            className="list-group-item border-0 d-flex align-items-end w-50"
+                          >
+                            <div
+                              className="avatar bg-light rounded-circle me-3 d-flex justify-content-center align-items-center"
+                              style={{ width: "40px", height: "40px" }}
+                            >
+                              <img
+                                src={avatar}
+                                alt=""
+                                className="avatar-xs rounded-circle"
+                              />
+                            </div>
+                            <div className="d-flex flex-column">
+                              <Card
+                                className="card-body bg-info bg-opacity-50 text-white d-flex justify-content-start border-0 rounded-top-5 rounded-end-5"
+                                style={{ borderBottomLeftRadius: "0" }}
+                              >
+                                <div
+                                  className={`message-content ${
+                                    isArabic(message.msg)
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                >
+                                  <p className="mb-0">{message.msg}</p>
+                                  {message.fichiers.length > 0 && (
+                                    <div className="file-list mt-2">
+                                      {message.fichiers?.map(
+                                        (fichier: any, fileIndex: number) => {
+                                          const extension = fichier
+                                            .substring(
+                                              fichier.lastIndexOf(".") + 1
+                                            )
+                                            .toLowerCase();
+                                          const isImage = extension?.match(
+                                            /(jpg|jpeg|png|gif|jfif|avif)$/i
+                                          );
+                                          return (
+                                            <div
+                                              key={fileIndex}
+                                              className="file-item mt-2"
+                                            >
+                                              {isImage ? (
+                                                <img
+                                                  src={`${process.env.REACT_APP_BASE_URL}/msgFiles/${fichier}`}
+                                                  alt="fichier"
+                                                  className="img-fluid rounded"
+                                                  style={{
+                                                    maxWidth: "100px",
+                                                    maxHeight: "100px",
+                                                  }}
+                                                />
+                                              ) : (
+                                                <a
+                                                  href={`${process.env.REACT_APP_BASE_URL}/msgFiles/${fichier}`}
+                                                  download={`file-${fileIndex}`}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="file-icon text-white"
+                                                >
+                                                  <i
+                                                    className="bi bi-file-earmark"
+                                                    style={{
+                                                      fontSize: "1.4rem",
+                                                    }}
+                                                  ></i>
+                                                </a>
+                                              )}
+                                            </div>
+                                          );
+                                        }
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </Card>
+                              <div
+                                className={`message-content ${
+                                  isArabic(message.msg)
+                                    ? "text-end"
+                                    : "text-start"
+                                }`}
+                              >
+                                <small className="text-dark">
+                                  {message.date}
+                                </small>{" "}
+                                <small className="fw-medium text-dark">
+                                  {message.heure}
+                                </small>
+                              </div>
+                            </div>
+                          </li>
+                        )
+                      )
+                    ) : (
+                      <li className="list-group-item">
+                        Aucun message disponible
+                      </li>
+                    )}
+                  </ul>
+                </Card.Body>
+                <Card.Footer className="d-flex align-items-center">
+                  <input
+                    type="text"
+                    id="msg"
+                    value={message.msg}
+                    onChange={onChangeMessage}
+                    className="form-control me-2"
+                    placeholder="Tapez un message"
+                  />
+
+                  <input
+                    type="file"
+                    id="file-upload"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={(e) =>
+                      handleFileUpload(Array.from(e.target.files || []))
+                    }
+                  />
+
+                  <button
+                    className="btn btn-outline-secondary me-2"
+                    onClick={() =>
+                      document.getElementById("file-upload")?.click()
+                    }
+                  >
+                    <i className="ph ph-paperclip"></i>
+                  </button>
+
+                  <button className="btn btn-primary" onClick={onSubmitMessage}>
+                    <i className="ph ph-paper-plane-tilt"></i>
+                  </button>
+                </Card.Footer>
+              </Card>
+            </Col>
+          </Row>
         </Container>
       </div>
     </React.Fragment>

@@ -39,7 +39,7 @@ import CreateCarnet from "pages/Carnets/CreateCarnet";
 import DevoirControle from "pages/Calendrier/DevoirControle";
 import DevoirSynthese from "pages/Calendrier/DevoirSynthese";
 import Parametres from "pages/Parametres";
-// import Messages from "pages/Messages";
+import Messages from "pages/Messages";
 
 const authProtectedRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
@@ -62,7 +62,7 @@ const authProtectedRoutes = [
   { path: "/compte_rendu", component: <CompteRendu /> },
   { path: "/matieres", component: <Matieres /> },
   { path: "/niveaux", component: <Niveaux /> },
-  // { path: "/messages", component: <Messages /> },
+  { path: "/messages", component: <Messages /> },
   { path: "/cantines", component: <Cantines /> },
   { path: "/salles", component: <Salles /> },
 

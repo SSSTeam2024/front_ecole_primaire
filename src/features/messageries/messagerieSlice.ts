@@ -26,6 +26,13 @@ export const messagerieSlice = createApi({
         },
         providesTags: ["Messagerie"],
       }),
+      getMessageriesByParentId: builder.mutation<Messagerie[], string | void>({
+        query: (id) => ({
+          url: `/messagesByParent/${id}`,
+          method: "GET",
+        }),
+        invalidatesTags: ["Messagerie"],
+      }),
       newMessagerie: builder.mutation<void, Messagerie>({
         query(payload) {
           return {
@@ -50,5 +57,6 @@ export const messagerieSlice = createApi({
 export const {
  useDeleteMessagerieMutation,
  useGetMessageriesQuery,
- useNewMessagerieMutation
+ useNewMessagerieMutation,
+ useGetMessageriesByParentIdMutation
 } = messagerieSlice;

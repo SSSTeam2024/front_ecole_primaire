@@ -321,14 +321,13 @@ const Navdata = () => {
         },
       ],
     },
-    // {
-    //   id: "invoices",
-    //   label: "Messages",
-    //   link: "/messages",
-    //   parentId: "invoices",
-    //   icon: "ph ph-chats-circle",
-    // },
-
+    {
+      id: "invoices",
+      label: "Messages",
+      link: "/messages",
+      parentId: "invoices",
+      icon: "ph ph-chat-dots",
+    },
     {
       id: "invoices",
       label: "Documents",

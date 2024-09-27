@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import logosm from "assets/images/sls-logo2.png";
 import logodark from "assets/images/sls-logo2.png";
 import logolight from "assets/images/sls-logo2.png";
+import AlertMessage from "Common/AlertMessage";
 
 const toogleMenuBtn = () => {
   var windowSize = document.documentElement.clientWidth;
@@ -113,7 +114,8 @@ const Header = () => {
                 </button>
               </div>
               {/* My Cart Dropdown */}
-              {/* <MyCartDropdown /> */}
+
+              <AlertMessage />
 
               {/* FullScreenDropdown */}
               <FullScreenDropdown />
