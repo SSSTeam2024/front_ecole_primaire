@@ -21,6 +21,7 @@ import {
 import Select from "react-select";
 import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
 import UpdateParent from "./UpdateParent";
+import UpdatePassword from "./UpdatePassword";
 
 const Parents = () => {
   const { data = [] } = useFetchParentsQuery();
@@ -94,7 +95,11 @@ const Parents = () => {
   function tog_UpdateParent() {
     setmodal_UpdateParent(!modal_UpdateParent);
   }
-
+  const [modal_UpdatePassword, setmodal_UpdatePassword] =
+    useState<boolean>(false);
+  function tog_UpdatePassword() {
+    setmodal_UpdatePassword(!modal_UpdatePassword);
+  }
   const filtredEtudiants = AllEtudiants.filter(
     (etudiant) => etudiant?.parent! === null
   );
@@ -222,20 +227,7 @@ const Parents = () => {
                 onClick={() => setShowParent(!showParent)}
                 state={row}
               >
-                <i
-                  className="ri-eye-line"
-                  style={{
-                    transition: "transform 0.3s ease-in-out",
-                    cursor: "pointer",
-                    fontSize: "1.2em",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.3)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
-                ></i>
+                <i className="ri-eye-line"></i>
               </Link>
             </li>
             <li>
@@ -259,6 +251,16 @@ const Parents = () => {
                     (e.currentTarget.style.transform = "scale(1)")
                   }
                 ></i>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="#"
+                className="badge badge-soft-dark password-item-btn"
+                onClick={() => tog_UpdatePassword()}
+                state={row}
+              >
+                <i className="ri-shield-keyhole-line"></i>
               </Link>
             </li>
             <li>
@@ -519,6 +521,27 @@ const Parents = () => {
               <UpdateParent
                 modal_UpdateParent={modal_UpdateParent}
                 setmodal_UpdateParent={setmodal_UpdateParent}
+              />
+            </Modal.Body>
+          </Modal>
+          <Modal
+            className="fade"
+            id="updatePasswordModal"
+            show={modal_UpdatePassword}
+            onHide={() => {
+              tog_UpdatePassword();
+            }}
+            centered
+          >
+            <Modal.Header closeButton>
+              <h1 className="modal-title fs-5" id="updatePasswordModalLabel">
+                Modifier Mot de passe
+              </h1>
+            </Modal.Header>
+            <Modal.Body>
+              <UpdatePassword
+                modal_UpdatePassword={modal_UpdatePassword}
+                setmodal_UpdatePassword={setmodal_UpdatePassword}
               />
             </Modal.Body>
           </Modal>

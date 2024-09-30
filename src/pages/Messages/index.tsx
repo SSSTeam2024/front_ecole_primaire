@@ -143,17 +143,6 @@ const Messages = () => {
     const arabicPattern = /[\u0600-\u06FF\u0750-\u077F]/;
     return arabicPattern.test(text);
   };
-  const [isFocused, setIsFocused] = useState(false);
-
-  const handleFocus = () => {
-    setIsFocused(true);
-  };
-
-  const handleBlur = () => {
-    if (!searchTerm) {
-      setIsFocused(false);
-    }
-  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,6 +165,9 @@ const Messages = () => {
     return filteredParents;
   };
 
+  const hasFilesOrMessage =
+    message.msg.trim() !== "" || message.fichiers.length > 0;
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -190,22 +182,15 @@ const Messages = () => {
                       <Form.Label>Parents</Form.Label>
                     </Col>
                     <Col lg={5}>
-                      <div
-                        className={`searching-box ${isFocused ? "active" : ""}`}
-                      >
-                        <i
-                          className="ri-search-line searching-icon"
-                          onClick={() => setIsFocused(true)}
-                        ></i>
+                      <div className="search-box">
                         <input
                           type="text"
-                          className="form-control form-control-sm searching-input-text"
+                          className="form-control form-control-sm search"
                           placeholder="Rechercher ..."
                           value={searchTerm}
                           onChange={handleSearchChange}
-                          onFocus={handleFocus}
-                          onBlur={handleBlur}
                         />
+                        <i className="ri-search-line search-icon"></i>
                       </div>
                     </Col>
                   </Row>
@@ -328,7 +313,6 @@ const Messages = () => {
                                   ""
                                 )}
                               </Card>
-                              {/* Date and time container */}
                               <div
                                 className={`message-info ${
                                   isArabic(message.msg)
@@ -478,9 +462,48 @@ const Messages = () => {
                     <i className="ph ph-paperclip"></i>
                   </button>
 
-                  <button className="btn btn-primary" onClick={onSubmitMessage}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={onSubmitMessage}
+                    disabled={!hasFilesOrMessage}
+                  >
                     <i className="ph ph-paper-plane-tilt"></i>
                   </button>
+                  <div className="d-flex flex-wrap mt-3">
+                    {message.fichiers.map((file: any, index: number) => {
+                      const mimeType = file.split(";")[0].split(":")[1];
+                      const isImage = mimeType.match(
+                        /(jpg|jpeg|png|gif|jfif|avif)$/i
+                      );
+
+                      return (
+                        <div key={index} className="me-2">
+                          {isImage ? (
+                            <img
+                              src={file}
+                              alt="preview"
+                              style={{
+                                width: 50,
+                                height: 50,
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            <a
+                              href={file}
+                              // download
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-outline-secondary"
+                            >
+                              <i className="ph ph-file"></i>{" "}
+                              {message.fichier_extension[index]}
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </Card.Footer>
               </Card>
             </Col>

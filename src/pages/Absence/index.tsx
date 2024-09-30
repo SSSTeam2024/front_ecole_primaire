@@ -136,7 +136,7 @@ const Absence = () => {
       sortable: true,
     },
     {
-      name: <span className="font-weight-bold fs-13">Matières</span>,
+      name: <span className="font-weight-bold fs-13">Matière</span>,
       selector: (row: any) => row?.matiere!,
       sortable: true,
     },

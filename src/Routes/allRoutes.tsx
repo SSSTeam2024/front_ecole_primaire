@@ -40,11 +40,13 @@ import DevoirControle from "pages/Calendrier/DevoirControle";
 import DevoirSynthese from "pages/Calendrier/DevoirSynthese";
 import Parametres from "pages/Parametres";
 import Messages from "pages/Messages";
+import DetailsEtudiant from "pages/Etudiants/DetailsEtudiant";
+import UpdateEtudiant from "pages/Etudiants/UpdateEtudiant";
 
 const authProtectedRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
   { path: "/classes", component: <Classes /> },
-  { path: "/etudiants", component: <Etudiants /> },
+
   { path: "/parents", component: <Parents /> },
   { path: "/enseignants", component: <Enseignants /> },
   { path: "/observations", component: <Observations /> },
@@ -72,6 +74,11 @@ const authProtectedRoutes = [
   { path: "/inscriptions", component: <Inscriptions /> },
   { path: "/details-inscription", component: <InscriptionDetails /> },
   { path: "/modifier-inscription", component: <UpdateInscription /> },
+
+  // Etudiants Section
+  { path: "/etudiants", component: <Etudiants /> },
+  { path: "/détails-etudiant", component: <DetailsEtudiant /> },
+  { path: "/modifier-etudiant", component: <UpdateEtudiant /> },
 
   // Calendrier Section
   { path: "/calendrier-examen-contrôle", component: <DevoirControle /> },

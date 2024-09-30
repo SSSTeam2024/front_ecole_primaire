@@ -1,8 +1,16 @@
 import React, { useState } from "react";
-import { Button, Card, Col, Form, Image, Row } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  Image,
+  Row,
+} from "react-bootstrap";
 import Swal from "sweetalert2";
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { useUpdateEtudiantMutation } from "features/etudiants/etudiantSlice";
 
@@ -12,18 +20,11 @@ import { useFetchParentsQuery } from "features/parents/parentSlice";
 import { French } from "flatpickr/dist/l10n/fr";
 import { formatDate } from "helpers/data_time_format";
 import { convertToBase64 } from "helpers/base64_convert";
+import Breadcrumb from "Common/BreadCrumb";
 
-interface ChildProps {
-  modal_UpdateEtudiant: boolean;
-  setmodal_UpdateEtudiant: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const UpdateEtudiant: React.FC<ChildProps> = ({
-  modal_UpdateEtudiant,
-  setmodal_UpdateEtudiant,
-}) => {
+const UpdateEtudiant = ({}) => {
   const etudiantLocation = useLocation();
-
+  const navigate = useNavigate();
   const { data: AllClasses = [] } = useFetchClassesQuery();
 
   const { data: AllParent = [] } = useFetchParentsQuery();
@@ -386,7 +387,8 @@ const UpdateEtudiant: React.FC<ChildProps> = ({
 
       updateEtudiant(etudiant)
         .then(() => notifySuccess())
-        .then(() => setEtudiant(initialEtudiant));
+        .then(() => setEtudiant(initialEtudiant))
+        .then(() => navigate("/etudiants"));
     } catch (error) {
       notifyError(error);
     }
@@ -394,485 +396,508 @@ const UpdateEtudiant: React.FC<ChildProps> = ({
 
   return (
     <React.Fragment>
-      <Form onSubmit={onSubmitUpdateEtudiant}>
-        <Row>
-          <Col>
-            <Card>
-              <Card.Header>
-                <h5>RENSEIGNEMENTS CONCERNANT L’ÉLÈVE</h5>
-              </Card.Header>
-              <Card.Body>
-                <Row className="mb-2">
-                  <div className="d-flex justify-content-center">
-                    {etudiant.avatar && etudiant.avatar_base64_string ? (
-                      <Image
-                        src={`data:image/jpeg;base64, ${etudiant.avatar_base64_string}`}
-                        alt=""
-                        className="avatar-xl rounded-circle p-1 bg-body mt-n3"
-                      />
-                    ) : (
-                      <Image
-                        src={`${
-                          process.env.REACT_APP_BASE_URL
-                        }/etudiantFiles/${etudiantLocation?.state?.avatar!}`}
-                        alt=""
-                        className="avatar-xl rounded-circle p-1 bg-body mt-n3"
-                      />
-                    )}
-                  </div>
-                  <div
-                    className="d-flex justify-content-center mt-n4"
-                    style={{ marginLeft: "60px" }}
+      <div className="page-content">
+        <Container fluid>
+          <Breadcrumb title="Modifier Elève" pageTitle="Tableau de bord" />
+          <Card>
+            <Form onSubmit={onSubmitUpdateEtudiant}>
+              <Row>
+                <Col>
+                  <Card>
+                    <Card.Header>
+                      <h5>RENSEIGNEMENTS CONCERNANT L’ÉLÈVE</h5>
+                    </Card.Header>
+                    <Card.Body>
+                      <Row className="mb-2">
+                        <div className="d-flex justify-content-center">
+                          {etudiant.avatar && etudiant.avatar_base64_string ? (
+                            <Image
+                              src={`data:image/jpeg;base64, ${etudiant.avatar_base64_string}`}
+                              alt=""
+                              className="avatar-xl rounded-circle p-1 bg-body mt-n3"
+                            />
+                          ) : (
+                            <Image
+                              src={`${
+                                process.env.REACT_APP_BASE_URL
+                              }/etudiantFiles/${etudiantLocation?.state
+                                ?.avatar!}`}
+                              alt=""
+                              className="avatar-xl rounded-circle p-1 bg-body mt-n3"
+                            />
+                          )}
+                        </div>
+                        <div
+                          className="d-flex justify-content-center mt-n4"
+                          style={{ marginLeft: "60px" }}
+                        >
+                          <label
+                            htmlFor="avatar_base64_string"
+                            className="mb-0"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="right"
+                            title="Choisir image pour l'élève"
+                          >
+                            <span className="avatar-xs d-inline-block">
+                              <span className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
+                                <i className="bi bi-pen"></i>
+                              </span>
+                            </span>
+                          </label>
+                          <input
+                            className="form-control d-none"
+                            type="file"
+                            name="avatar_base64_string"
+                            id="avatar_base64_string"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e)}
+                            style={{ width: "210px", height: "120px" }}
+                          />
+                        </div>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={4}>
+                          <Form.Label htmlFor="etudiantFirstName">
+                            Nom
+                          </Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <Form.Control
+                            type="text"
+                            id="etudiantFirstName"
+                            name="etudiantFirstName"
+                            value={etudiantFirstName}
+                            onChange={handleEtudiantFirstName}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={4}>
+                          <Form.Label htmlFor="etudiantLastName">
+                            Prenom
+                          </Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <Form.Control
+                            type="text"
+                            id="etudiantLastName"
+                            name="etudiantLastName"
+                            value={etudiantLastName}
+                            onChange={handleEtudiantLastName}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={4}>
+                          <Form.Label htmlFor="date">
+                            Date de Naissance
+                          </Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <span>
+                            {etudiantLocation.state.date_de_naissance}
+                          </span>
+                          <div
+                            className="d-flex justify-content-start mt-n3"
+                            style={{ marginLeft: "230px" }}
+                          >
+                            <label
+                              htmlFor="date"
+                              className="mb-0"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="right"
+                              title="Choisir Date"
+                            >
+                              <span
+                                className="d-inline-block"
+                                onClick={() =>
+                                  setShowDateOfBirth(!showDateOfBirth)
+                                }
+                              >
+                                <span className="text-success cursor-pointer">
+                                  <i className="bi bi-pen fs-14"></i>
+                                </span>
+                              </span>
+                            </label>
+                          </div>
+                          {showDateOfBirth && (
+                            <Flatpickr
+                              className="form-control flatpickr-input"
+                              placeholder="Choisir Date"
+                              options={{
+                                dateFormat: "d M, Y",
+                                locale: French,
+                              }}
+                              onChange={handleBirthDateChange}
+                            />
+                          )}
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={4}>
+                          <Form.Label htmlFor="lieuNaissance">
+                            Lieu de Naissance
+                          </Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <Form.Control
+                            type="text"
+                            id="lieuNaissance"
+                            name="lieuNaissance"
+                            value={lieuNaissance}
+                            onChange={handlelieuNaissance}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={4}>
+                          <Form.Label htmlFor="genre">Genre : </Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <div className="mb-3">
+                            <span>{etudiantLocation?.state?.genre!}</span>
+                            <div
+                              className="d-flex justify-content-start mt-n3"
+                              style={{ marginLeft: "140px" }}
+                            >
+                              <label
+                                htmlFor="genre"
+                                className="mb-0"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="right"
+                                title="Choisir Genre"
+                              >
+                                <span
+                                  className="d-inline-block"
+                                  onClick={() => setShowGenre(!showGenre)}
+                                >
+                                  <span className="text-success cursor-pointer">
+                                    <i className="bi bi-pen fs-14"></i>
+                                  </span>
+                                </span>
+                              </label>
+                            </div>
+                            {showGenre && (
+                              <select
+                                className="form-select text-muted"
+                                name="genre"
+                                id="genre"
+                                onChange={handleSelectGenre}
+                              >
+                                <option value="">Choisir</option>
+                                <option value="Mâle">Mâle</option>
+                                <option value="Femelle">Femelle</option>
+                              </select>
+                            )}
+                          </div>
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={4}>
+                          <Form.Label htmlFor="adresse">Adresse</Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <Form.Control
+                            type="text"
+                            id="adresse"
+                            name="adresse"
+                            value={adresse}
+                            onChange={handleAdresse}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={4}>
+                          <Form.Label htmlFor="villeName">Ville</Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <Form.Control
+                            type="text"
+                            id="villeName"
+                            name="villeName"
+                            value={villeName}
+                            onChange={handleVilleName}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={4}>
+                          <Form.Label htmlFor="nationalite_eleve">
+                            Nationalité
+                          </Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <Form.Control
+                            type="text"
+                            id="nationalite_eleve"
+                            name="nationalite_eleve"
+                            value={nationalite_eleve}
+                            onChange={handleNationaliteEleve}
+                          />
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col lg={4}>
+                          <Form.Label htmlFor="parent">Parent : </Form.Label>
+                        </Col>
+                        <Col lg={8}>
+                          <div className="mb-3">
+                            <span>
+                              {etudiantLocation?.state?.parent?.nom_parent!}{" "}
+                              {etudiantLocation?.state?.parent?.prenom_parent!}
+                            </span>
+                            <div
+                              className="d-flex justify-content-start mt-n3"
+                              style={{ marginLeft: "140px" }}
+                            >
+                              <label
+                                htmlFor="parent"
+                                className="mb-0"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="right"
+                                title="Choisir Parent"
+                              >
+                                <span
+                                  className="d-inline-block"
+                                  onClick={() => setShowParent(!showParent)}
+                                >
+                                  <span className="text-success cursor-pointer">
+                                    <i className="bi bi-pen fs-14"></i>
+                                  </span>
+                                </span>
+                              </label>
+                            </div>
+                            {showParent && (
+                              <select
+                                className="form-select text-muted"
+                                name="parent"
+                                id="parent"
+                                onChange={handleSelectParent}
+                              >
+                                <option value="">Choisir</option>
+                                {AllParent.map((parent) => (
+                                  <option
+                                    value={parent._id!}
+                                    key={parent?._id!}
+                                  >
+                                    {parent.nom_parent} {parent.prenom_parent}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        </Col>
+                      </Row>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col>
+                  <Card>
+                    <Card.Header>
+                      <h5>SCOLARITE ANTERIEURE</h5>
+                    </Card.Header>
+                    <Card.Body>
+                      <Row className="mb-4"></Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="classe">Classe : </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <div className="mb-3">
+                            <span>
+                              {etudiantLocation?.state?.classe?.nom_classe!}
+                            </span>
+                            <div
+                              className="d-flex justify-content-start mt-n3"
+                              style={{ marginLeft: "140px" }}
+                            >
+                              <label
+                                htmlFor="classe"
+                                className="mb-0"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="right"
+                                title="Choisir Classe"
+                              >
+                                <span
+                                  className="d-inline-block"
+                                  onClick={() => setShowClasse(!showClasse)}
+                                >
+                                  <span className="text-success cursor-pointer">
+                                    <i className="bi bi-pen fs-14"></i>
+                                  </span>
+                                </span>
+                              </label>
+                            </div>
+                            {showClasse && (
+                              <select
+                                className="form-select text-muted"
+                                name="classe"
+                                id="classe"
+                                onChange={handleSelectClasse}
+                              >
+                                <option value="">Choisir</option>
+                                {AllClasses.map((classe) => (
+                                  <option
+                                    value={classe._id!}
+                                    key={classe?._id!}
+                                  >
+                                    {classe.nom_classe}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="anneeScolaire">
+                            Année Scolaire
+                          </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <Form.Control
+                            type="text"
+                            id="anneeScolaire"
+                            name="anneeScolaire"
+                            value={anneeScolaire}
+                            onChange={handleAnneeScolaire}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="convocationConcours">
+                            N° Convocation Concours
+                          </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <Form.Control
+                            type="text"
+                            id="convocationConcours"
+                            name="convocationConcours"
+                            value={convocationConcours}
+                            onChange={handleConvocationConcours}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="moyenneConcours">
+                            Moyenne Concours
+                          </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <Form.Control
+                            type="text"
+                            id="moyenneConcours"
+                            name="moyenneConcours"
+                            value={moyenneConcours}
+                            onChange={handleMoyenneConcours}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="etablissementFrequente">
+                            Etablissement Fréquenté
+                          </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <Form.Control
+                            type="text"
+                            id="etablissementFrequente"
+                            name="etablissementFrequente"
+                            value={etablissementFrequente}
+                            onChange={handleEtablissementFrequente}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="moyTrimestre1">
+                            Moyenne 1er Trimestre
+                          </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <Form.Control
+                            type="text"
+                            id="moyTrimestre1"
+                            name="moyTrimestre1"
+                            value={moyTrimestre1}
+                            onChange={handleMoyTrimestre1}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="moyTrimestre2">
+                            Moyenne 2ème Trimestre
+                          </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <Form.Control
+                            type="text"
+                            id="moyTrimestre2"
+                            name="moyTrimestre2"
+                            value={moyTrimestre2}
+                            onChange={handleMoyTrimestre2}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="moyTrimestre3">
+                            Moyenne 3ème Trimestre
+                          </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <Form.Control
+                            type="text"
+                            id="moyTrimestre3"
+                            name="moyTrimestre3"
+                            value={moyTrimestre3}
+                            onChange={handleMoyTrimestre3}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4">
+                        <Col lg={5}>
+                          <Form.Label htmlFor="moyenneAnnuelle">
+                            Moyenne Annuelle
+                          </Form.Label>
+                        </Col>
+                        <Col lg={7}>
+                          <Form.Control
+                            type="text"
+                            id="moyenneAnnuelle"
+                            name="moyenneAnnuelle"
+                            value={moyenneAnnuelle}
+                            onChange={handleMoyenneAnnuelle}
+                          />
+                        </Col>
+                      </Row>
+                      <Row className="mb-4"></Row>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
+              <Row>
+                <div className="hstack gap-2 justify-content-center mb-2">
+                  <Button
+                    type="submit"
+                    className="btn-soft-success"
+                    data-bs-dismiss="modal"
                   >
-                    <label
-                      htmlFor="avatar_base64_string"
-                      className="mb-0"
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="right"
-                      title="Choisir image pour l'élève"
-                    >
-                      <span className="avatar-xs d-inline-block">
-                        <span className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
-                          <i className="bi bi-pen"></i>
-                        </span>
-                      </span>
-                    </label>
-                    <input
-                      className="form-control d-none"
-                      type="file"
-                      name="avatar_base64_string"
-                      id="avatar_base64_string"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e)}
-                      style={{ width: "210px", height: "120px" }}
-                    />
-                  </div>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={4}>
-                    <Form.Label htmlFor="etudiantFirstName">Nom</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="etudiantFirstName"
-                      name="etudiantFirstName"
-                      value={etudiantFirstName}
-                      onChange={handleEtudiantFirstName}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={4}>
-                    <Form.Label htmlFor="etudiantLastName">Prenom</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="etudiantLastName"
-                      name="etudiantLastName"
-                      value={etudiantLastName}
-                      onChange={handleEtudiantLastName}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={4}>
-                    <Form.Label htmlFor="date">Date de Naissance</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <span>{etudiantLocation.state.date_de_naissance}</span>
-                    <div
-                      className="d-flex justify-content-start mt-n3"
-                      style={{ marginLeft: "230px" }}
-                    >
-                      <label
-                        htmlFor="date"
-                        className="mb-0"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="right"
-                        title="Choisir Date"
-                      >
-                        <span
-                          className="d-inline-block"
-                          onClick={() => setShowDateOfBirth(!showDateOfBirth)}
-                        >
-                          <span className="text-success cursor-pointer">
-                            <i className="bi bi-pen fs-14"></i>
-                          </span>
-                        </span>
-                      </label>
-                    </div>
-                    {showDateOfBirth && (
-                      <Flatpickr
-                        className="form-control flatpickr-input"
-                        placeholder="Choisir Date"
-                        options={{
-                          dateFormat: "d M, Y",
-                          locale: French,
-                        }}
-                        onChange={handleBirthDateChange}
-                      />
-                    )}
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={4}>
-                    <Form.Label htmlFor="lieuNaissance">
-                      Lieu de Naissance
-                    </Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="lieuNaissance"
-                      name="lieuNaissance"
-                      value={lieuNaissance}
-                      onChange={handlelieuNaissance}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={4}>
-                    <Form.Label htmlFor="genre">Genre : </Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <div className="mb-3">
-                      <span>{etudiantLocation?.state?.genre!}</span>
-                      <div
-                        className="d-flex justify-content-start mt-n3"
-                        style={{ marginLeft: "140px" }}
-                      >
-                        <label
-                          htmlFor="genre"
-                          className="mb-0"
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="right"
-                          title="Choisir Genre"
-                        >
-                          <span
-                            className="d-inline-block"
-                            onClick={() => setShowGenre(!showGenre)}
-                          >
-                            <span className="text-success cursor-pointer">
-                              <i className="bi bi-pen fs-14"></i>
-                            </span>
-                          </span>
-                        </label>
-                      </div>
-                      {showGenre && (
-                        <select
-                          className="form-select text-muted"
-                          name="genre"
-                          id="genre"
-                          onChange={handleSelectGenre}
-                        >
-                          <option value="">Choisir</option>
-                          <option value="Mâle">Mâle</option>
-                          <option value="Femelle">Femelle</option>
-                        </select>
-                      )}
-                    </div>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={4}>
-                    <Form.Label htmlFor="adresse">Adresse</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="adresse"
-                      name="adresse"
-                      value={adresse}
-                      onChange={handleAdresse}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={4}>
-                    <Form.Label htmlFor="villeName">Ville</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="villeName"
-                      name="villeName"
-                      value={villeName}
-                      onChange={handleVilleName}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={4}>
-                    <Form.Label htmlFor="nationalite_eleve">
-                      Nationalité
-                    </Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Form.Control
-                      type="text"
-                      id="nationalite_eleve"
-                      name="nationalite_eleve"
-                      value={nationalite_eleve}
-                      onChange={handleNationaliteEleve}
-                    />
-                  </Col>
-                </Row>
-                <Row>
-                  <Col lg={4}>
-                    <Form.Label htmlFor="parent">Parent : </Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <div className="mb-3">
-                      <span>
-                        {etudiantLocation?.state?.parent?.nom_parent!}{" "}
-                        {etudiantLocation?.state?.parent?.prenom_parent!}
-                      </span>
-                      <div
-                        className="d-flex justify-content-start mt-n3"
-                        style={{ marginLeft: "140px" }}
-                      >
-                        <label
-                          htmlFor="parent"
-                          className="mb-0"
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="right"
-                          title="Choisir Parent"
-                        >
-                          <span
-                            className="d-inline-block"
-                            onClick={() => setShowParent(!showParent)}
-                          >
-                            <span className="text-success cursor-pointer">
-                              <i className="bi bi-pen fs-14"></i>
-                            </span>
-                          </span>
-                        </label>
-                      </div>
-                      {showParent && (
-                        <select
-                          className="form-select text-muted"
-                          name="parent"
-                          id="parent"
-                          onChange={handleSelectParent}
-                        >
-                          <option value="">Choisir</option>
-                          {AllParent.map((parent) => (
-                            <option value={parent._id!} key={parent?._id!}>
-                              {parent.nom_parent} {parent.prenom_parent}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col>
-            <Card>
-              <Card.Header>
-                <h5>SCOLARITE ANTERIEURE</h5>
-              </Card.Header>
-              <Card.Body>
-                <Row className="mb-4"></Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="classe">Classe : </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <div className="mb-3">
-                      <span>
-                        {etudiantLocation?.state?.classe?.nom_classe!}
-                      </span>
-                      <div
-                        className="d-flex justify-content-start mt-n3"
-                        style={{ marginLeft: "140px" }}
-                      >
-                        <label
-                          htmlFor="classe"
-                          className="mb-0"
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="right"
-                          title="Choisir Classe"
-                        >
-                          <span
-                            className="d-inline-block"
-                            onClick={() => setShowClasse(!showClasse)}
-                          >
-                            <span className="text-success cursor-pointer">
-                              <i className="bi bi-pen fs-14"></i>
-                            </span>
-                          </span>
-                        </label>
-                      </div>
-                      {showClasse && (
-                        <select
-                          className="form-select text-muted"
-                          name="classe"
-                          id="classe"
-                          onChange={handleSelectClasse}
-                        >
-                          <option value="">Choisir</option>
-                          {AllClasses.map((classe) => (
-                            <option value={classe._id!} key={classe?._id!}>
-                              {classe.nom_classe}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="anneeScolaire">
-                      Année Scolaire
-                    </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <Form.Control
-                      type="text"
-                      id="anneeScolaire"
-                      name="anneeScolaire"
-                      value={anneeScolaire}
-                      onChange={handleAnneeScolaire}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="convocationConcours">
-                      N° Convocation Concours
-                    </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <Form.Control
-                      type="text"
-                      id="convocationConcours"
-                      name="convocationConcours"
-                      value={convocationConcours}
-                      onChange={handleConvocationConcours}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="moyenneConcours">
-                      Moyenne Concours
-                    </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <Form.Control
-                      type="text"
-                      id="moyenneConcours"
-                      name="moyenneConcours"
-                      value={moyenneConcours}
-                      onChange={handleMoyenneConcours}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="etablissementFrequente">
-                      Etablissement Fréquenté
-                    </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <Form.Control
-                      type="text"
-                      id="etablissementFrequente"
-                      name="etablissementFrequente"
-                      value={etablissementFrequente}
-                      onChange={handleEtablissementFrequente}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="moyTrimestre1">
-                      Moyenne 1er Trimestre
-                    </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <Form.Control
-                      type="text"
-                      id="moyTrimestre1"
-                      name="moyTrimestre1"
-                      value={moyTrimestre1}
-                      onChange={handleMoyTrimestre1}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="moyTrimestre2">
-                      Moyenne 2ème Trimestre
-                    </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <Form.Control
-                      type="text"
-                      id="moyTrimestre2"
-                      name="moyTrimestre2"
-                      value={moyTrimestre2}
-                      onChange={handleMoyTrimestre2}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="moyTrimestre3">
-                      Moyenne 3ème Trimestre
-                    </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <Form.Control
-                      type="text"
-                      id="moyTrimestre3"
-                      name="moyTrimestre3"
-                      value={moyTrimestre3}
-                      onChange={handleMoyTrimestre3}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4">
-                  <Col lg={5}>
-                    <Form.Label htmlFor="moyenneAnnuelle">
-                      Moyenne Annuelle
-                    </Form.Label>
-                  </Col>
-                  <Col lg={7}>
-                    <Form.Control
-                      type="text"
-                      id="moyenneAnnuelle"
-                      name="moyenneAnnuelle"
-                      value={moyenneAnnuelle}
-                      onChange={handleMoyenneAnnuelle}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mb-4"></Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-        <Row>
-          <div className="hstack gap-2 justify-content-center mb-2">
-            <Button
-              type="submit"
-              className="btn-soft-success"
-              onClick={() => setmodal_UpdateEtudiant(!modal_UpdateEtudiant)}
-              data-bs-dismiss="modal"
-            >
-              <i className="me-1 fs-18 align-middle"></i>
-              Modifier
-            </Button>
-          </div>
-        </Row>
-      </Form>
+                    <i className="me-1 fs-18 align-middle"></i>
+                    Modifier
+                  </Button>
+                </div>
+              </Row>
+            </Form>
+          </Card>
+        </Container>
+      </div>
     </React.Fragment>
   );
 };

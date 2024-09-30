@@ -20,11 +20,18 @@ import {
 import Swal from "sweetalert2";
 import ModalEdit from "./ModalEdit";
 import { useGetNiveauxQuery } from "features/niveaux/niveauxSlice";
-import { useFetchEtudiantsByClasseIdMutation } from "features/etudiants/etudiantSlice";
+import {
+  useFetchEtudiantsByClasseIdMutation,
+  useUpdateEleveClasseMutation,
+} from "features/etudiants/etudiantSlice";
 
 const Classes = () => {
   const { data = [] } = useFetchClassesQuery();
   const { data: AllNiveaux = [] } = useGetNiveauxQuery();
+
+  const handleReload = async () => {
+    window.location.reload();
+  };
 
   const [deleteClasse] = useDeleteClasseMutation();
 
@@ -144,6 +151,41 @@ const Classes = () => {
     setShowClasse(!showClasse);
   };
 
+  const [deleteEleveFromClasse] = useUpdateEleveClasseMutation();
+
+  const AlertDeleteEleveFromClasse = async (_id: any) => {
+    swalWithBootstrapButtons
+      .fire({
+        title: "Etes-vous sûr?",
+        text: "Vous ne pouvez pas revenir en arrière?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprime-le !",
+        cancelButtonText: "Non, annuler !",
+        reverseButtons: true,
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          deleteEleveFromClasse({
+            _id,
+            classe: null,
+          });
+          await handleReload();
+          swalWithBootstrapButtons.fire(
+            "Supprimé !",
+            "L'élève est supprimée de ce classe.",
+            "success"
+          );
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Annulé",
+            "L'élève est en sécurité :)",
+            "info"
+          );
+        }
+      });
+  };
+
   const columns = [
     {
       name: <span className="font-weight-bold fs-13">Niveau</span>,
@@ -257,10 +299,9 @@ const Classes = () => {
           <ul className="hstack gap-2 list-unstyled mb-0">
             <li>
               <Link
-                to="#"
+                to="/détails-etudiant"
                 className="badge badge-soft-info edit-item-btn"
-                // onClick={() => setShowEtudiant(!showEtudiant)}
-                // state={row}
+                state={row}
               >
                 <i
                   className="ri-eye-line"
@@ -280,10 +321,9 @@ const Classes = () => {
             </li>
             <li>
               <Link
-                to="#"
+                to="/modifier-etudiant"
                 className="badge badge-soft-success edit-item-btn"
-                // onClick={() => tog_UpdateEtudiant()}
-                // state={row}
+                state={row}
               >
                 <i
                   className="ri-edit-2-line"
@@ -316,7 +356,7 @@ const Classes = () => {
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.transform = "scale(1)")
                   }
-                  // onClick={() => AlertDelete(row._id)}
+                  onClick={() => AlertDeleteEleveFromClasse(row._id)}
                 ></i>
               </Link>
             </li>

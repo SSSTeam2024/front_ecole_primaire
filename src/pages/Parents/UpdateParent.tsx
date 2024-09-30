@@ -190,7 +190,7 @@ const UpdateParent: React.FC<ChildProps> = ({
     <React.Fragment>
       <Form onSubmit={onSubmitUpdateParent}>
         <Row className="mb-4">
-          <Col lg={3}>
+          <Col lg={4}>
             <Form.Label htmlFor="parentFirstName">Nom</Form.Label>
           </Col>
           <Col lg={8}>
@@ -204,7 +204,7 @@ const UpdateParent: React.FC<ChildProps> = ({
           </Col>
         </Row>
         <Row className="mb-4">
-          <Col lg={3}>
+          <Col lg={4}>
             <Form.Label htmlFor="parentLastName">Prenom</Form.Label>
           </Col>
           <Col lg={8}>
@@ -218,7 +218,7 @@ const UpdateParent: React.FC<ChildProps> = ({
           </Col>
         </Row>
         <Row className="mb-4">
-          <Col lg={3}>
+          <Col lg={4}>
             <Form.Label htmlFor="parentCin">C.I.N</Form.Label>
           </Col>
           <Col lg={8}>
@@ -232,7 +232,7 @@ const UpdateParent: React.FC<ChildProps> = ({
           </Col>
         </Row>
         <Row className="mb-4">
-          <Col lg={3}>
+          <Col lg={4}>
             <Form.Label htmlFor="parentPhone">Numéro Téléphone</Form.Label>
           </Col>
           <Col lg={8}>
@@ -246,7 +246,7 @@ const UpdateParent: React.FC<ChildProps> = ({
           </Col>
         </Row>
         <Row className="mb-4">
-          <Col lg={3}>
+          <Col lg={4}>
             <Form.Label htmlFor="parentProfession">Profession</Form.Label>
           </Col>
           <Col lg={8}>
@@ -260,7 +260,7 @@ const UpdateParent: React.FC<ChildProps> = ({
           </Col>
         </Row>
         <Row className="mb-4">
-          <Col lg={3}>
+          <Col lg={4}>
             <Form.Label htmlFor="parentLogin">Nom Utilisateur</Form.Label>
           </Col>
           <Col lg={8}>
@@ -274,7 +274,7 @@ const UpdateParent: React.FC<ChildProps> = ({
           </Col>
         </Row>
         <Row className="mb-4">
-          <Col lg={3}>
+          <Col lg={4}>
             <Form.Label htmlFor="fils">Fils</Form.Label>
           </Col>
           <Col lg={8}>

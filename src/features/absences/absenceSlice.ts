@@ -25,6 +25,13 @@ export const absenceSlice = createApi({
         },
         providesTags: ["Absence"],
       }),
+      getAbsencesByEleveId: builder.mutation<Absence[], string | void>({
+        query: (id) => ({
+          url: `/absence-eleve-id/${id}`,
+          method: "GET",
+        }),
+        invalidatesTags: ["Absence"],
+      }),
       addAbsence: builder.mutation<void, Absence>({
         query(payload) {
           return {
@@ -54,4 +61,4 @@ export const absenceSlice = createApi({
   },
 });
 
-export const { useAddAbsenceMutation, useDeleteAbsenceMutation, useFetchAbsencesQuery, useUpdateAbsenceMutation } = absenceSlice;
+export const { useAddAbsenceMutation, useDeleteAbsenceMutation, useFetchAbsencesQuery, useUpdateAbsenceMutation, useGetAbsencesByEleveIdMutation } = absenceSlice;

@@ -33,7 +33,7 @@ export interface StatusPaiement {
 
 export interface EleveClasse {
   _id?: string;
-  classe: string;
+  classe: string | null;
 }
 
 export const etudiantSlice = createApi({

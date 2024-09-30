@@ -18,12 +18,17 @@ export interface Parent {
   profession: string;
 }
 
+export interface UpdatePasswordParent {
+  _id?: string;
+  password?: string;
+}
+
 export const parentSlice = createApi({
   reducerPath: "Parent",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.REACT_APP_BASE_URL}/api/parents`,
   }),
-  tagTypes: ["Parent"],
+  tagTypes: ["Parent", "UpdatePasswordParent"],
   endpoints(builder) {
     return {
       fetchParents: builder.query<Parent[], number | void>({
@@ -57,6 +62,14 @@ export const parentSlice = createApi({
         }),
         invalidatesTags: ["Parent"],
       }),
+      updatePassword: builder.mutation<void, UpdatePasswordParent>({
+        query: ({ _id, ...rest }) => ({
+          url: `/updateParentPassword/${_id}`,
+          method: "PUT",
+          body: rest,
+        }),
+        invalidatesTags: ["Parent", "UpdatePasswordParent"],
+      }),
       deleteParent: builder.mutation<void, Parent>({
         query: (_id) => ({
           url: `/deleteParent/${_id}`,
@@ -73,5 +86,6 @@ export const {
   useFetchParentsQuery,
   useDeleteParentMutation,
   useUpdateParentMutation,
-  useFetchParentByIdMutation
+  useFetchParentByIdMutation,
+  useUpdatePasswordMutation
 } = parentSlice;

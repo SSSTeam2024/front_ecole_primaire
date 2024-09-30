@@ -7,7 +7,6 @@ import {
   Modal,
   Form,
   Button,
-  Offcanvas,
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
@@ -20,7 +19,6 @@ import {
 } from "features/etudiants/etudiantSlice";
 import Flatpickr from "react-flatpickr";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
-import UpdateEtudiant from "./UpdateEtudiant";
 import { French } from "flatpickr/dist/l10n/fr";
 import { convertToBase64 } from "helpers/base64_convert";
 import { formatDate } from "helpers/data_time_format";
@@ -30,8 +28,6 @@ const Etudiants = () => {
   const { data: AllClasses = [] } = useFetchClassesQuery();
 
   const [deleteEtudiant] = useDeleteEtudiantMutation();
-
-  const [showEtudiant, setShowEtudiant] = useState<boolean>(false);
 
   const [selectedDateDeNaissance, setSelectedDateDeNaissance] =
     useState<Date | null>(null);
@@ -113,12 +109,6 @@ const Etudiants = () => {
   const [modal_AddEtudiant, setmodal_AddEtudiant] = useState<boolean>(false);
   function tog_AddEtudiant() {
     setmodal_AddEtudiant(!modal_AddEtudiant);
-  }
-
-  const [modal_UpdateEtudiant, setmodal_UpdateEtudiant] =
-    useState<boolean>(false);
-  function tog_UpdateEtudiant() {
-    setmodal_UpdateEtudiant(!modal_UpdateEtudiant);
   }
 
   const [createEtudiant] = useAddEtudiantMutation();
@@ -251,9 +241,8 @@ const Etudiants = () => {
           <ul className="hstack gap-2 list-unstyled mb-0">
             <li>
               <Link
-                to="#"
+                to="/détails-etudiant"
                 className="badge badge-soft-info edit-item-btn"
-                onClick={() => setShowEtudiant(!showEtudiant)}
                 state={row}
               >
                 <i
@@ -274,9 +263,8 @@ const Etudiants = () => {
             </li>
             <li>
               <Link
-                to="#"
+                to="/modifier-etudiant"
                 className="badge badge-soft-success edit-item-btn"
-                onClick={() => tog_UpdateEtudiant()}
                 state={row}
               >
                 <i
@@ -319,8 +307,6 @@ const Etudiants = () => {
       },
     },
   ];
-
-  const etudiantLocation = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -790,214 +776,8 @@ const Etudiants = () => {
               </Form>
             </Modal.Body>
           </Modal>
-          <Modal
-            className="fade"
-            id="createModal"
-            show={modal_UpdateEtudiant}
-            onHide={() => {
-              tog_UpdateEtudiant();
-            }}
-            centered
-            size="xl"
-          >
-            <Modal.Header closeButton>
-              <h1 className="modal-title fs-5" id="createModalLabel">
-                Modifier Elève
-              </h1>
-            </Modal.Header>
-            <Modal.Body>
-              <UpdateEtudiant
-                modal_UpdateEtudiant={modal_UpdateEtudiant}
-                setmodal_UpdateEtudiant={setmodal_UpdateEtudiant}
-              />
-            </Modal.Body>
-          </Modal>
         </Container>
       </div>
-      <Offcanvas
-        show={showEtudiant}
-        onHide={() => setShowEtudiant(!showEtudiant)}
-        placement="end"
-      >
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Détails d'élève</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          <div className="mt-3">
-            <div className="p-3 border-bottom border-bottom-dashed">
-              <table>
-                <tr>
-                  <div className="d-flex justify-content-center">
-                    <img
-                      src={`${
-                        process.env.REACT_APP_BASE_URL
-                      }/etudiantFiles/${etudiantLocation?.state?.avatar!}`}
-                      alt=""
-                      className="rounded"
-                      width="200"
-                    />
-                  </div>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Nom :</h6>{" "}
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.nom!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Prénom : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.prenom!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Date et Lieu de Naissance : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.date_de_naissance!}</i> à{" "}
-                    <strong>{etudiantLocation?.state?.lieu_naissance!}</strong>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Genre: </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.genre!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Adresse: </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.adresse_eleve!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Ville: </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.ville!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Nationalité: </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.nationalite!}</i>
-                  </td>
-                </tr>
-                {etudiantLocation?.state?.parent! === null ? (
-                  <tr>
-                    <td>
-                      <h6>Parent: </h6>
-                    </td>
-                    <td>
-                      <i className="text-danger">
-                        Aucun parent assigné pour le moment !!
-                      </i>
-                    </td>
-                  </tr>
-                ) : (
-                  <tr>
-                    <td>
-                      <h6>Parent: </h6>
-                    </td>
-                    <td>
-                      <i>
-                        {etudiantLocation?.state?.parent?.nom_parent}{" "}
-                        {etudiantLocation?.state?.parent?.prenom_parent}
-                      </i>
-                    </td>
-                  </tr>
-                )}
-                <tr>
-                  <td>
-                    <h6>Classe : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.classe?.nom_classe!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Année Scolaire : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.annee_scolaire!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>N° Convocation Concours : </h6>
-                  </td>
-                  <td>
-                    <i>
-                      {etudiantLocation?.state?.numero_convocation_concours!}
-                    </i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Moyenne Concours : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.moyenne_concours_6!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Etablissement Fréquenté : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.etablissement_frequente!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Moyenne 1er Trimestre : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.moyenne_trimestre_1!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Moyenne 2ème Trimestre : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.moyenne_trimestre_2!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Moyenne 3ème Trimestre : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.moyenne_trimestre_3!}</i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h6>Moyenne Annuelle : </h6>
-                  </td>
-                  <td>
-                    <i>{etudiantLocation?.state?.moyenne_annuelle!}</i>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </Offcanvas.Body>
-      </Offcanvas>
     </React.Fragment>
   );
 };
