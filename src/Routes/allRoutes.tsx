@@ -42,6 +42,7 @@ import Parametres from "pages/Parametres";
 import Messages from "pages/Messages";
 import DetailsEtudiant from "pages/Etudiants/DetailsEtudiant";
 import UpdateEtudiant from "pages/Etudiants/UpdateEtudiant";
+import Abonnements from "pages/Abonnements";
 
 const authProtectedRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
@@ -67,6 +68,7 @@ const authProtectedRoutes = [
   { path: "/messages", component: <Messages /> },
   { path: "/cantines", component: <Cantines /> },
   { path: "/salles", component: <Salles /> },
+  { path: "/abonnements", component: <Abonnements /> },
 
   // { path: "/evaluations", component: <Evaluations /> },
   { path: "/rendez-vous", component: <Rendezvous /> },

@@ -26,6 +26,13 @@ export const disciplineSlice = createApi({
         },
         providesTags: ["Discipline"],
       }),
+      getDisciplinesByEleveId: builder.mutation<Discipline[], string | void>({
+        query: (id) => ({
+          url: `/discipline-eleve-id/${id}`,
+          method: "GET",
+        }),
+        invalidatesTags: ["Discipline"],
+      }),
       addDiscipline: builder.mutation<void, Discipline>({
         query(payload) {
           return {
@@ -47,5 +54,5 @@ export const disciplineSlice = createApi({
   },
 });
 
-export const { useAddDisciplineMutation, useFetchDisciplinesQuery, useDeleteDisciplineMutation } =
+export const { useAddDisciplineMutation, useFetchDisciplinesQuery, useDeleteDisciplineMutation, useGetDisciplinesByEleveIdMutation } =
   disciplineSlice;

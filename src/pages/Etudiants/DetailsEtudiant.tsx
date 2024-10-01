@@ -14,6 +14,7 @@ import student from "assets/images/6168872.png";
 import eleve from "assets/images/2995357.png";
 import { useGetAbsencesByEleveIdMutation } from "features/absences/absenceSlice";
 import DataTable from "react-data-table-component";
+import { useGetDisciplinesByEleveIdMutation } from "features/disciplines/disciplineSlice";
 
 const DetailsEtudiant = () => {
   const etudiantLocation = useLocation();
@@ -21,12 +22,36 @@ const DetailsEtudiant = () => {
   const [fetchAbsenceByEleveId, { data: fetchedEtudiants }] =
     useGetAbsencesByEleveIdMutation();
 
+  const [fetchDisciplineByEleveId, { data: fetchedEtudiantsDiscipline }] =
+    useGetDisciplinesByEleveIdMutation();
+
   useEffect(() => {
     if (etudiantLocation?.state?._id) {
       fetchAbsenceByEleveId(etudiantLocation.state._id)
         .unwrap()
         .then((result) => {
-          // handle the result if necessary
+          result.forEach((absence) => {
+            const eleveData = absence.eleves.find(
+              (eleve: any) => eleve.eleve._id === etudiantLocation.state._id
+            );
+            if (eleveData) {
+              console.log(`Type of absence for eleve: ${eleveData.typeAbsent}`);
+            } else {
+              console.log("No absence data found for the current eleve");
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching absence data:", error);
+        });
+    }
+  }, [etudiantLocation?.state?._id]);
+
+  useEffect(() => {
+    if (etudiantLocation?.state?._id) {
+      fetchDisciplineByEleveId(etudiantLocation.state._id)
+        .unwrap()
+        .then((result) => {
           console.log(result);
         })
         .catch((error) => {
@@ -36,6 +61,22 @@ const DetailsEtudiant = () => {
   }, [etudiantLocation?.state?._id]);
 
   const columns = [
+    {
+      name: <span className="font-weight-bold fs-13">Type</span>,
+      selector: (row: any) => {
+        const eleveData = row.eleves.find(
+          (eleve: any) => eleve.eleve._id === etudiantLocation.state._id
+        );
+        return eleveData.typeAbsent === "R" ? (
+          <span className="badge badge-soft-warning">Retard</span>
+        ) : eleveData.typeAbsent === "A" ? (
+          <span className="badge badge-soft-danger">Absent</span>
+        ) : (
+          <span className="badge badge-soft-info">Présent</span>
+        );
+      },
+      sortable: true,
+    },
     {
       name: <span className="font-weight-bold fs-13">Date</span>,
       selector: (row: any) => row.date,
@@ -63,34 +104,75 @@ const DetailsEtudiant = () => {
     },
   ];
 
+  const columnsDiscipline = [
+    {
+      name: <span className="font-weight-bold fs-13">Type</span>,
+      selector: (row: any) => row.type,
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Date de création</span>,
+      selector: (row: any) => row.date,
+      sortable: true,
+    },
+    {
+      name: <span className="font-weight-bold fs-13">Editeur</span>,
+      selector: (row: any) => row.editeur,
+      sortable: true,
+    },
+  ];
+
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
           <Card>
             <Tab.Container defaultActiveKey="bottomtabs-profile">
+              <Card.Header className="bg-transparent border-bottom">
+                <Nav
+                  as="ul"
+                  variant="pills"
+                  className="nav-justified card-footer-tabs fs-17"
+                  role="tablist"
+                >
+                  <Nav.Item as="li">
+                    <Nav.Link eventKey="bottomtabs-profile">
+                      <div className="d-flex align-items-center justify-content-center">
+                        <i className="ri-user-2-line"></i> <span>Profile</span>
+                      </div>
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item as="li">
+                    <Nav.Link eventKey="bottomtabs-home">
+                      <div className="d-flex align-items-center justify-content-center">
+                        <i className="ri-file-user-line"></i>{" "}
+                        <span>Absence</span>
+                      </div>
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item as="li">
+                    <Nav.Link eventKey="bottomtabs-messages">
+                      <div className="d-flex align-items-center justify-content-center">
+                        <i className="ri-mail-line"></i> <span>Discipline</span>
+                      </div>
+                    </Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </Card.Header>
               <Card.Body>
-                <div className="mb-5">
-                  <Image
-                    src={`${
-                      process.env.REACT_APP_BASE_URL
-                    }/etudiantFiles/${etudiantLocation?.state?.avatar!}`}
-                    alt=""
-                    className="avatar-xl rounded-circle bg-body m-1"
-                  />{" "}
-                  <span className="fw-medium fs-24 ">
-                    {" "}
-                    {etudiantLocation?.state?.prenom!}{" "}
-                    {etudiantLocation?.state?.nom!}{" "}
-                  </span>
-                </div>
-
                 <Tab.Content className="text-muted">
                   <Tab.Pane eventKey="bottomtabs-profile">
-                    <h5>
-                      <i className="ri-user-2-line align-bottom me-1"></i>{" "}
-                      Profile
-                    </h5>
+                    <Row>
+                      <div className="mb-5">
+                        <Image
+                          src={`${
+                            process.env.REACT_APP_BASE_URL
+                          }/etudiantFiles/${etudiantLocation?.state?.avatar!}`}
+                          alt=""
+                          className="avatar-xl rounded-circle bg-body m-1"
+                        />{" "}
+                      </div>
+                    </Row>
                     <h5 className="fs-24">
                       {etudiantLocation?.state?.prenom!}{" "}
                       {etudiantLocation?.state?.nom!}{" "}
@@ -231,61 +313,21 @@ const DetailsEtudiant = () => {
                     </Row>
                   </Tab.Pane>
                   <Tab.Pane eventKey="bottomtabs-home">
-                    <h5>
-                      <i className="ri-home-3-line align-bottom me-1"></i>{" "}
-                      Absence
-                    </h5>
                     <DataTable
                       columns={columns}
                       data={fetchedEtudiants}
                       pagination
                     />
                   </Tab.Pane>
-
-                  {/* <Tab.Pane eventKey="bottomtabs-messages">
-                    <h5>
-                      <i className="ri-mail-line align-bottom me-1"></i>{" "}
-                      Messages
-                    </h5>
-                    <p className="mb-2">
-                      Blowzy red vixens fight for a quick jump. Joaquin Phoenix
-                      was gazed by MTV for luck. A wizard’s job is to vex chumps
-                      quickly in fog. Watch "Jeopardy! ", Alex Trebek's fun TV
-                      quiz game. Woven silk pyjamas exchanged for blue quartz.
-                      Brawny gods just flocked up to quiz and vex him.
-                    </p>
-                    <p className="mb-0">
-                      Big July earthquakes confound zany experimental vow. My
-                      girl wove six dozen plaid jackets before she quit. Six big
-                      devils from Japan quickly forgot how to waltz.
-                    </p>
-                  </Tab.Pane> */}
+                  <Tab.Pane eventKey="bottomtabs-messages">
+                    <DataTable
+                      columns={columnsDiscipline}
+                      data={fetchedEtudiantsDiscipline}
+                      pagination
+                    />
+                  </Tab.Pane>
                 </Tab.Content>
               </Card.Body>
-              <Card.Footer className="bg-transparent border-top">
-                <Nav
-                  as="ul"
-                  variant="pills"
-                  className="nav-justified card-footer-tabs fs-17"
-                  role="tablist"
-                >
-                  <Nav.Item as="li">
-                    <Nav.Link eventKey="bottomtabs-profile">
-                      <i className="ri-user-2-line"></i>
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item as="li">
-                    <Nav.Link eventKey="bottomtabs-home">
-                      <i className="ri-file-user-line"></i>
-                    </Nav.Link>
-                  </Nav.Item>
-                  {/* <Nav.Item as="li">
-                    <Nav.Link eventKey="bottomtabs-messages">
-                      <i className="ri-mail-line"></i>
-                    </Nav.Link>
-                  </Nav.Item> */}
-                </Nav>
-              </Card.Footer>
             </Tab.Container>
           </Card>
         </Container>

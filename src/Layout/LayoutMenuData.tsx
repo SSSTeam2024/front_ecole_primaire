@@ -109,13 +109,6 @@ const Navdata = () => {
       parentId: "invoices",
       icon: "ph ph-exam",
     },
-    // {
-    //   id: "invoices",
-    //   label: "Evaluations",
-    //   link: "/evaluations",
-    //   parentId: "invoices",
-    //   icon: "ph ph-smiley",
-    // },
     {
       id: "invoices",
       label: "Absence",
@@ -144,42 +137,6 @@ const Navdata = () => {
       parentId: "invoices",
       icon: "ph ph-house",
     },
-    // {
-    //   id: "invoices",
-    //   label: "Compte Rendu",
-    //   link: "/compte_rendu",
-    //   parentId: "invoices",
-    //   icon: "ph ph-house-simple",
-    // },
-    // {
-    //   id: "Planification",
-    //   label: "Planification",
-    //   icon: "ph ph-target",
-    //   link: "/#",
-    //   click: function (e: any) {
-    //     e.preventDefault();
-    //     setIsPayement(!isPayement);
-    //     setIscurrentState("Payement");
-    //     updateIconSidebar(e);
-    //   },
-    //   stateVariables: isPayement,
-    //   subItems: [
-    //     {
-    //       id: "invoices",
-    //       label: "Calendrier Examen",
-    //       link: "/calendrier-examen",
-    //       parentId: "invoices",
-    //       icon: "ph ph-calendar-check",
-    //     },
-    //     {
-    //       id: "invoices",
-    //       label: "Emploi",
-    //       link: "/emploi",
-    //       parentId: "invoices",
-    //       icon: "ph ph-calendar-blank",
-    //     },
-    //   ],
-    // },
     {
       id: "multilevel",
       label: "Planification",
@@ -235,13 +192,6 @@ const Navdata = () => {
       parentId: "invoices",
       icon: "ph ph-wallet",
     },
-    // {
-    //   id: "invoices",
-    //   label: "Sms",
-    //   link: "/sms",
-    //   parentId: "invoices",
-    //   icon: "ph ph-chat-circle-text",
-    // },
     {
       id: "SMS",
       label: "SMS",
@@ -335,12 +285,35 @@ const Navdata = () => {
       parentId: "invoices",
       icon: "ph ph-files",
     },
+
     {
-      id: "invoices",
-      label: "Cantines",
-      link: "/cantines",
-      parentId: "invoices",
+      id: "Help",
+      label: "Restauration",
       icon: "ph ph-fork-knife",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+        setIsHelp(!isHelp);
+        setIscurrentState("Help");
+        updateIconSidebar(e);
+      },
+      stateVariables: isHelp,
+      subItems: [
+        {
+          id: "invoices",
+          label: "Cantines",
+          link: "/cantines",
+          parentId: "invoices",
+          icon: "ph ph-hamburger",
+        },
+        {
+          id: "invoices",
+          label: "Abonnements",
+          link: "/abonnements",
+          parentId: "invoices",
+          icon: "ph ph-identification-badge",
+        },
+      ],
     },
     {
       id: "Administration",

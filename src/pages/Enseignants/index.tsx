@@ -20,12 +20,26 @@ import {
 } from "features/enseignants/enseignantSlice";
 import UpdateEnseignant from "./UpdateEnseignant";
 import { useFetchRendezvousByEnseignantIdQuery } from "features/rendezvous/rendezvousSlice";
-import { useFetchMatieresQuery } from "features/matieres/matiereSlice";
+import {
+  Matiere,
+  MatieresToAdd,
+  useFetchMatieresQuery,
+} from "features/matieres/matiereSlice";
 
 const Enseignants = () => {
   const { data = [] } = useFetchEnseignantsQuery();
 
   const { data: AllMatieres = [] } = useFetchMatieresQuery();
+  const allMatieres = AllMatieres.flatMap((item) => item.matieres);
+
+  // Step 2: Extract the names of the matieres
+  const allMatiereNames = allMatieres.map((matiere) => matiere.nom_matiere);
+
+  // Step 3: Use a Set to remove duplicate names
+  const uniqueMatiereNames = Array.from(new Set(allMatiereNames));
+
+  // uniqueMatiereNames now contains all unique matiere names
+  console.log(uniqueMatiereNames);
 
   const [deleteEnseignant] = useDeleteEnseignantMutation();
 
@@ -401,13 +415,11 @@ const Enseignants = () => {
                       onChange={handleSelectMatiere}
                     >
                       <option value="">Choisir</option>
-                      {AllMatieres.map((matiere) =>
-                        matiere.matieres.map((m) => (
-                          <option value={m.nom_matiere} key={m?._id!}>
-                            {m.nom_matiere}
-                          </option>
-                        ))
-                      )}
+                      {uniqueMatiereNames.map((matiere, index) => (
+                        <option value={matiere} key={index}>
+                          {matiere}
+                        </option>
+                      ))}
                     </select>
                   </Col>
                 </Row>

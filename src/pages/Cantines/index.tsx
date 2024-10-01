@@ -210,7 +210,17 @@ const Cantines = () => {
     e.preventDefault();
     try {
       cantine["creation_date"] = formatDate(selectedDate);
-      cantine["jour"] = selectedJour;
+      const [day, month, year] = formatDate(selectedDate).split("-");
+      const formattedDate = `${year}-${month}-${day}`; // Convert to ISO format yyyy-mm-dd
+
+      // Create a Date object from the formatted string
+      const dateObj = new Date(formattedDate);
+
+      // Use Intl.DateTimeFormat to get the day in French
+      const dayOfWeek = new Intl.DateTimeFormat("fr-FR", {
+        weekday: "long",
+      }).format(dateObj);
+      cantine["jour"] = dayOfWeek;
       createCantine(cantine)
         .then(() => notifySuccess("La cantine a été créée avec succès"))
         .then(() => setCantine(initialCantine));
@@ -418,27 +428,40 @@ const Cantines = () => {
                   <Masonry className="my-masonry-grid_column me-3">
                     {getFilteredCantines().map((cantine) => (
                       <Col key={cantine?._id!}>
-                        <Card>
+                        <Card className="m-2">
                           <Card.Header>
-                            <Link
-                              to="#"
-                              type="button"
-                              className="btn btn-soft-success float-end btn-sm"
-                              onClick={() => tog_UpdateCantine()}
-                              state={cantine}
-                            >
-                              {/* <i className="ph ph-pen"></i> */}
-                              Modifier
-                            </Link>
-                            <h6 className="fs-15 mb-0">{cantine.jour!}</h6>
+                            <span className="fw-medium fs-16 mb-0">
+                              {cantine?.jour!} {cantine.creation_date!}
+                            </span>
+                            <div className="hstack gap-2 float-end">
+                              <Link
+                                to="#"
+                                type="button"
+                                className="btn btn-soft-success btn-sm"
+                                onClick={() => tog_UpdateCantine()}
+                                state={cantine}
+                              >
+                                Modifier
+                              </Link>
+                              <Link
+                                to="#"
+                                type="button"
+                                className="btn btn-soft-danger btn-sm"
+                                onClick={() => AlertDelete(cantine?._id!)}
+                                state={cantine}
+                              >
+                                Supprimer
+                              </Link>
+                            </div>
                           </Card.Header>
                           <Image
                             // src={`${process.env.REACT_APP_BASE_URL}/cantineFiles/${cantine.fichier!}`}
                             src={`${
                               process.env.REACT_APP_BASE_URL
                             }/cantineFiles/${cantine.fichier!}`}
-                            className="card-img-top"
-                            alt="..."
+                            className="rounded m-2"
+                            alt={cantine.repas}
+                            width="280"
                           />
                           <Card.Body>
                             <h5 className="card-title mb-1">
@@ -473,6 +496,24 @@ const Cantines = () => {
               <Form className="create-form" onSubmit={onSubmitCantine}>
                 <Row className="mb-4">
                   <Col lg={3}>
+                    <Form.Label htmlFor="date">Date</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <Flatpickr
+                      className="form-control flatpickr-input"
+                      placeholder="Date Repas"
+                      onChange={handleDateChange}
+                      options={{
+                        dateFormat: "d M, Y",
+                        locale: French,
+                      }}
+                      id="date"
+                      name="date"
+                    />
+                  </Col>
+                </Row>
+                <Row className="mb-4">
+                  <Col lg={3}>
                     <Form.Label htmlFor="repas">Repas</Form.Label>
                   </Col>
                   <Col lg={8}>
@@ -485,7 +526,7 @@ const Cantines = () => {
                     />
                   </Col>
                 </Row>
-                <Row className="mb-4">
+                {/* <Row className="mb-4">
                   <Col lg={3}>
                     <Form.Label htmlFor="jour">Jour</Form.Label>
                   </Col>
@@ -502,12 +543,10 @@ const Cantines = () => {
                       <option value="Mercredi">Mercredi</option>
                       <option value="Jeudi">Jeudi</option>
                       <option value="Vendredi">Vendredi</option>
-                      {/* <option value="Samedi">
-                      Samedi
-                      </option> */}
+                      
                     </select>
                   </Col>
-                </Row>
+                </Row> */}
                 <Row className="mb-4">
                   <Col lg={3}>
                     <Form.Label htmlFor="desc">Description</Form.Label>
@@ -523,23 +562,7 @@ const Cantines = () => {
                     ></textarea>
                   </Col>
                 </Row>
-                <Row className="mb-4">
-                  <Col lg={3}>
-                    <Form.Label htmlFor="date">Date Création</Form.Label>
-                  </Col>
-                  <Col lg={8}>
-                    <Flatpickr
-                      className="form-control flatpickr-input"
-                      placeholder="Date Création"
-                      onChange={handleDateChange}
-                      options={{
-                        dateFormat: "d M, Y",
-                      }}
-                      id="date"
-                      name="date"
-                    />
-                  </Col>
-                </Row>
+
                 <Row className="mb-4">
                   <Col lg={3}>
                     <Form.Label htmlFor="fichier_base64_string">
@@ -640,67 +663,6 @@ const Cantines = () => {
             </Modal.Body>
           </Modal>
         </Container>
-        <Offcanvas
-          show={showCantine}
-          onHide={() => setShowCantine(!showCantine)}
-          placement="end"
-          style={{ width: "40%" }}
-        >
-          <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Détails du cantine</Offcanvas.Title>
-          </Offcanvas.Header>
-          <Offcanvas.Body>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Repas</span>
-              </Col>
-              <Col lg={9}>
-                <i>{cantineLocation?.state?.repas}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Description</span>
-              </Col>
-              <Col lg={9}>
-                <i>{cantineLocation?.state?.desc!}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Jour</span>
-              </Col>
-              <Col lg={9}>
-                <i>{cantineLocation?.state?.jour!}</i>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col lg={3}>
-                <span className="fw-medium">Date création</span>
-              </Col>
-              <Col lg={9}>
-                <i>{cantineLocation?.state?.creation_date!}</i>
-              </Col>
-            </Row>
-            <Row>
-              <Col lg={3}>
-                <span className="fw-medium">Fichier</span>
-              </Col>
-              <Col lg={9}>
-                <div className="d-flex justify-content-center">
-                  <img
-                    src={`${
-                      process.env.REACT_APP_BASE_URL
-                    }/cantineFiles/${cantineLocation?.state?.fichier!}`}
-                    alt=""
-                    className="rounded"
-                    width="200"
-                  />
-                </div>
-              </Col>
-            </Row>
-          </Offcanvas.Body>
-        </Offcanvas>
       </div>
     </React.Fragment>
   );
