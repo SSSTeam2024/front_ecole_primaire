@@ -355,6 +355,28 @@ const Observations = () => {
     openFileInNewTab(fileUrl, fileName);
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const getFilteredObservations = () => {
+    let filteredObservations = data;
+
+    if (searchTerm) {
+      filteredObservations = filteredObservations.filter(
+        (observation: any) =>
+          observation
+            ?.titre!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          observation?.par!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          observation?.date!.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredObservations;
+  };
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -370,6 +392,8 @@ const Observations = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -435,7 +459,11 @@ const Observations = () => {
                 </Row>
               </Card.Header>
               <Card.Body>
-                <DataTable columns={columns} data={data} pagination />
+                <DataTable
+                  columns={columns}
+                  data={getFilteredObservations()}
+                  pagination
+                />
               </Card.Body>
             </Card>
           </Col>
@@ -566,7 +594,7 @@ const Observations = () => {
                         setObservation(initialObservation);
                       }}
                     >
-                      Close
+                      Fermer
                     </Button>
                     <Button
                       onClick={() => {

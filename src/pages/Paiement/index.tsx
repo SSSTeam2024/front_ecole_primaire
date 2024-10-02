@@ -1463,7 +1463,7 @@ const PaiementPage = () => {
                         setPaiement(initialPaiement);
                       }}
                     >
-                      Close
+                      Fermer
                     </Button>
                     <Button
                       onClick={() => {

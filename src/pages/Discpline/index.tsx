@@ -368,6 +368,32 @@ const Discipline = () => {
     openFileInNewTab(fileUrl, fileName);
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const getFilteredDisciplines = () => {
+    let filteredDisciplines = data;
+
+    if (searchTerm) {
+      filteredDisciplines = filteredDisciplines.filter(
+        (discipline: any) =>
+          discipline?.eleve
+            ?.nom!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          discipline?.eleve
+            ?.prenom!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          discipline?.type!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          discipline?.date!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          discipline?.editeur!.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredDisciplines;
+  };
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -383,6 +409,8 @@ const Discipline = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -448,7 +476,11 @@ const Discipline = () => {
                 </Row>
               </Card.Header>
               <Card.Body>
-                <DataTable columns={columns} data={data} pagination />
+                <DataTable
+                  columns={columns}
+                  data={getFilteredDisciplines()}
+                  pagination
+                />
               </Card.Body>
             </Card>
           </Col>
@@ -609,7 +641,7 @@ const Discipline = () => {
                         setObservation(initialObservation);
                       }}
                     >
-                      Close
+                      Fermer
                     </Button>
                     <Button
                       onClick={() => {

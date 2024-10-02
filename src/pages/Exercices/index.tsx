@@ -382,7 +382,34 @@ const Exercices = () => {
   const { data: allMatieresByClasseId = [] } =
     useFetchMatieresByClasseIdQuery(selectedClasse);
 
-  console.log(observationLocation.state);
+  const [searchTerm, setSearchTerm] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const getFilteredExercices = () => {
+    let filteredExercices = data;
+
+    if (searchTerm) {
+      filteredExercices = filteredExercices.filter(
+        (exercice: any) =>
+          exercice?.matiere!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          exercice?.classes
+            ?.nom_classe!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          exercice
+            ?.creation_date!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          exercice
+            ?.badge_date!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          exercice?.enseignant!.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredExercices;
+  };
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -398,6 +425,8 @@ const Exercices = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -463,7 +492,11 @@ const Exercices = () => {
                 </Row>
               </Card.Header>
               <Card.Body>
-                <DataTable columns={columns} data={data} pagination />
+                <DataTable
+                  columns={columns}
+                  data={getFilteredExercices()}
+                  pagination
+                />
               </Card.Body>
             </Card>
           </Col>
@@ -632,7 +665,7 @@ const Exercices = () => {
                         setObservation(initialObservation);
                       }}
                     >
-                      Close
+                      Fermer
                     </Button>
                     <Button
                       onClick={() => {

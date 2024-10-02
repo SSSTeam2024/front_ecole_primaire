@@ -240,16 +240,7 @@ const Absence = () => {
     if (searchTerm) {
       filteredAbsences = filteredAbsences.filter(
         (absence: any) =>
-          absence?.eleve
-            ?.nom!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          absence?.eleve
-            ?.prenom!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          absence?.matiere
-            ?.nom_matiere!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          absence?.type!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          absence?.matiere!.toLowerCase().includes(searchTerm.toLowerCase()) ||
           absence?.heure!.toLowerCase().includes(searchTerm.toLowerCase()) ||
           absence?.date!.toLowerCase().includes(searchTerm.toLowerCase()) ||
           absence?.enseignant
@@ -257,6 +248,9 @@ const Absence = () => {
             .includes(searchTerm.toLowerCase()) ||
           absence?.enseignant
             ?.prenom_enseignant!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          absence?.classe
+            ?.nom_classe!.toLowerCase()
             .includes(searchTerm.toLowerCase())
       );
     }
@@ -279,8 +273,8 @@ const Absence = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        // value={searchTerm}
-                        // onChange={handleSearchChange}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>

@@ -17,11 +17,6 @@ import {
   useDeleteNoteMutation,
   useFetchNotesQuery,
 } from "features/notes/noteSlice";
-import {
-  useFetchMatieresByEtudiantIdQuery,
-  useFetchMatieresQuery,
-} from "features/matieres/matiereSlice";
-import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
 import UpdateNote from "./UpdateNote";
 
 import {
@@ -246,14 +241,12 @@ const Notes = () => {
     if (searchTerm) {
       filteredNotes = filteredNotes.filter(
         (note: any) =>
-          note?.eleve?.nom!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          note?.eleve
-            ?.prenom!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
           note?.matiere!.toLowerCase().includes(searchTerm.toLowerCase()) ||
           note?.trimestre!.toLowerCase().includes(searchTerm.toLowerCase()) ||
           note?.type!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          note?.note!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          note?.classe
+            ?.nom_classe!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           note?.date!.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -276,8 +269,8 @@ const Notes = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
-                        // value={searchTerm}
-                        // onChange={handleSearchChange}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>

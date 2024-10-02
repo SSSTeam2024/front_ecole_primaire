@@ -221,6 +221,28 @@ const Carnets = () => {
     document.body.removeChild(link);
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const getFilteredCarnets = () => {
+    let filteredCarnets = data;
+
+    if (searchTerm) {
+      filteredCarnets = filteredCarnets.filter(
+        (carnet: any) =>
+          carnet?.trimestre!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          carnet?.classe
+            ?.nom_classe!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          carnet?.date!.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredCarnets;
+  };
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -236,6 +258,8 @@ const Carnets = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -301,7 +325,11 @@ const Carnets = () => {
                 </Row>
               </Card.Header>
               <Card.Body>
-                <DataTable columns={columns} data={data} pagination />
+                <DataTable
+                  columns={columns}
+                  data={getFilteredCarnets()}
+                  pagination
+                />
               </Card.Body>
             </Card>
           </Col>
