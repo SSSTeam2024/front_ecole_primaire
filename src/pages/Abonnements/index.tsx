@@ -21,14 +21,20 @@ import {
   useFetchEtudiantsByClasseIdMutation,
   useFetchEtudiantsQuery,
 } from "features/etudiants/etudiantSlice";
-import { useGetAbonnementsByEleveIdMutation } from "features/abonnements/abonnementSlice";
+import {
+  useAddAbonnementMutation,
+  useGetAbonnementsByEleveIdMutation,
+} from "features/abonnements/abonnementSlice";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
+import { useFetchCantinesQuery } from "features/cantines/cantineSlice";
 // import UpdateSalle from "./UpdateSalle";
 
 const Abonnements = () => {
   const { data: AllEtudiants = [] } = useFetchEtudiantsQuery();
 
   const { data: AllClasses = [] } = useFetchClassesQuery();
+
+  const { data: AllCantines = [] } = useFetchCantinesQuery();
 
   const [fetchAbonnementByEleveId, { data: fetchedAbonnements }] =
     useGetAbonnementsByEleveIdMutation();
@@ -40,6 +46,14 @@ const Abonnements = () => {
 
   const [selectedClasse, setSelectedClasse] = useState<string>("");
   const [students, setStudents] = useState<any[]>([]);
+  const [studentsToCreateAbonnement, setStudentsToCreateAbonnement] = useState<
+    any[]
+  >([]);
+  const [
+    selectedClasseToCreateAbonnement,
+    setSelectedClasseToCreateAbonnement,
+  ] = useState<string>("");
+
   const handleSelectClasse = async (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -49,11 +63,20 @@ const Abonnements = () => {
     setSelectedClasse(value);
   };
 
+  const handleSelectClasseToCreateAbonnement = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = event.target.value;
+    const result = await fetchEtudiantsByClasseId(value).unwrap();
+    setStudentsToCreateAbonnement(result);
+    setSelectedClasseToCreateAbonnement(value);
+  };
+
   const notifySuccess = () => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "La salle a été créée avec succès",
+      title: "L'abonnement a été créé avec succès",
       showConfirmButton: false,
       timer: 2500,
     });
@@ -106,9 +129,10 @@ const Abonnements = () => {
       });
   };
 
-  const [modal_AddSalle, setmodal_AddSalle] = useState<boolean>(false);
-  function tog_AddSalle() {
-    setmodal_AddSalle(!modal_AddSalle);
+  const [modal_AddAbonnement, setmodal_AddAbonnement] =
+    useState<boolean>(false);
+  function tog_AddAbonnement() {
+    setmodal_AddAbonnement(!modal_AddAbonnement);
   }
   const [modal_UpdateSalle, setmodal_UpdateSalle] = useState<boolean>(false);
   function tog_UpdateSalle() {
@@ -116,32 +140,60 @@ const Abonnements = () => {
   }
 
   const [selectedAbonnements, setSelectedAbonnements] = useState<any[]>([]);
-  const [selectedEleve, setSelectedEleve] = useState<string>("");
+  const [selectedType, setSelectedType] = useState<string>("");
   const [selectedEleveId, setSelectedEleveId] = useState(null);
+  const [selectedEleve, setSelectedEleve] = useState<string>("");
+  // const [selectedCantine, setSelectedCantine] = useState<string | null>("");
 
-  const [createSalle] = useAddSalleMutation();
-
-  const initialSalle = {
-    nom_salle: "",
+  const handleSelectEleve = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = event.target.value;
+    setSelectedEleve(value);
   };
 
-  const [salle, setSalle] = useState(initialSalle);
+  const handleSelectType = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = event.target.value;
+    setSelectedType(value);
+  };
 
-  const { nom_salle } = salle;
+  // const handleSelectCantine = async (
+  //   event: React.ChangeEvent<HTMLSelectElement>
+  // ) => {
+  //   const value = event.target.value;
+  //   setSelectedCantine(value);
+  // };
 
-  const onChangeSalle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSalle((prevState) => ({
+  const [createAbonnement] = useAddAbonnementMutation();
+
+  const initialAbonnement = {
+    eleve: "",
+    type: "",
+    status: "",
+  };
+
+  const [abonnement, setAbonnement] = useState(initialAbonnement);
+
+  const { eleve, type, status } = abonnement;
+
+  const onChangeAbonnement = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAbonnement((prevState) => ({
       ...prevState,
       [e.target.id]: e.target.value,
     }));
   };
 
-  const onSubmitSalle = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmitAbonnement = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      createSalle(salle)
+      abonnement["eleve"] = selectedEleve;
+      abonnement["type"] = selectedType;
+      // abonnement.cantine = selectedCantine === "" ? null : selectedCantine;
+      createAbonnement(abonnement)
         .then(() => notifySuccess())
-        .then(() => setSalle(initialSalle));
+        .then(() => setAbonnement(initialAbonnement));
     } catch (error) {
       notifyError(error);
     }
@@ -159,9 +211,14 @@ const Abonnements = () => {
   };
 
   const columns = [
+    // {
+    //   name: <span className="font-weight-bold fs-13">Cantine</span>,
+    //   selector: (row: any) => row.cantine?.repas,
+    //   sortable: true,
+    // },
     {
-      name: <span className="font-weight-bold fs-13">Cantine</span>,
-      selector: (row: any) => row.cantine?.repas,
+      name: <span className="font-weight-bold fs-13">Type</span>,
+      selector: (row: any) => row.type,
       sortable: true,
     },
     {
@@ -169,11 +226,7 @@ const Abonnements = () => {
       selector: (row: any) => row.cantine?.creation_date,
       sortable: true,
     },
-    {
-      name: <span className="font-weight-bold fs-13">Type</span>,
-      selector: (row: any) => row.type,
-      sortable: true,
-    },
+
     // {
     //   name: <span className="font-weight-bold fs-13">Actions</span>,
     //   sortable: true,
@@ -251,55 +304,9 @@ const Abonnements = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumb title="Salles" pageTitle="Tableau de bord" />
+          <Breadcrumb title="Abonnements" pageTitle="Tableau de bord" />
           <Col lg={12}>
             <Card id="shipmentsList">
-              {/* <Card.Header className="border-bottom-dashed">
-                <Row className="g-3">
-                  <Col lg={3}>
-                    <div className="search-box">
-                      <input
-                        type="text"
-                        className="form-control search"
-                        placeholder="Rechercher ..."
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                      />
-                      <i className="ri-search-line search-icon"></i>
-                    </div>
-                  </Col>
-                  <Col lg={7}></Col>
-                  <Col lg={2} className="d-flex justify-content-end">
-                    <div
-                      className="btn-group btn-group-sm"
-                      role="group"
-                      aria-label="Basic example"
-                    >
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => tog_AddSalle()}
-                      >
-                        <i
-                          className="ri-add-fill align-middle"
-                          style={{
-                            transition: "transform 0.3s ease-in-out",
-                            cursor: "pointer",
-                            fontSize: "1.5em",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.transform = "scale(1.3)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.transform = "scale(1)")
-                          }
-                        ></i>{" "}
-                        <span>Ajouter Salle</span>
-                      </button>
-                    </div>
-                  </Col>
-                </Row>
-              </Card.Header> */}
               <Card.Body>
                 <Row>
                   <Col>
@@ -394,7 +401,42 @@ const Abonnements = () => {
                   <Col>
                     <Card>
                       <Card.Header>
-                        <Form.Label>Abonnements</Form.Label>
+                        <Row>
+                          <Col lg={8}>
+                            <Form.Label>Abonnements</Form.Label>
+                          </Col>
+                          <Col lg={4}>
+                            <div
+                              className="btn-group btn-group-sm"
+                              role="group"
+                              aria-label="Basic example"
+                            >
+                              <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => tog_AddAbonnement()}
+                              >
+                                <i
+                                  className="ri-add-fill align-middle"
+                                  style={{
+                                    transition: "transform 0.3s ease-in-out",
+                                    cursor: "pointer",
+                                    fontSize: "1.5em",
+                                  }}
+                                  onMouseEnter={(e) =>
+                                    (e.currentTarget.style.transform =
+                                      "scale(1.3)")
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.currentTarget.style.transform =
+                                      "scale(1)")
+                                  }
+                                ></i>{" "}
+                                <span>Ajouter Abonnement</span>
+                              </button>
+                            </div>
+                          </Col>
+                        </Row>
                       </Card.Header>
                       <Card.Body>
                         <DataTable
@@ -406,58 +448,142 @@ const Abonnements = () => {
                     </Card>
                   </Col>
                 </Row>
-                {/* <DataTable
-                  columns={columns}
-                  data={getFilteredSalles()}
-                  pagination
-                /> */}
               </Card.Body>
             </Card>
           </Col>
-          {/* <Modal
+          <Modal
             className="fade"
             id="createModal"
-            show={modal_AddSalle}
+            show={modal_AddAbonnement}
             onHide={() => {
-              tog_AddSalle();
+              tog_AddAbonnement();
             }}
             centered
           >
             <Modal.Header closeButton>
               <h1 className="modal-title fs-5" id="createModalLabel">
-                Ajouter Salle
+                Ajouter Abonnement
               </h1>
             </Modal.Header>
             <Modal.Body>
-              <Form className="create-form" onSubmit={onSubmitSalle}>
-                <Row>
-                  <Col lg={12} className="d-flex justify-content-center">
-                    <div className="mb-3">
-                      <Form.Label htmlFor="nom_salle">Nom</Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="nom_salle"
-                        name="nom_salle"
-                        onChange={onChangeSalle}
-                        value={salle.nom_salle}
-                      />
-                    </div>
+              <Form className="create-form" onSubmit={onSubmitAbonnement}>
+                <Row className="mb-2">
+                  <Col lg={4}>
+                    <Form.Label htmlFor="classe">Classe</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <select
+                      className="form-select text-muted"
+                      name="classe"
+                      id="classe"
+                      onChange={handleSelectClasseToCreateAbonnement}
+                    >
+                      <option value="">Choisir</option>
+                      {AllClasses.map((classe) => (
+                        <option value={classe?._id!} key={classe?._id!}>
+                          {classe.nom_classe}
+                        </option>
+                      ))}
+                    </select>
                   </Col>
                 </Row>
+                <Row className="mb-2">
+                  <Col lg={4}>
+                    <Form.Label htmlFor="eleve">Elèves</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <select
+                      className="form-select text-muted"
+                      name="eleve"
+                      id="eleve"
+                      onChange={handleSelectEleve}
+                    >
+                      <option value="">Choisir</option>
+                      {studentsToCreateAbonnement.map((eleve) => (
+                        <option value={eleve?._id!} key={eleve?._id!}>
+                          {eleve?.prenom!} {eleve?.nom!}
+                        </option>
+                      ))}
+                    </select>
+                  </Col>
+                </Row>
+                <Row className="mb-2">
+                  <Col lg={4}>
+                    <Form.Label htmlFor="type">Type</Form.Label>
+                  </Col>
+                  <Col lg={8}>
+                    <select
+                      className="form-select text-muted"
+                      name="type"
+                      id="type"
+                      onChange={handleSelectType}
+                    >
+                      <option value="">Choisir</option>
+
+                      <option value="Garde et Restauration annuel">
+                        Garde et Restauration annuel
+                      </option>
+                      <option value="Garde et Panier annuel">
+                        Garde et Panier annuel
+                      </option>
+                      <option value="Garde et Restauration T1">
+                        Garde et Restauration T1
+                      </option>
+                      <option value="Garde et Restauration T2">
+                        Garde et Restauration T2
+                      </option>
+                      <option value="Garde et Restauration T3">
+                        Garde et Restauration T3
+                      </option>
+                      <option value="Garde et Panier T1">
+                        Garde et Panier T1
+                      </option>
+                      <option value="Garde et Panier T2">
+                        Garde et Panier T2
+                      </option>
+                      <option value="Garde et Panier T3">
+                        Garde et Panier T3
+                      </option>
+                      <option value="Solo">Solo</option>
+                    </select>
+                  </Col>
+                </Row>
+                {/* {selectedType === "Solo" && (
+                  <Row className="mb-2">
+                    <Col lg={4}>
+                      <Form.Label htmlFor="cantine">Cantine</Form.Label>
+                    </Col>
+                    <Col lg={8}>
+                      <select
+                        className="form-select text-muted"
+                        name="cantine"
+                        id="cantine"
+                        onChange={handleSelectCantine}
+                      >
+                        <option value="">Choisir</option>
+                        {AllCantines.map((cantine) => (
+                          <option value={cantine?._id!} key={cantine?._id!}>
+                            {cantine?.repas!}
+                          </option>
+                        ))}
+                      </select>
+                    </Col>
+                  </Row>
+                )} */}
                 <Row>
                   <div className="hstack gap-2 justify-content-end">
                     <Button
                       variant="light"
                       onClick={() => {
-                        tog_AddSalle();
-                        setSalle(initialSalle);
+                        tog_AddAbonnement();
+                        setAbonnement(initialAbonnement);
                       }}
                     >
-                      Close
+                      Fermer
                     </Button>
                     <Button
                       onClick={() => {
-                        tog_AddSalle();
+                        tog_AddAbonnement();
                       }}
                       type="submit"
                       variant="success"
@@ -469,7 +595,7 @@ const Abonnements = () => {
                 </Row>
               </Form>
             </Modal.Body>
-          </Modal> */}
+          </Modal>
           {/* <Modal
             className="fade"
             id="createModal"

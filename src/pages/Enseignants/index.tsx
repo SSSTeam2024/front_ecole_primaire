@@ -32,14 +32,9 @@ const Enseignants = () => {
   const { data: AllMatieres = [] } = useFetchMatieresQuery();
   const allMatieres = AllMatieres.flatMap((item) => item.matieres);
 
-  // Step 2: Extract the names of the matieres
   const allMatiereNames = allMatieres.map((matiere) => matiere.nom_matiere);
 
-  // Step 3: Use a Set to remove duplicate names
   const uniqueMatiereNames = Array.from(new Set(allMatiereNames));
-
-  // uniqueMatiereNames now contains all unique matiere names
-  console.log(uniqueMatiereNames);
 
   const [deleteEnseignant] = useDeleteEnseignantMutation();
 
@@ -262,14 +257,14 @@ const Enseignants = () => {
     if (searchTerm) {
       filteredEnseignants = filteredEnseignants.filter(
         (enseignant: any) =>
-          enseignant
-            ?.nom_enseignant!.toLowerCase()
+          enseignant?.nom_enseignant
+            ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          enseignant
-            ?.prenom_enseignant!.toLowerCase()
+          enseignant?.prenom_enseignant
+            ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          enseignant
-            ?.phone_enseignant!.toLowerCase()
+          enseignant?.phone_enseignant
+            ?.toLowerCase()
             .includes(searchTerm.toLowerCase())
       );
     }
@@ -278,11 +273,6 @@ const Enseignants = () => {
   };
 
   const enseignantLocation = useLocation();
-
-  const { data: rendezvous = [] } = useFetchRendezvousByEnseignantIdQuery(
-    enseignantLocation?.state?._id!
-  );
-
   return (
     <React.Fragment>
       <div className="page-content">
@@ -492,7 +482,7 @@ const Enseignants = () => {
             </Row>
             <Row className="mb-3">
               <Col lg={3}>
-                <span className="fw-medium">Prenom</span>
+                <span className="fw-medium">Prénom</span>
               </Col>
               <Col lg={9}>
                 <i>{enseignantLocation?.state?.prenom_enseignant!}</i>
@@ -506,36 +496,14 @@ const Enseignants = () => {
                 <i>{enseignantLocation?.state?.phone!}</i>
               </Col>
             </Row>
-            {rendezvous.length === 0 ? (
-              <Row className="d-flew justify-content-center">
-                <Col lg={3}>
-                  <i>Aucun Rendez-vous pour l'enseignant</i>
-                </Col>
-              </Row>
-            ) : (
-              <Row className="mb-3">
-                {rendezvous.map((rendezvous) => (
-                  <Col lg={12} key={rendezvous?._id!} className="mb-4">
-                    <div className="card h-100">
-                      <div className="card-body">
-                        <h5 className="card-title fw-medium">
-                          {rendezvous.titre}
-                        </h5>
-                        <p className="card-text">
-                          <strong>Description:</strong> {rendezvous.description}
-                        </p>
-                        <p className="card-text">
-                          <strong>Date:</strong> {rendezvous.date}
-                        </p>
-                        <p className="card-text">
-                          <strong>Heure:</strong> {rendezvous.heure}
-                        </p>
-                      </div>
-                    </div>
-                  </Col>
-                ))}
-              </Row>
-            )}
+            <Row className="mb-3">
+              <Col lg={3}>
+                <span className="fw-medium">Matière</span>
+              </Col>
+              <Col lg={9}>
+                <i>{enseignantLocation?.state?.matiere!}</i>
+              </Col>
+            </Row>
           </Offcanvas.Body>
         </Offcanvas>
       </div>

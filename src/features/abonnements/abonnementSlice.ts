@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Abonnement {
   _id?: string;
-  cantine: string
+  cantine?: string | null
   eleve: string;
   type: string;
   status: string
