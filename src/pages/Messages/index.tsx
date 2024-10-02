@@ -152,13 +152,20 @@ const Messages = () => {
   const getFilteredParents = () => {
     let filteredParents = AllParents;
 
-    if (searchTerm) {
+    if (searchTerm.trim()) {
       filteredParents = filteredParents.filter(
         (parent: any) =>
-          parent
-            ?.prenom_parent!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          parent?.phone!.toLowerCase().includes(searchTerm.toLowerCase())
+          parent?.prenom_parent?.toLowerCase().trim() ===
+            searchTerm.toLowerCase().trim() ||
+          parent?.phone!.toLowerCase().trim() ===
+            searchTerm.toLowerCase().trim() ||
+          parent?.fils.some(
+            (eleve: any) =>
+              eleve.nom.toLowerCase().trim() ===
+                searchTerm.toLowerCase().trim() ||
+              eleve.prenom.toLowerCase().trim() ===
+                searchTerm.toLowerCase().trim()
+          )
       );
     }
 
@@ -197,32 +204,42 @@ const Messages = () => {
                 </Card.Header>
                 <Card.Body style={{ overflowY: "scroll", maxHeight: "686px" }}>
                   <ul className="list-group">
-                    {getFilteredParents().map((parent) => (
-                      <li
-                        key={parent._id}
-                        className="list-group-item"
-                        aria-disabled="true"
-                        onClick={() => handleParentClick(parent._id)}
-                        style={{
-                          cursor: "pointer",
-                          backgroundColor:
-                            selectedParentId === parent._id ? "#f0f0f0" : "",
-                        }}
-                      >
-                        <div className="d-flex align-items-center">
-                          <div className="flex-shrink-0">
-                            <img
-                              src={avatar}
-                              alt=""
-                              className="avatar-xs rounded-circle"
-                            />
+                    {getFilteredParents().map((parent) =>
+                      parent.fils?.map((eleve) => (
+                        <li
+                          key={parent._id}
+                          className="list-group-item"
+                          aria-disabled="true"
+                          onClick={() => handleParentClick(parent._id)}
+                          style={{
+                            cursor: "pointer",
+                            backgroundColor:
+                              selectedParentId === parent._id ? "#f0f0f0" : "",
+                          }}
+                        >
+                          <div className="d-flex align-items-center">
+                            <div className="flex-shrink-0">
+                              <img
+                                src={avatar}
+                                alt=""
+                                className="avatar-xs rounded-circle"
+                              />
+                            </div>
+                            <div className="flex-grow-1 ms-2">
+                              <strong>
+                                <i>{parent?.prenom_parent!} </i>
+                              </strong>
+                              :{" "}
+                              <i>
+                                {eleve.prenom} {eleve.nom}
+                              </i>{" "}
+                              __ {eleve.classe.nom_classe} :{" "}
+                              <strong>{parent?.phone!}</strong>
+                            </div>
                           </div>
-                          <div className="flex-grow-1 ms-2">
-                            {parent?.prenom_parent!} : {parent?.phone!}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
+                        </li>
+                      ))
+                    )}
                   </ul>
                 </Card.Body>
               </Card>
