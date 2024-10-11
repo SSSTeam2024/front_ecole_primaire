@@ -11,6 +11,12 @@ export interface Absence {
   trimestre: string
 }
 
+interface UpdateAbsenceData {
+  _id?: string;
+  updateData: any;
+  eleves: any[];
+}
+
 export const absenceSlice = createApi({
   reducerPath: "Absence",
   baseQuery: fetchBaseQuery({
@@ -42,7 +48,7 @@ export const absenceSlice = createApi({
         },
         invalidatesTags: ["Absence"],
       }),
-      updateAbsence: builder.mutation<void, Absence>({
+      updateAbsence: builder.mutation<void, UpdateAbsenceData>({
         query: ({ _id, ...rest }) => ({
           url: `/updateAbsence/${_id}`,
           method: "PATCH",

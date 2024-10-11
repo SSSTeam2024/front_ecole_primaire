@@ -36,6 +36,14 @@ export const observationSlice = createApi({
         },
         invalidatesTags: ["Observation"],
       }),
+      updateObservation: builder.mutation<void, Observation>({
+        query: ({ _id, ...rest }) => ({
+          url: `/updateObservation/${_id}`,
+          method: "PATCH",
+          body: rest,
+        }),
+        invalidatesTags: ["Observation"],
+      }),
       deleteObservation: builder.mutation<void, Observation>({
         query: (_id) => ({
           url: `/deleteObservation/${_id}`,
@@ -50,5 +58,6 @@ export const observationSlice = createApi({
 export const {
  useAddObservationMutation,
  useFetchObservationsQuery,
- useDeleteObservationMutation
+ useDeleteObservationMutation,
+ useUpdateObservationMutation
 } = observationSlice;

@@ -30,6 +30,8 @@ import {
   useFetchSmsSettingsQuery,
   useUpdateSmsSettingByIdMutation,
 } from "features/smsSettings/smsSettings";
+import Select from "react-select";
+import UpdateDiscipline from "./UpdateDiscipline";
 
 const Discipline = () => {
   const { data = [] } = useFetchDisciplinesQuery();
@@ -126,11 +128,16 @@ const Discipline = () => {
     setSelectedPar(value);
   };
 
-  const [selectedEleve, setSelectedEleve] = useState<string>("");
+  const optionColumnsTable = students.map((eleve: any) => ({
+    value: eleve?._id!,
+    label: `${eleve?.prenom!} ${eleve?.nom!}`,
+  }));
 
-  const handleSelectEleve = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedEleve(value);
+  const [selectedColumnValues, setSelectedColumnValues] = useState<any[]>([]);
+
+  const handleSelectValueColumnChange = (selectedOption: any) => {
+    const values = selectedOption.map((option: any) => option.value);
+    setSelectedColumnValues(values);
   };
 
   const [selectedType, setSelectedType] = useState<string>("");
@@ -144,6 +151,12 @@ const Discipline = () => {
     useState<boolean>(false);
   function tog_AddObservation() {
     setmodal_AddObservation(!modal_AddObservation);
+  }
+
+  const [modal_UpdateDiscipline, setmodal_UpdateDiscipline] =
+    useState<boolean>(false);
+  function tog_UpdateDiscipline() {
+    setmodal_UpdateDiscipline(!modal_UpdateDiscipline);
   }
 
   const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
@@ -185,7 +198,7 @@ const Discipline = () => {
   const [createObservation] = useAddDisciplineMutation();
 
   const initialObservation = {
-    eleve: "",
+    eleve: [""],
     type: "",
     texte: "",
     editeur: "",
@@ -193,6 +206,7 @@ const Discipline = () => {
     fichier_base64_string: "",
     fichier_extension: "",
     fichier: "",
+    classe: "",
   };
 
   const [observation, setObservation] = useState(initialObservation);
@@ -206,6 +220,7 @@ const Discipline = () => {
     fichier_base64_string,
     fichier_extension,
     fichier,
+    classe,
   } = observation;
 
   const onChangeObservation = (
@@ -239,9 +254,10 @@ const Discipline = () => {
     e.preventDefault();
     try {
       observation["date"] = formatDate(selectedDate);
-      observation["eleve"] = selectedEleve;
+      observation["eleve"] = selectedColumnValues;
       observation["type"] = selectedType;
       observation["editeur"] = selectedPar;
+      observation["classe"] = selectedClasse;
       createObservation(observation)
         .then(() => notifySuccess("La discipline a été créée avec succès"))
         .then(() => setObservation(initialObservation));
@@ -253,11 +269,17 @@ const Discipline = () => {
   const columns = [
     {
       name: <span className="font-weight-bold fs-13">Elève</span>,
-      selector: (row: any) => (
-        <span>
-          {row?.eleve?.nom!} {row?.eleve?.prenom!}
-        </span>
-      ),
+      selector: (row: any) => {
+        return (
+          <ul className="vstack gap-2 list-unstyled mb-0">
+            {row?.eleve?.map((eleve: any) => (
+              <li key={eleve._id}>
+                {eleve.prenom} {eleve.nom}
+              </li>
+            ))}
+          </ul>
+        );
+      },
       sortable: true,
     },
     {
@@ -305,7 +327,12 @@ const Discipline = () => {
               </Link>
             </li>
             <li>
-              <Link to="#" className="badge badge-soft-success edit-item-btn">
+              <Link
+                to="#"
+                className="badge badge-soft-success edit-item-btn"
+                onClick={() => tog_UpdateDiscipline()}
+                state={row}
+              >
                 <i
                   className="ri-edit-2-line"
                   style={{
@@ -374,24 +401,31 @@ const Discipline = () => {
   };
 
   const getFilteredDisciplines = () => {
-    let filteredDisciplines = data;
+    let filteredDisciplines = [...data];
 
     if (searchTerm) {
-      filteredDisciplines = filteredDisciplines.filter(
-        (discipline: any) =>
-          discipline?.eleve
-            ?.nom!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          discipline?.eleve
-            ?.prenom!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          discipline?.type!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          discipline?.date!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          discipline?.editeur!.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filteredDisciplines = filteredDisciplines.filter((discipline: any) => {
+        const eleveMatch = discipline?.eleve?.some(
+          (eleve: any) =>
+            eleve?.nom!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            eleve?.prenom!.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        const typeMatch = discipline
+          ?.type!.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const dateMatch = discipline
+          ?.date!.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const editeurMatch = discipline
+          ?.editeur!.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+
+        return eleveMatch || typeMatch || dateMatch || editeurMatch;
+      });
     }
 
-    return filteredDisciplines;
+    return filteredDisciplines.reverse();
   };
 
   return (
@@ -525,19 +559,13 @@ const Discipline = () => {
                     <Form.Label htmlFor="eleve">Elève</Form.Label>
                   </Col>
                   <Col lg={8}>
-                    <select
-                      className="form-select text-muted"
-                      name="eleve"
-                      id="eleve"
-                      onChange={handleSelectEleve}
-                    >
-                      <option value="">Choisir</option>
-                      {students.map((etudiant) => (
-                        <option value={etudiant?._id!} key={etudiant?._id!}>
-                          {etudiant.nom} {etudiant.prenom}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      closeMenuOnSelect={false}
+                      isMulti
+                      options={optionColumnsTable}
+                      onChange={handleSelectValueColumnChange}
+                      placeholder="Choisir..."
+                    />
                   </Col>
                 </Row>
                 <Row className="mb-4">
@@ -658,6 +686,28 @@ const Discipline = () => {
               </Form>
             </Modal.Body>
           </Modal>
+          <Modal
+            className="fade"
+            id="createModal"
+            show={modal_UpdateDiscipline}
+            onHide={() => {
+              tog_UpdateDiscipline();
+            }}
+            centered
+            size="lg"
+          >
+            <Modal.Header closeButton>
+              <h1 className="modal-title fs-5" id="createModalLabel">
+                Modifier Discipline
+              </h1>
+            </Modal.Header>
+            <Modal.Body>
+              <UpdateDiscipline
+                modal_UpdateDiscipline={modal_UpdateDiscipline}
+                setmodal_UpdateDiscipline={setmodal_UpdateDiscipline}
+              />
+            </Modal.Body>
+          </Modal>
         </Container>
         <Offcanvas
           show={showObservation}
@@ -674,10 +724,13 @@ const Discipline = () => {
                 <span className="fw-medium">Elève</span>
               </Col>
               <Col lg={9}>
-                <i>
-                  {observationLocation?.state?.eleve?.nom!}{" "}
-                  {observationLocation?.state?.eleve?.prenom!}
-                </i>
+                <ul className="vstack gap-2 list-unstyled mb-0">
+                  {observationLocation?.state?.eleve?.map((eleve: any) => (
+                    <li key={eleve._id}>
+                      {eleve.prenom} {eleve.nom}
+                    </li>
+                  ))}
+                </ul>
               </Col>
             </Row>
             <Row className="mb-3">

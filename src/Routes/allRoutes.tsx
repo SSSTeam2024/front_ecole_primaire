@@ -43,6 +43,10 @@ import Messages from "pages/Messages";
 import DetailsEtudiant from "pages/Etudiants/DetailsEtudiant";
 import UpdateEtudiant from "pages/Etudiants/UpdateEtudiant";
 import Abonnements from "pages/Abonnements";
+import UpdateCarnet from "pages/Carnets/UpdateCarnet";
+import UpdateNote from "pages/Notes/UpdateNote";
+import UpdateAbsence from "pages/Absence/UpdateAbsence";
+import MessageCollectif from "pages/Messages/MessageCollectif";
 
 const authProtectedRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
@@ -65,10 +69,14 @@ const authProtectedRoutes = [
   { path: "/compte_rendu", component: <CompteRendu /> },
   { path: "/matieres", component: <Matieres /> },
   { path: "/niveaux", component: <Niveaux /> },
-  { path: "/messages", component: <Messages /> },
+
   { path: "/cantines", component: <Cantines /> },
   { path: "/salles", component: <Salles /> },
   { path: "/abonnements", component: <Abonnements /> },
+
+  // Messagerie Section
+  { path: "/messages-individuels", component: <Messages /> },
+  { path: "/messages-groupe", component: <MessageCollectif /> },
 
   // { path: "/evaluations", component: <Evaluations /> },
   { path: "/rendez-vous", component: <Rendezvous /> },
@@ -89,13 +97,17 @@ const authProtectedRoutes = [
   // Note Section
   { path: "/notes", component: <Notes /> },
   { path: "/nouveau-note", component: <CreateNote /> },
+  { path: "/modifier-note", component: <UpdateNote /> },
+
   // Absence Section
   { path: "/absence", component: <Absence /> },
   { path: "/nouveau-absence", component: <CreateAbsence /> },
+  { path: "/modifier-absence", component: <UpdateAbsence /> },
 
   // Carnet Section
   { path: "/bulletins", component: <Carnets /> },
   { path: "/nouveau-bulletin", component: <CreateCarnet /> },
+  { path: "/modifier-bulletin", component: <UpdateCarnet /> },
 
   // Sms Section
   { path: "/sms-parents", component: <ParentsSmses /> },

@@ -5,9 +5,9 @@ export interface Emploi {
   titre: string;
   date: string;
   classe: string;
-  image_base64_string: string;
-  image_extension: string;
-  image: string;
+  image_base64_string?: string;
+  image_extension?: string;
+  image?: string;
 }
 
 export const emploiSlice = createApi({
@@ -34,6 +34,14 @@ export const emploiSlice = createApi({
         },
         invalidatesTags: ["Emploi"],
       }),
+      updateEmploi: builder.mutation<void, Emploi>({
+        query: ({ _id, ...rest }) => ({
+          url: `/updateEmploi/${_id}`,
+          method: "PATCH",
+          body: rest,
+        }),
+        invalidatesTags: ["Emploi"],
+      }),
         deleteEmploi: builder.mutation<void, Emploi>({
           query: (_id) => ({
             url: `/deleteEmploi/${_id}`,
@@ -45,5 +53,5 @@ export const emploiSlice = createApi({
   },
 });
 
-export const { useAddEmploiMutation, useFetchEmploisQuery, useDeleteEmploiMutation } =
+export const { useAddEmploiMutation, useFetchEmploisQuery, useDeleteEmploiMutation, useUpdateEmploiMutation } =
 emploiSlice;

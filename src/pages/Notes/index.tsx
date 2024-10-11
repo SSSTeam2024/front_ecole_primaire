@@ -182,10 +182,9 @@ const Notes = () => {
             </li>
             <li>
               <Link
-                to="#"
+                to="/modifier-note"
                 className="badge badge-soft-success edit-item-btn"
-                // onClick={() => tog_UpdateNote()}
-                // state={row}
+                state={row}
               >
                 <i
                   className="ri-edit-2-line"
@@ -344,28 +343,6 @@ const Notes = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Modal
-            className="fade"
-            id="createModal"
-            show={modal_UpdateNote}
-            onHide={() => {
-              tog_UpdateNote();
-            }}
-            centered
-            size="lg"
-          >
-            <Modal.Header closeButton>
-              <h1 className="modal-title fs-5" id="createModalLabel">
-                Modifier Note
-              </h1>
-            </Modal.Header>
-            <Modal.Body>
-              <UpdateNote
-                modal_UpdateNote={modal_UpdateNote}
-                setmodal_UpdateNote={setmodal_UpdateNote}
-              />
-            </Modal.Body>
-          </Modal>
         </Container>
         <Offcanvas
           show={showObservation}

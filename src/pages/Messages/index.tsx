@@ -14,7 +14,6 @@ import {
 import { useFetchParentsQuery } from "features/parents/parentSlice";
 import { formatDate, formatTime } from "helpers/data_time_format";
 import avatar from "assets/images/3607444.png";
-import "./searchBox.css";
 import { convertToBase64 } from "helpers/base64_convert";
 
 const Messages = () => {
@@ -179,7 +178,10 @@ const Messages = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumb title="Messages" pageTitle="Tableau de bord" />
+          <Breadcrumb
+            title="Messages Individuels"
+            pageTitle="Tableau de bord"
+          />
           <Row>
             <Col lg={4}>
               <Card>

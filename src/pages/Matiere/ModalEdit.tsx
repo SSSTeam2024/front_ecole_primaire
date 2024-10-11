@@ -1,14 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
-import {
-  Matiere,
-  useFetchMatieresQuery,
-  useUpdateMatiereMutation,
-} from "features/matieres/matiereSlice";
-import Select from "react-select";
-import { useFetchClassesQuery } from "features/classes/classeSlice";
+import { useUpdateMatiereMutation } from "features/matieres/matiereSlice";
 import { useGetNiveauxQuery } from "features/niveaux/niveauxSlice";
 
 interface ChildProps {
@@ -20,62 +14,12 @@ const ModalEdit: React.FC<ChildProps> = ({
   modal_UpdateMatiere,
   setmodal_UpdateMatiere,
 }) => {
-  const customStyles = {
-    control: (styles: any, { isFocused }: any) => ({
-      ...styles,
-      minHeight: "41px",
-      borderColor: isFocused ? "#4b93ff" : "#e9ebec",
-      boxShadow: isFocused ? "0 0 0 1px #4b93ff" : styles.boxShadow,
-      ":hover": {
-        borderColor: "#4b93ff",
-      },
-    }),
-    multiValue: (styles: any, { data }: any) => {
-      return {
-        ...styles,
-        backgroundColor: "#4b93ff",
-      };
-    },
-    multiValueLabel: (styles: any, { data }: any) => ({
-      ...styles,
-      backgroundColor: "#4b93ff",
-      color: "white",
-    }),
-    multiValueRemove: (styles: any, { data }: any) => ({
-      ...styles,
-      color: "white",
-      backgroundColor: "#4b93ff",
-      ":hover": {
-        backgroundColor: "#4b93ff",
-        color: "white",
-      },
-    }),
-  };
-
+  const [showNiveau, setShowNiveau] = useState<boolean>(false);
   const matiereLocation = useLocation();
-  const location = useLocation();
-  const matiereToEdit = location.state?.matiere;
 
   const { data: AllNiveaux = [] } = useGetNiveauxQuery();
-  const { data: AllMatieres = [] } = useFetchMatieresQuery();
-  const [matiereName, setMatiereName] = useState<string>(
-    matiereLocation?.state?.nom_matiere ?? ""
-  );
-  const [matiere_id, setMatiereId] = useState<string>(
-    matiereLocation?.state?._id! ?? ""
-  );
-
-  const handleMatiereName = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMatiereName(e.target.value);
-  };
 
   const [updateMatiere] = useUpdateMatiereMutation();
-
-  const initialMatiere = {
-    nom_matiere: "",
-  };
-
-  const [matiere, setMatiere] = useState(initialMatiere);
 
   const notifySuccess = () => {
     Swal.fire({
@@ -97,128 +41,145 @@ const ModalEdit: React.FC<ChildProps> = ({
     });
   };
 
-  const [selectedValues, setSelectedValues] = useState(
-    matiereLocation?.state?.classe || []
+  const {
+    _id,
+    matieres: initialMatieres,
+    niveau: initialNiveau,
+  } = matiereLocation.state;
+
+  const [selectedNiveau, setSelectedNiveau] = useState<string>(
+    initialNiveau || ""
   );
 
-  const [selectedMatiere, setSelectedMatiere] = useState<Matiere>({
-    _id: "",
-    niveau: "",
-    matieres: [{ nom_matiere: "" }],
+  const [formValues, setFormValues] = useState({
+    niveau: initialNiveau || "",
+    matieres: initialMatieres || [],
   });
 
-  useEffect(() => {
-    if (matiereToEdit) {
-      setSelectedMatiere(matiereToEdit);
-    }
-  }, [matiereToEdit]);
+  const handleSelectNiveau = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedNiveau(value);
+    setFormValues((prevState) => ({
+      ...prevState,
+      niveau: value,
+    }));
+  };
+
+  const handleMatiereChange = (index: number, event: any) => {
+    const updatedMatieres = [...formValues.matieres];
+    updatedMatieres[index].nom_matiere = event.target.value;
+    setFormValues({ ...formValues, matieres: updatedMatieres });
+  };
+
+  const handleDeleteMatiere = (index: number) => {
+    const updatedMatieres = formValues.matieres.filter(
+      (_: any, i: number) => i !== index
+    );
+    setFormValues({ ...formValues, matieres: updatedMatieres });
+  };
 
   const handleAddMatiere = () => {
-    setSelectedMatiere((prevState) => ({
-      ...prevState,
-      matieres: [...prevState.matieres, { nom_matiere: "" }],
-    }));
+    const newMatiere = { nom_matiere: "" };
+    setFormValues({
+      ...formValues,
+      matieres: [...formValues.matieres, newMatiere],
+    });
   };
 
-  const handleRemoveMatiere = (index: number) => {
-    setSelectedMatiere((prevState) => ({
-      ...prevState,
-      matieres: prevState.matieres.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleSelectMatiereToUpdate = (selectedId: string) => {
-    const selectedMatiere = AllMatieres.find(
-      (matiere) => matiere._id === selectedId
-    );
-    if (selectedMatiere) {
-      setSelectedMatiere(selectedMatiere); // Populate the form with the selected matiere
+  const handleSubmit = (event: any) => {
+    event.preventDefault();
+    try {
+      updateMatiere({ _id, ...formValues }).then(() => notifySuccess());
+    } catch (error) {
+      notifyError("Quelque chose s'est mal passé, Veuillez Réessayer");
     }
-  };
-
-  const handleMatiereChange = (index: number, value: string) => {
-    const updatedMatieres = [...selectedMatiere.matieres];
-    updatedMatieres[index].nom_matiere = value;
-    setSelectedMatiere({ ...selectedMatiere, matieres: updatedMatieres });
-  };
-
-  const onSubmitMatiere = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    updateMatiere({ _id: selectedMatiere._id, ...selectedMatiere });
   };
 
   return (
     <React.Fragment>
-      <Form className="create-form" onSubmit={onSubmitMatiere}>
+      <Form className="create-form" onSubmit={handleSubmit}>
         <Row className="mb-4">
           <Col lg={3}>
             <Form.Label htmlFor="niveau">Niveau</Form.Label>
           </Col>
           <Col lg={8}>
-            <select
-              className="form-select text-muted"
-              name="niveau"
-              id="niveau"
-              value={selectedMatiere.niveau}
-              onChange={(e) =>
-                setSelectedMatiere({
-                  ...selectedMatiere,
-                  niveau: e.target.value,
-                })
-              }
-            >
-              <option value="">Choisir</option>
-              {AllNiveaux.map((niveau: any) => (
-                <option value={niveau._id} key={niveau._id}>
-                  {niveau.nom_niveau}
-                </option>
-              ))}
-            </select>
+            <div className="mb-3">
+              <span>{matiereLocation?.state?.niveau.nom_niveau!}</span>
+              <div
+                className="d-flex justify-content-start mt-n3"
+                style={{ marginLeft: "140px" }}
+              >
+                <label
+                  htmlFor="niveau"
+                  className="mb-0"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="right"
+                  title="Choisir Niveau"
+                >
+                  <span
+                    className="d-inline-block"
+                    onClick={() => setShowNiveau(!showNiveau)}
+                  >
+                    <span className="text-success cursor-pointer">
+                      <i className="bi bi-pen fs-14"></i>
+                    </span>
+                  </span>
+                </label>
+              </div>
+              {showNiveau && (
+                <select
+                  className="form-select text-muted"
+                  name="niveau"
+                  id="niveau"
+                  onChange={handleSelectNiveau}
+                >
+                  <option value="">Choisir</option>
+                  {AllNiveaux.map((niveau) => (
+                    <option value={niveau?._id!} key={niveau?._id!}>
+                      {niveau?.nom_niveau!}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </Col>
         </Row>
-
-        {selectedMatiere.matieres.map((item, index) => (
-          <Row className="mb-4" key={index}>
-            <Col lg={3}>
-              <Form.Label htmlFor={`nom_matiere_${index}`}>
-                Matière {index + 1}
-              </Form.Label>
-            </Col>
-            <Col lg={6}>
-              <Form.Control
+        <div className="form-group mb-4">
+          <label>Matières</label>
+          {formValues.matieres.map((matiere: any, index: number) => (
+            <div key={index} className="d-flex align-items-center mb-2 gap-2">
+              <input
                 type="text"
-                id={`nom_matiere_${index}`}
-                name={`nom_matiere_${index}`}
-                placeholder="Matière"
-                className="w-100"
-                value={item.nom_matiere}
-                onChange={(e) => handleMatiereChange(index, e.target.value)}
+                value={matiere.nom_matiere}
+                onChange={(e) => handleMatiereChange(index, e)}
+                className="form-control"
               />
-            </Col>
-            <Col lg={1} className="m-1">
-              {index === selectedMatiere.matieres.length - 1 && (
-                <button
-                  type="button"
-                  className="btn btn-soft-info btn-icon"
-                  onClick={handleAddMatiere}
-                >
-                  <i className="ri-add-line"></i>
-                </button>
-              )}
-            </Col>
-            <Col lg={1} className="m-1">
               <button
                 type="button"
-                className="btn btn-danger btn-icon"
-                onClick={() => handleRemoveMatiere(index)}
+                onClick={() => handleDeleteMatiere(index)}
+                className="btn btn-danger"
               >
-                <i className="ri-delete-bin-5-line"></i>
+                <i className="ri-delete-bin-2-line"></i>
               </button>
-            </Col>
-          </Row>
-        ))}
+            </div>
+          ))}
+          <div className="form-group float-end">
+            <button
+              type="button"
+              onClick={handleAddMatiere}
+              className="btn btn-success"
+            >
+              <i className="ri-add-fill"></i>{" "}
+            </button>
+          </div>
+        </div>
 
-        <Button type="submit" variant="success" id="addNew">
+        <Button
+          type="submit"
+          variant="success"
+          id="addNew"
+          onClick={() => setmodal_UpdateMatiere(!modal_UpdateMatiere)}
+        >
           Mettre à jour
         </Button>
       </Form>

@@ -2,11 +2,12 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Discipline {
   _id?: string;
-  eleve: string;
+  eleve: string[];
   type: string;
   texte: string;
   editeur: string;
   date: string;
+  classe: string;
   fichier_base64_string: string;
   fichier_extension: string;
   fichier: string;
@@ -43,6 +44,14 @@ export const disciplineSlice = createApi({
         },
         invalidatesTags: ["Discipline"],
       }),
+      updateDiscipline: builder.mutation<void, Discipline>({
+        query: ({ _id, ...rest }) => ({
+          url: `/updateDiscipline/${_id}`,
+          method: "PATCH",
+          body: rest,
+        }),
+        invalidatesTags: ["Discipline"],
+      }),
         deleteDiscipline: builder.mutation<void, Discipline>({
           query: (_id) => ({
             url: `/deleteDiscipline/${_id}`,
@@ -54,5 +63,5 @@ export const disciplineSlice = createApi({
   },
 });
 
-export const { useAddDisciplineMutation, useFetchDisciplinesQuery, useDeleteDisciplineMutation, useGetDisciplinesByEleveIdMutation } =
+export const { useAddDisciplineMutation, useFetchDisciplinesQuery, useDeleteDisciplineMutation, useGetDisciplinesByEleveIdMutation, useUpdateDisciplineMutation } =
   disciplineSlice;

@@ -181,10 +181,9 @@ const Absence = () => {
             </li>
             <li>
               <Link
-                to="#"
+                to="/modifier-absence"
                 className="badge badge-soft-success edit-item-btn"
-                // onClick={() => tog_UpdateAbsence()}
-                // state={row}
+                state={row}
               >
                 <i
                   className="ri-edit-2-line"

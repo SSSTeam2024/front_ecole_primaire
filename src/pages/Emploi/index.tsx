@@ -27,6 +27,7 @@ import {
   useFetchSmsSettingsQuery,
   useUpdateSmsSettingByIdMutation,
 } from "features/smsSettings/smsSettings";
+import UpdateEmploi from "./UpdateEmploi";
 
 const Emploi = () => {
   const { data = [] } = useFetchEmploisQuery();
@@ -42,6 +43,11 @@ const Emploi = () => {
   const handleDateChange = (selectedDates: Date[]) => {
     setSelectedDate(selectedDates[0]);
   };
+
+  const [modal_UpdateEmploi, setmodal_UpdateEmploi] = useState<boolean>(false);
+  function tog_UpdateEmploi() {
+    setmodal_UpdateEmploi(!modal_UpdateEmploi);
+  }
 
   const notifySuccess = (msg: string) => {
     Swal.fire({
@@ -251,7 +257,12 @@ const Emploi = () => {
               </Link>
             </li>
             <li>
-              <Link to="#" className="badge badge-soft-success edit-item-btn">
+              <Link
+                to="#"
+                className="badge badge-soft-success edit-item-btn"
+                onClick={() => tog_UpdateEmploi()}
+                state={row}
+              >
                 <i
                   className="ri-edit-2-line"
                   style={{
@@ -295,6 +306,28 @@ const Emploi = () => {
 
   const observationLocation = useLocation();
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const getFilteredEmplois = () => {
+    let filteredEmplois = [...data];
+
+    if (searchTerm) {
+      filteredEmplois = filteredEmplois.filter(
+        (emploi: any) =>
+          emploi?.titre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          emploi?.classe
+            ?.nom_classe!.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          emploi?.date?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredEmplois.reverse();
+  };
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -310,6 +343,8 @@ const Emploi = () => {
                         type="text"
                         className="form-control search"
                         placeholder="Rechercher ..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
                       <i className="ri-search-line search-icon"></i>
                     </div>
@@ -375,7 +410,11 @@ const Emploi = () => {
                 </Row>
               </Card.Header>
               <Card.Body>
-                <DataTable columns={columns} data={data} pagination />
+                <DataTable
+                  columns={columns}
+                  data={getFilteredEmplois()}
+                  pagination
+                />
               </Card.Body>
             </Card>
           </Col>
@@ -533,7 +572,7 @@ const Emploi = () => {
           style={{ width: "40%" }}
         >
           <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Détails d'emplo</Offcanvas.Title>
+            <Offcanvas.Title>Détails d'emploi</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
             <Row className="mb-3">
@@ -579,6 +618,28 @@ const Emploi = () => {
             </Row>
           </Offcanvas.Body>
         </Offcanvas>
+        <Modal
+          className="fade"
+          id="createModal"
+          show={modal_UpdateEmploi}
+          onHide={() => {
+            tog_UpdateEmploi();
+          }}
+          centered
+          size="lg"
+        >
+          <Modal.Header closeButton>
+            <h1 className="modal-title fs-5" id="createModalLabel">
+              Modifier Emploi
+            </h1>
+          </Modal.Header>
+          <Modal.Body>
+            <UpdateEmploi
+              modal_UpdateEmploi={modal_UpdateEmploi}
+              setmodal_UpdateEmploi={setmodal_UpdateEmploi}
+            />
+          </Modal.Body>
+        </Modal>
       </div>
     </React.Fragment>
   );

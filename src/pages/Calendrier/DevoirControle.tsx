@@ -8,8 +8,6 @@ import {
   Form,
   Button,
   Offcanvas,
-  Tab,
-  Nav,
 } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import Breadcrumb from "Common/BreadCrumb";
@@ -17,7 +15,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
-import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 import { useFetchMatieresByClasseIdQuery } from "features/matieres/matiereSlice";
 import UpdateCalendrier from "./UpdateCalendrier";
 import {
@@ -44,8 +41,6 @@ const DevoirControle = () => {
   const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
 
   const { data: AllClasses = [] } = useFetchClassesQuery();
-
-  const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
 
   const [deleteCalendrier] = useDeleteCalendrierMutation();
 
@@ -170,15 +165,6 @@ const DevoirControle = () => {
     setSelectedSalle(value);
   };
 
-  const [selectedEnseignant, setSelectedEnseignant] = useState<string>("");
-
-  const handleSelectEnseignant = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = event.target.value;
-    setSelectedEnseignant(value);
-  };
-
   const [selectedMatiere, setSelectedMatiere] = useState<string>("");
 
   const handleSelectMatiere = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -242,87 +228,6 @@ const DevoirControle = () => {
     // enseignant,
   } = calendrier;
 
-  const [calendrierList, setCalendrierList] = useState([initialCalendrier]);
-
-  const handleAddRow = () => {
-    setCalendrierList([...calendrierList, initialCalendrier]);
-  };
-
-  const handleDeleteRow = (index: number) => {
-    const updatedList = calendrierList.filter((_, i) => i !== index);
-    setCalendrierList(updatedList);
-  };
-
-  const handleSelectChange = (e: any, index: number) => {
-    const { name, value } = e.target;
-    const updatedCalendrierList = [...calendrierList];
-    updatedCalendrierList[index] = {
-      ...updatedCalendrierList[index],
-      [name]: value,
-    };
-    setCalendrierList(updatedCalendrierList);
-  };
-
-  const handleManyDateChange = (date: Date[], index: number) => {
-    const updatedCalendrierList = [...calendrierList];
-    updatedCalendrierList[index] = {
-      ...updatedCalendrierList[index],
-      date: formatDate(date[0]), // Flatpickr returns an array, so get the first value
-    };
-    setCalendrierList(updatedCalendrierList);
-  };
-
-  const handleManyStartTimeChange = (time: Date[], index: number) => {
-    const updatedCalendrierList = [...calendrierList];
-    updatedCalendrierList[index] = {
-      ...updatedCalendrierList[index],
-      heure_debut: formatTime(time[0]),
-    };
-    setCalendrierList(updatedCalendrierList);
-  };
-
-  const handleEndManyTimeChange = (time: Date[], index: number) => {
-    const updatedCalendrierList = [...calendrierList];
-    updatedCalendrierList[index] = {
-      ...updatedCalendrierList[index],
-      heure_fin: formatTime(time[0]), // Flatpickr returns an array, so get the first value
-    };
-    setCalendrierList(updatedCalendrierList);
-  };
-
-  const handleSelectManySalle = (e: any, index: number) => {
-    const { value } = e.target;
-    const updatedCalendrierList = [...calendrierList];
-    updatedCalendrierList[index] = {
-      ...updatedCalendrierList[index],
-      salle: value,
-    };
-    setCalendrierList(updatedCalendrierList);
-  };
-
-  const onChangeCalendrier = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setCalendrier((prevState) => ({
-      ...prevState,
-      [e.target.id]: e.target.value,
-    }));
-  };
-
-  const [classetoAdd, setClasseToAdd] = useState("");
-  const [trimestretoAdd, setTrimestreToAdd] = useState("");
-
-  const handleSelectTrimestreToAdd = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = event.target.value;
-    setTrimestreToAdd(value);
-  };
-
-  const handleSelectClasseToAdd = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setClasseToAdd(e.target.value);
-  };
-
   const onSubmitCalendrier = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -339,42 +244,6 @@ const DevoirControle = () => {
         .then(() => notifySuccess("Le calendrier a été créé avec succès"))
         .then(() => setCalendrier(initialCalendrier));
       navigate("/calendrier-examen-contrôle");
-    } catch (error) {
-      notifyError(error);
-    }
-  };
-
-  const onSubmitManyCalendrier = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
-
-    try {
-      console.log("Selected Date:", selectedDate);
-      console.log("Selected Start Time:", selectedStartTime);
-      console.log("Selected End Time:", selectedEndTime);
-
-      const updatedCalendrierList = calendrierList.map((calendrier) => ({
-        ...calendrier,
-        classe: classetoAdd,
-        trimestre: trimestretoAdd,
-        type: "Synthèse",
-        // heure_fin: formatTime(selectedEndTime),
-        // heure_debut: formatTime(selectedStartTime),
-        // date: formatDate(selectedDate)!,
-      }));
-
-      console.log("Updated Calendrier List:", updatedCalendrierList);
-
-      await Promise.all(
-        updatedCalendrierList.map((calendrier) => createCalendrier(calendrier))
-      );
-
-      //  notifySuccess();
-      setCalendrierList([initialCalendrier]);
-      setClasseToAdd("");
-      setTrimestreToAdd("");
-      navigate("/calendrier-examen-synthèse");
     } catch (error) {
       notifyError(error);
     }
@@ -425,11 +294,11 @@ const DevoirControle = () => {
       selector: (row: any) => row.trimestre,
       sortable: true,
     },
-    {
-      name: <span className="font-weight-bold fs-13">Type</span>,
-      selector: (row: any) => row.type,
-      sortable: true,
-    },
+    // {
+    //   name: <span className="font-weight-bold fs-13">Type</span>,
+    //   selector: (row: any) => row.type,
+    //   sortable: true,
+    // },
     {
       name: <span className="font-weight-bold fs-13">Actions</span>,
       sortable: true,
@@ -515,7 +384,7 @@ const DevoirControle = () => {
   };
 
   const getFilteredCalendriers = () => {
-    let filteredCalendriers = data;
+    let filteredCalendriers = [...controleData];
 
     if (searchTerm) {
       filteredCalendriers = filteredCalendriers.filter(
@@ -530,12 +399,6 @@ const DevoirControle = () => {
             ?.heure_debut!.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
           calendrier?.date!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          calendrier?.enseignant
-            ?.nom_enseignant!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          calendrier?.enseignant
-            ?.prenom_enseignant!.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
           calendrier
             ?.heure_fin!.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
@@ -548,14 +411,11 @@ const DevoirControle = () => {
       );
     }
 
-    return filteredCalendriers;
+    return filteredCalendriers.reverse();
   };
 
   const { data: allMatieresByClasseId = [] } =
     useFetchMatieresByClasseIdQuery(selectedClasse);
-
-  const { data: manyAllMatieresByClasseId = [] } =
-    useFetchMatieresByClasseIdQuery(classetoAdd);
 
   return (
     <React.Fragment>
@@ -642,7 +502,11 @@ const DevoirControle = () => {
                 </Row>
               </Card.Header>
               <Card.Body>
-                <DataTable columns={columns} data={controleData} pagination />
+                <DataTable
+                  columns={columns}
+                  data={getFilteredCalendriers()}
+                  pagination
+                />
               </Card.Body>
             </Card>
           </Col>

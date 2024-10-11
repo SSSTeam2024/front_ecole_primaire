@@ -124,9 +124,9 @@ const Header = () => {
               <LayoutModeDropdown />
 
               {/* NotificationDropdown */}
-              <NotificationDropdown />
+              {/* <NotificationDropdown /> */}
               {/* Browse by Apps Dropdown */}
-              <BrowseAppsDropdown />
+              {/* <BrowseAppsDropdown /> */}
               {/* ProfileDropdown */}
               <ProfileDropdown />
             </div>

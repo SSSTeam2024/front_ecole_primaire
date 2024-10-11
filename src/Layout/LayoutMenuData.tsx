@@ -11,6 +11,7 @@ const Navdata = () => {
   const [isAccounts, setIsAccounts] = useState(false);
   const [isTools, setIsTools] = useState(false);
   const [isHelp, setIsHelp] = useState(false);
+  const [isMessagerie, setIsMessagerie] = useState(false);
   const [isMultiLevel, setIsMultiLevel] = useState(false);
 
   // Multi Level
@@ -39,6 +40,9 @@ const Navdata = () => {
 
     if (iscurrentState !== "Tracking") {
       setIsTracking(false);
+    }
+    if (iscurrentState !== "Messagerie") {
+      setIsMessagerie(false);
     }
     if (iscurrentState !== "Students") {
       setIsStudents(false);
@@ -74,6 +78,7 @@ const Navdata = () => {
     isAccounts,
     isTools,
     isHelp,
+    isMessagerie,
     isMultiLevel,
   ]);
 
@@ -272,11 +277,33 @@ const Navdata = () => {
       ],
     },
     {
-      id: "invoices",
+      id: "Messagerie",
       label: "Messages",
-      link: "/messages",
-      parentId: "invoices",
       icon: "ph ph-chat-dots",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+        setIsMessagerie(!isMessagerie);
+        setIscurrentState("Messagerie");
+        updateIconSidebar(e);
+      },
+      stateVariables: isMessagerie,
+      subItems: [
+        {
+          id: "invoices",
+          label: "Messages individuels",
+          link: "/messages-individuels",
+          parentId: "Messagerie",
+          icon: "ph ph-user-circle",
+        },
+        {
+          id: "invoices",
+          label: "Messages de groupe",
+          link: "/messages-groupe",
+          parentId: "Messagerie",
+          icon: "ph ph-users-three",
+        },
+      ],
     },
     {
       id: "invoices",
@@ -285,7 +312,6 @@ const Navdata = () => {
       parentId: "invoices",
       icon: "ph ph-files",
     },
-
     {
       id: "Help",
       label: "Restauration",

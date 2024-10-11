@@ -30,6 +30,7 @@ import {
   useFetchSmsSettingsQuery,
   useUpdateSmsSettingByIdMutation,
 } from "features/smsSettings/smsSettings";
+import UpdateObservation from "./UpdateObservation";
 
 const Observations = () => {
   const { data = [] } = useFetchObservationsQuery();
@@ -114,13 +115,6 @@ const Observations = () => {
       });
   };
 
-  const [selectedClasse, setSelectedClasse] = useState<string>("");
-
-  const handleSelectClasse = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setSelectedClasse(value);
-  };
-
   const [selectedPar, setSelectedPar] = useState<string>("");
 
   const handleSelectPar = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -132,6 +126,12 @@ const Observations = () => {
     useState<boolean>(false);
   function tog_AddObservation() {
     setmodal_AddObservation(!modal_AddObservation);
+  }
+
+  const [modal_UpdateObservation, setmodal_UpdateObservation] =
+    useState<boolean>(false);
+  function tog_UpdateObservation() {
+    setmodal_UpdateObservation(!modal_UpdateObservation);
   }
 
   const [updateAvisSmsSetting] = useUpdateSmsSettingByIdMutation();
@@ -294,7 +294,12 @@ const Observations = () => {
               </Link>
             </li>
             <li>
-              <Link to="#" className="badge badge-soft-success edit-item-btn">
+              <Link
+                to="#"
+                className="badge badge-soft-success edit-item-btn"
+                onClick={() => tog_UpdateObservation()}
+                state={row}
+              >
                 <i
                   className="ri-edit-2-line"
                   style={{
@@ -312,7 +317,11 @@ const Observations = () => {
               </Link>
             </li>
             <li>
-              <Link to="#" className="badge badge-soft-danger remove-item-btn">
+              <Link
+                to="#"
+                className="badge badge-soft-danger remove-item-btn"
+                onClick={() => AlertDelete(row._id)}
+              >
                 <i
                   className="ri-delete-bin-2-line"
                   style={{
@@ -326,7 +335,6 @@ const Observations = () => {
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.transform = "scale(1)")
                   }
-                  onClick={() => AlertDelete(row._id)}
                 ></i>
               </Link>
             </li>
@@ -678,6 +686,28 @@ const Observations = () => {
             </Row>
           </Offcanvas.Body>
         </Offcanvas>
+        <Modal
+          className="fade"
+          id="createModal"
+          show={modal_UpdateObservation}
+          onHide={() => {
+            tog_UpdateObservation();
+          }}
+          centered
+          size="lg"
+        >
+          <Modal.Header closeButton>
+            <h1 className="modal-title fs-5" id="createModalLabel">
+              Modifier Observation
+            </h1>
+          </Modal.Header>
+          <Modal.Body>
+            <UpdateObservation
+              modal_UpdateObservation={modal_UpdateObservation}
+              setmodal_UpdateObservation={setmodal_UpdateObservation}
+            />
+          </Modal.Body>
+        </Modal>
       </div>
     </React.Fragment>
   );

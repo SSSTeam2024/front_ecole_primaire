@@ -10,6 +10,12 @@ export interface Note {
   date: string;
 }
 
+interface UpdateNoteData {
+  _id?: string;
+  updateData: any;
+  eleves: any[];
+}
+
 export const noteSlice = createApi({
   reducerPath: "Note",
   baseQuery: fetchBaseQuery({
@@ -34,7 +40,7 @@ export const noteSlice = createApi({
         },
         invalidatesTags: ["Note"],
       }),
-      updateNote: builder.mutation<void, Note>({
+      updateNote: builder.mutation<void, UpdateNoteData>({
         query: ({ _id, ...rest }) => ({
           url: `/updateNote/${_id}`,
           method: "PATCH",

@@ -15,7 +15,6 @@ import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import ModalEdit from "./ModalEdit";
 import {
-  Matiere,
   MatieresToAdd,
   useAddMatiereMutation,
   useDeleteMatiereMutation,
@@ -115,8 +114,6 @@ const Matieres = () => {
 
   const [matiere, setMatiere] = useState(initialMatiere);
 
-  const { matieres, niveau } = matiere;
-
   const handleAddMatiere = () => {
     setMatiere((prevState) => ({
       ...prevState,
@@ -138,13 +135,6 @@ const Matieres = () => {
     setMatiere((prevState) => ({
       ...prevState,
       matieres: updatedMatieres,
-    }));
-  };
-
-  const onChangeMatiere = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMatiere((prevState) => ({
-      ...prevState,
-      [e.target.id]: e.target.value,
     }));
   };
 
@@ -192,8 +182,8 @@ const Matieres = () => {
               <Link
                 to="#"
                 className="badge badge-soft-success edit-item-btn"
-                // onClick={() => tog_UpdateMatiere()}
-                // state={row}
+                onClick={() => tog_UpdateMatiere()}
+                state={row}
               >
                 <i
                   className="ri-edit-2-line"

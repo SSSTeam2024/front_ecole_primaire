@@ -166,7 +166,11 @@ const Carnets = () => {
               </Link>
             </li>
             <li>
-              <Link to="#" className="badge badge-soft-success edit-item-btn">
+              <Link
+                to="/modifier-bulletin"
+                className="badge badge-soft-success edit-item-btn"
+                state={row}
+              >
                 <i
                   className="ri-edit-2-line"
                   style={{

@@ -2,12 +2,8 @@ import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
-import {
-  useFetchMatieresByClasseIdQuery,
-  useFetchMatieresQuery,
-} from "features/matieres/matiereSlice";
+import { useFetchMatieresByClasseIdQuery } from "features/matieres/matiereSlice";
 import Flatpickr from "react-flatpickr";
-import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
 import { useFetchSallesQuery } from "features/salles/salleSlice";
 import { useUpdateCalendrierMutation } from "features/calendriers/calendrierSlice";
@@ -29,10 +25,6 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
 
   const { data: AllSalles = [] } = useFetchSallesQuery();
 
-  const { data: AllMatieres = [] } = useFetchMatieresQuery();
-
-  const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
-
   const [selectedClasse, setSelectedClasse] = useState<string>("");
 
   const handleSelectClasse = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -45,15 +37,6 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
   const handleSelectMatiere = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
     setSelectedMatiere(value);
-  };
-
-  const [selectedEnseignant, setSelectedEnseignant] = useState<string>("");
-
-  const handleSelectEnseignant = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = event.target.value;
-    setSelectedEnseignant(value);
   };
 
   const [selectedSalle, setSelectedSalle] = useState<string>("");
@@ -108,8 +91,6 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
 
   const [showHeureFin, setShowHeureFin] = useState<boolean>(false);
 
-  const [showEnseignant, setShowEnseignant] = useState<boolean>(false);
-
   const [showSalle, setShowSalle] = useState<boolean>(false);
 
   const [updateCalendrier] = useUpdateCalendrierMutation();
@@ -153,7 +134,7 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
       const update_calendrier = {
         _id: calendrier_id || calendrierLocation?.state?._id!,
         matiere: selectedMatiere || calendrierLocation?.state?.matiere,
-        enseignant: selectedEnseignant || calendrierLocation?.state?.enseignant,
+        // enseignant: selectedEnseignant || calendrierLocation?.state?.enseignant,
         heure_debut:
           formatTime(selectedStartTime) ||
           calendrierLocation?.state?.heure_debut,
@@ -275,7 +256,7 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
             </div>
           </Col>
         </Row>
-        <Row className="mb-4">
+        {/* <Row className="mb-4">
           <Col lg={3}>
             <Form.Label htmlFor="enseignant">Enseignant : </Form.Label>
           </Col>
@@ -323,7 +304,7 @@ const UpdateCalendrier: React.FC<ChildProps> = ({
               )}
             </div>
           </Col>
-        </Row>
+        </Row> */}
         <Row className="mb-4">
           <Col lg={3}>
             <Form.Label htmlFor="salle">Salle : </Form.Label>

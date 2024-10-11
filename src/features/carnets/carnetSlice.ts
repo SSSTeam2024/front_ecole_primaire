@@ -16,6 +16,12 @@ export interface Carnet {
   eleves: EleveData[]
 }
 
+interface UpdateCarnetData {
+  _id?: string;
+  updateData: any;
+  eleves: EleveData[];
+}
+
 export const carnetSlice = createApi({
   reducerPath: "Carnet",
   baseQuery: fetchBaseQuery({
@@ -40,6 +46,14 @@ export const carnetSlice = createApi({
         },
         invalidatesTags: ["Carnet"],
       }),
+      updateCarnet: builder.mutation<void, UpdateCarnetData>({
+        query: ({ _id, ...rest }) => ({
+          url: `/updateCarnet/${_id}`,
+          method: "PATCH",
+          body: rest,
+        }),
+        invalidatesTags: ["Carnet"],
+      }),
       deleteCarnet: builder.mutation<void, Carnet>({
         query: (_id) => ({
           url: `/deleteCarnet/${_id}`,
@@ -51,4 +65,4 @@ export const carnetSlice = createApi({
   },
 });
 
-export const { useAddCarnetMutation, useFetchCarnetsQuery, useDeleteCarnetMutation } = carnetSlice;
+export const { useAddCarnetMutation, useFetchCarnetsQuery, useDeleteCarnetMutation, useUpdateCarnetMutation } = carnetSlice;
