@@ -12,6 +12,18 @@ export interface Messagerie {
   fichiers: string[],
 }
 
+export interface MessagerieCollectif {
+  _id?: string,
+  msg: string,
+  sender: string,
+  receivers: string[],
+  date: string,
+  heure: string,
+  fichier_base64_string: string[],
+  fichier_extension: string[],
+  fichiers: string[],
+}
+
 export const messagerieSlice = createApi({
   reducerPath: "Messagerie",
   baseQuery: fetchBaseQuery({
@@ -43,6 +55,16 @@ export const messagerieSlice = createApi({
         },
         invalidatesTags: ["Messagerie"],
       }),
+      newMessagerieCollectif: builder.mutation<void, MessagerieCollectif>({
+        query(payload) {
+          return {
+            url: "/newMessagerieCollectif",
+            method: "POST",
+            body: payload,
+          };
+        },
+        invalidatesTags: ["Messagerie"],
+      }),
       deleteMessagerie: builder.mutation<void, Messagerie>({
         query: (_id) => ({
           url: `/deleteMessagerie/${_id}`,
@@ -58,5 +80,6 @@ export const {
  useDeleteMessagerieMutation,
  useGetMessageriesQuery,
  useNewMessagerieMutation,
- useGetMessageriesByParentIdMutation
+ useGetMessageriesByParentIdMutation,
+ useNewMessagerieCollectifMutation
 } = messagerieSlice;

@@ -9,6 +9,7 @@ import {
   useDeleteMessagerieMutation,
   useGetMessageriesByParentIdMutation,
   useGetMessageriesQuery,
+  useNewMessagerieCollectifMutation,
   useNewMessagerieMutation,
 } from "features/messageries/messagerieSlice";
 import { useFetchParentsQuery } from "features/parents/parentSlice";
@@ -25,16 +26,14 @@ const MessageCollectif = () => {
   const [selectedMessages, setSelectedMessages] = useState<any[]>([]);
   const [getMessageriesByParentId] = useGetMessageriesByParentIdMutation();
   const [selectedParent, setSelectedParent] = useState<string>("");
-  const [selectedParentId, setSelectedParentId] = useState(null);
-  const handleParentClick = async (parentId: any) => {
-    try {
-      const response = await getMessageriesByParentId(parentId).unwrap();
-      setSelectedMessages(response);
-      setSelectedParent(parentId);
-      setSelectedParentId(parentId);
-    } catch (error) {
-      console.error("Error fetching messages", error);
-    }
+  const [selectedParentIds, setSelectedParentIds] = useState<any[]>([]);
+  const handleParentClick = (parentId: any) => {
+    setSelectedParentIds(
+      (prevSelected) =>
+        prevSelected.includes(parentId)
+          ? prevSelected.filter((id) => id !== parentId) // Remove if already selected
+          : [...prevSelected, parentId] // Add if not selected
+    );
   };
 
   const notifySuccess = () => {
@@ -65,12 +64,12 @@ const MessageCollectif = () => {
     buttonsStyling: false,
   });
 
-  const [createMessage] = useNewMessagerieMutation();
+  const [createMessage] = useNewMessagerieCollectifMutation();
 
   const initialMessage = {
     msg: "",
     sender: "",
-    receiver: "",
+    receivers: [""],
     date: "",
     heure: "",
     fichier_base64_string: [],
@@ -83,7 +82,7 @@ const MessageCollectif = () => {
   const {
     msg,
     sender,
-    receiver,
+    receivers,
     date,
     heure,
     fichier_base64_string,
@@ -123,14 +122,14 @@ const MessageCollectif = () => {
       fichier_extension: base64Files.map((file) => file.extension),
     }));
   };
-
+  //   console.log("selectedParentIds", selectedParentIds);
   const currentDate = new Date();
   const onSubmitMessage = () => {
     try {
       message["date"] = formatDate(currentDate);
       message["heure"] = formatTime(currentDate);
       message["sender"] = "administration";
-      message["receiver"] = selectedParent;
+      message["receivers"] = selectedParentIds;
       createMessage(message)
         .then(() => notifySuccess())
         .then(() => setMessage(initialMessage));
@@ -212,8 +211,11 @@ const MessageCollectif = () => {
                           onClick={() => handleParentClick(parent._id)}
                           style={{
                             cursor: "pointer",
-                            backgroundColor:
-                              selectedParentId === parent._id ? "#f0f0f0" : "",
+                            backgroundColor: selectedParentIds.includes(
+                              parent?._id!
+                            )
+                              ? "#f0f0f0"
+                              : "",
                           }}
                         >
                           <div className="d-flex align-items-center">

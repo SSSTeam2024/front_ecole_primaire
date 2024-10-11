@@ -37,6 +37,14 @@ export const exerciceSlice = createApi({
         },
         invalidatesTags: ["Exercice"],
       }),
+      updateExercice: builder.mutation<void, Exercice>({
+        query: ({ _id, ...rest }) => ({
+          url: `/updateExercice/${_id}`,
+          method: "PATCH",
+          body: rest,
+        }),
+        invalidatesTags: ["Exercice"],
+      }),
       deleteExercice: builder.mutation<void, Exercice>({
         query: (_id) => ({
           url: `/deleteExercice/${_id}`,
@@ -51,5 +59,6 @@ export const exerciceSlice = createApi({
 export const {
  useAddExerciceMutation,
  useFetchExercicesQuery,
- useDeleteExerciceMutation
+ useDeleteExerciceMutation,
+ useUpdateExerciceMutation
 } = exerciceSlice;

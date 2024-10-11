@@ -33,6 +33,7 @@ import {
   useFetchSmsSettingsQuery,
   useUpdateSmsSettingByIdMutation,
 } from "features/smsSettings/smsSettings";
+import UpdateExercice from "./UpdateExercice";
 
 const Exercices = () => {
   const { data = [] } = useFetchExercicesQuery();
@@ -131,6 +132,12 @@ const Exercices = () => {
     useState<boolean>(false);
   function tog_AddObservation() {
     setmodal_AddObservation(!modal_AddObservation);
+  }
+
+  const [modal_UpdateExercice, setmodal_UpdateExercice] =
+    useState<boolean>(false);
+  function tog_UpdateExercice() {
+    setmodal_UpdateExercice(!modal_UpdateExercice);
   }
 
   const optionColumnsTable = AllClasses.map((classe: any) => ({
@@ -319,7 +326,12 @@ const Exercices = () => {
               </Link>
             </li>
             <li>
-              <Link to="#" className="badge badge-soft-success edit-item-btn">
+              <Link
+                to="#"
+                className="badge badge-soft-success edit-item-btn"
+                onClick={() => tog_UpdateExercice()}
+                state={row}
+              >
                 <i
                   className="ri-edit-2-line"
                   style={{
@@ -680,6 +692,28 @@ const Exercices = () => {
                   </div>
                 </Row>
               </Form>
+            </Modal.Body>
+          </Modal>
+          <Modal
+            className="fade"
+            id="createModal"
+            show={modal_UpdateExercice}
+            onHide={() => {
+              tog_UpdateExercice();
+            }}
+            centered
+            size="lg"
+          >
+            <Modal.Header closeButton>
+              <h1 className="modal-title fs-5" id="createModalLabel">
+                Modifier Exercice
+              </h1>
+            </Modal.Header>
+            <Modal.Body>
+              <UpdateExercice
+                modal_UpdateExercice={modal_UpdateExercice}
+                setmodal_UpdateExercice={setmodal_UpdateExercice}
+              />
             </Modal.Body>
           </Modal>
         </Container>
