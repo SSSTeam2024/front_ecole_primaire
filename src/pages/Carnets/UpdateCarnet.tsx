@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -23,6 +23,24 @@ import { formatDate } from "helpers/data_time_format";
 import { useFetchClassesQuery } from "features/classes/classeSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 
+function getMimeType(extension: any) {
+  switch (extension.toLowerCase()) {
+    case "txt":
+      return "text/plain";
+    case "csv":
+      return "text/csv";
+    case "pdf":
+      return "application/pdf";
+    case "doc":
+    case "docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    case "xlsx":
+      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    default:
+      return "application/octet-stream";
+  }
+}
+
 const UpdateCarnet = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,7 +57,14 @@ const UpdateCarnet = () => {
 
   const { _id, classe, trimestre, date, eleves } = location.state;
 
-  const [elevesData, setElevesData] = useState(eleves);
+  const [elevesData, setElevesData] = useState(
+    eleves.map((eleve: any) => ({
+      ...eleve,
+      fichier: eleve.fichier || "",
+      fichier_base64_string: eleve.fichier_base64_string || "",
+      fichier_extension: eleve.fichier_extension || "",
+    }))
+  );
   const [updateCarnet] = useUpdateCarnetMutation();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -69,17 +94,39 @@ const UpdateCarnet = () => {
     index: number
   ) => {
     const file = event.target.files ? event.target.files[0] : null;
+
     if (file) {
-      const { base64Data, extension } = await convertToBase64(file);
-      const newFileString = `${base64Data}.${extension}`;
-      const updatedEleves = [...elevesData];
-      updatedEleves[index] = {
-        ...updatedEleves[index],
-        fichier: newFileString,
-        fichier_base64_string: base64Data,
-        fichier_extension: extension,
-      };
-      setElevesData(updatedEleves);
+      try {
+        const { base64Data, extension } = await convertToBase64(file);
+
+        if (!base64Data || !extension) {
+          throw new Error("File conversion failed");
+        }
+
+        const newFileString = `${base64Data}.${extension}`;
+
+        setElevesData((prevElevesData: any) =>
+          prevElevesData.map((eleve: any, eleveIndex: number) => {
+            if (eleveIndex === index) {
+              return {
+                ...eleve,
+                fichier: newFileString,
+                fichier_base64_string: base64Data,
+                fichier_extension: extension,
+              };
+            } else {
+              return {
+                ...eleve,
+                fichier: eleve.fichier || "",
+                fichier_base64_string: eleve.fichier_base64_string || "",
+                fichier_extension: eleve.fichier_extension || "",
+              };
+            }
+          })
+        );
+      } catch (error) {
+        console.error("Error handling file upload:", error);
+      }
     }
   };
 
@@ -97,6 +144,13 @@ const UpdateCarnet = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleOpenFile = (eleve: any) => {
+    const fileURL = `data:${getMimeType(eleve.fichier_extension)};base64,${
+      eleve.fichier_base64_string
+    }`;
+    window.open(fileURL, "_system");
   };
 
   return (
@@ -242,12 +296,59 @@ const UpdateCarnet = () => {
                           />
                         </Col>
                         <Col className="d-flex align-items-center">
-                          <Image
-                            src={`${process.env.REACT_APP_BASE_URL}/carnetFiles/${eleve.fichier}`}
-                            className="rounded"
-                            width="70"
-                            alt="Bulletin élève"
-                          />
+                          {eleve.fichier && eleve.fichier_extension ? (
+                            <>
+                              {["jpeg", "jpg", "png", "gif", "bmp"].includes(
+                                eleve.fichier_extension.toLowerCase()
+                              ) ? (
+                                <Image
+                                  src={`data:image/${eleve.fichier_extension};base64, ${eleve.fichier_base64_string}`}
+                                  alt="Bulletin élève"
+                                  className="rounded"
+                                  width="70"
+                                />
+                              ) : (
+                                <a>
+                                  {eleve.fichier_extension === "pdf" && (
+                                    <i className="bi bi-filetype-pdf text-danger fs-22"></i>
+                                  )}
+                                  {["doc", "docx"].includes(
+                                    eleve.fichier_extension
+                                  ) && (
+                                    <i className="bi bi-file-earmark-word text-primary fs-22"></i>
+                                  )}
+                                  {["xls", "xlsx"].includes(
+                                    eleve.fichier_extension
+                                  ) && (
+                                    <i className="bi bi-file-earmark-excel text-success fs-22"></i>
+                                  )}
+                                  {["ppt", "pptx"].includes(
+                                    eleve.fichier_extension
+                                  ) && (
+                                    <i className="bi bi-file-earmark-ppt text-warning fs-22"></i>
+                                  )}
+                                  {![
+                                    "pdf",
+                                    "doc",
+                                    "docx",
+                                    "xls",
+                                    "xlsx",
+                                    "ppt",
+                                    "pptx",
+                                  ].includes(eleve.fichier_extension) && (
+                                    <i className="bi bi-file-earmark fs-22"></i>
+                                  )}
+                                </a>
+                              )}
+                            </>
+                          ) : (
+                            <Image
+                              src={`${process.env.REACT_APP_BASE_URL}/carnetFiles/${eleve.fichier}`}
+                              className="rounded"
+                              width="70"
+                              alt="Bulletin élève"
+                            />
+                          )}
                           <div className="ms-3 d-flex flex-column">
                             <div className="d-flex align-items-center">
                               <i
@@ -275,7 +376,7 @@ const UpdateCarnet = () => {
                                       e.target.files &&
                                       e.target.files.length > 0
                                     ) {
-                                      handleFileUpload(e, index); // Pass index to know which student is being updated
+                                      handleFileUpload(e, index);
                                     }
                                   }}
                                 />

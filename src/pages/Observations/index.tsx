@@ -674,16 +674,18 @@ const Observations = () => {
                 <i>{observationLocation?.state?.par!}</i>
               </Col>
             </Row>
-            <Row>
-              <Col lg={3}>
-                <span className="fw-medium">Fichier</span>
-              </Col>
-              <Col lg={9}>
-                <Button variant="soft-danger" onClick={handleButtonClick}>
-                  <i className="bi bi-filetype-pdf align-middle fs-22"></i>
-                </Button>
-              </Col>
-            </Row>
+            {observationLocation?.state?.fichier! !== "" && (
+              <Row>
+                <Col lg={3}>
+                  <span className="fw-medium">Fichier</span>
+                </Col>
+                <Col lg={9}>
+                  <Button variant="soft-danger" onClick={handleButtonClick}>
+                    <i className="bi bi-filetype-pdf align-middle fs-22"></i>
+                  </Button>
+                </Col>
+              </Row>
+            )}
           </Offcanvas.Body>
         </Offcanvas>
         <Modal
