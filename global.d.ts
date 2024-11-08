@@ -7,3 +7,4 @@ declare module '@ckeditor/ckeditor5-build-classic';
 declare module 'react-data-table-component';
 declare module 'google-maps-react';
 declare module 'react-dual-listbox';
+declare module 'react-to-print';

@@ -399,6 +399,13 @@ const Navdata = () => {
         },
         {
           id: "profile",
+          label: "Surveillants",
+          link: "/surveillants",
+          parentId: "profile",
+          icon: "ph ph-user-square",
+        },
+        {
+          id: "profile",
           label: "Salles",
           link: "/salles",
           parentId: "profile",

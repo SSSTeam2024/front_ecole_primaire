@@ -47,6 +47,7 @@ import UpdateCarnet from "pages/Carnets/UpdateCarnet";
 import UpdateNote from "pages/Notes/UpdateNote";
 import UpdateAbsence from "pages/Absence/UpdateAbsence";
 import MessageCollectif from "pages/Messages/MessageCollectif";
+import Surveillants from "pages/Surveillants";
 
 const authProtectedRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
@@ -113,6 +114,8 @@ const authProtectedRoutes = [
   { path: "/sms-parents", component: <ParentsSmses /> },
   { path: "/sms-enseignants", component: <EnseignantsSmses /> },
   { path: "/paremètres-sms", component: <Parametres /> },
+
+  { path: "/surveillants", component: <Surveillants /> },
 
   { path: "/", exact: true, component: <Navigate to="/dashboard" /> },
   { path: "*", component: <Navigate to="/dashboard" /> },
