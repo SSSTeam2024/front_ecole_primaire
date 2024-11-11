@@ -14,6 +14,7 @@ import {
 } from "features/smsSettings/smsSettings";
 
 const Absence = () => {
+  //! add this line just to push it in github !!
   const { data = [] } = useFetchAbsencesQuery();
 
   const { data: AllSmsSettings, isLoading = [] } = useFetchSmsSettingsQuery();
