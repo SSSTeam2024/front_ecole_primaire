@@ -59,11 +59,19 @@ export const smSSlice = createApi({
         query: (ids) => ({
           url: `/deleteSms`,
           method: "DELETE",
-          body: { ids },  // Send an array of IDs in the body
+          body: { ids },
         }),
         invalidatesTags: ["SmS"],
       }),
-      
+      deleteSmsEnAttente: builder.mutation<void, void>({
+        query() {
+          return {
+            url: "/delete-pending-smses",
+            method: "DELETE",
+          };
+        },
+        invalidatesTags: ["SmS"],
+      }),
     };
   },
 });
@@ -73,5 +81,6 @@ export const {
  useDeleteSmSMutation,
  useFetchSmSQuery,
  useUpdateSmSMutation,
- useSendSmSMutation
+ useSendSmSMutation,
+ useDeleteSmsEnAttenteMutation
 } = smSSlice;

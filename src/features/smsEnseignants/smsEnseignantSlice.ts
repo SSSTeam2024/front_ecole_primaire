@@ -60,6 +60,15 @@ export const smsEnseignantSlice = createApi({
         }),
         invalidatesTags: ["SmS"],
       }),
+      deleteSmsEnAttente: builder.mutation<void, void>({
+        query() {
+          return {
+            url: "/delete-pending-smses",
+            method: "DELETE",
+          };
+        },
+        invalidatesTags: ["SmS"],
+      }),
     };
   },
 });
@@ -69,5 +78,6 @@ export const {
  useDeleteSmSMutation,
  useFetchSmSQuery,
  useUpdateSmSMutation,
- useSendSmSMutation
+ useSendSmSMutation,
+ useDeleteSmsEnAttenteMutation
 } = smsEnseignantSlice;

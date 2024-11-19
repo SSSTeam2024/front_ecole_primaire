@@ -15,6 +15,7 @@ import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
   useAddSmSMutation,
+  useDeleteSmsEnAttenteMutation,
   useFetchSmSQuery,
   useSendSmSMutation,
 } from "features/smsEnseignants/smsEnseignantSlice";
@@ -49,6 +50,46 @@ const EnseignantsSmses = () => {
       showConfirmButton: false,
       timer: 2500,
     });
+  };
+  const [
+    deleteSmsEnAttente,
+    { isLoading: isDeletingPendingSmsLoading, isError },
+  ] = useDeleteSmsEnAttenteMutation();
+  const swalWithBootstrapButtons = Swal.mixin({
+    customClass: {
+      confirmButton: "btn btn-success",
+      cancelButton: "btn btn-danger",
+    },
+    buttonsStyling: false,
+  });
+
+  const AlertDelete = async () => {
+    swalWithBootstrapButtons
+      .fire({
+        title: "Etes-vous sûr?",
+        text: "Vous ne pouvez pas revenir en arrière?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprime-le !",
+        cancelButtonText: "Non, annuler !",
+        reverseButtons: true,
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          deleteSmsEnAttente();
+          swalWithBootstrapButtons.fire(
+            "Supprimé !",
+            "Les SMS en attente ont été supprimés avec succès.",
+            "success"
+          );
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Annulé",
+            "Les SMS en attente sont sécurisés :)",
+            "info"
+          );
+        }
+      });
   };
 
   const [modal_AddSms, setmodal_AddSms] = useState<boolean>(false);
@@ -248,7 +289,7 @@ const EnseignantsSmses = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={8}>
+                  <Col lg={6}>
                     <div className="d-flex align-items-center justify-content-start">
                       <div className="d-flex flex-column align-items-center mb-0">
                         <p className="h5 mb-1">Messages prêt à envoyer</p>
@@ -282,33 +323,44 @@ const EnseignantsSmses = () => {
                       </div>
                     </div>
                   </Col>
-                  <Col lg={2} className="d-flex justify-content-end">
-                    <div
-                      className="btn-group btn-group-sm"
-                      role="group"
-                      aria-label="Basic example"
-                    >
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => tog_AddSms()}
+                  <Col lg={4} className="d-flex justify-content-end">
+                    <div className="hstack gap-3">
+                      <div
+                        className="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="Basic example"
                       >
-                        <i
-                          className="ri-add-fill align-middle"
-                          style={{
-                            transition: "transform 0.3s ease-in-out",
-                            cursor: "pointer",
-                            fontSize: "1.5em",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.transform = "scale(1.3)")
+                        <button
+                          type="button"
+                          className="btn btn-danger"
+                          onClick={AlertDelete}
+                          disabled={
+                            isDeletingPendingSmsLoading ||
+                            pending_sms.length === 0
                           }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.transform = "scale(1)")
-                          }
-                        ></i>{" "}
-                        <span>Ajouter Message(s)</span>
-                      </button>
+                        >
+                          <i className="ri-delete-bin-2-line align-middle fs-20"></i>{" "}
+                          {isDeletingPendingSmsLoading ? (
+                            <span>Nettoyer ... </span>
+                          ) : (
+                            <span>Nettoyer Sms en attente</span>
+                          )}
+                        </button>
+                      </div>
+                      <div
+                        className="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="Basic example"
+                      >
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={() => tog_AddSms()}
+                        >
+                          <i className="ri-add-fill align-middle fs-20"></i>{" "}
+                          <span>Ajouter Message(s)</span>
+                        </button>
+                      </div>
                     </div>
                   </Col>
                 </Row>

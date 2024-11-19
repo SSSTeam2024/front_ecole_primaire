@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Container, Row, Card, Col, Form } from "react-bootstrap";
-
 import Breadcrumb from "Common/BreadCrumb";
-
 import Swal from "sweetalert2";
-
 import {
   useDeleteMessagerieMutation,
   useGetMessageriesByParentIdMutation,

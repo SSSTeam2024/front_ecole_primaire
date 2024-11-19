@@ -17,6 +17,7 @@ import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
   useAddSmSMutation,
+  useDeleteSmsEnAttenteMutation,
   useDeleteSmSMutation,
   useFetchSmSQuery,
   useSendSmSMutation,
@@ -29,13 +30,18 @@ import shortCode from "Common/shortCode";
 
 const ParentsSmses = () => {
   const { data = [] } = useFetchSmSQuery();
+
   const { data: AllParents = [] } = useFetchParentsQuery();
   const { data: AllClasses = [] } = useFetchClassesQuery();
   const filteredShortCode = shortCode.filter((item) => item.id !== 6);
   const [fetchEtudiantsByClasseId, { data: fetchedEtudiants }] =
     useFetchEtudiantsByClasseIdMutation();
-
   const [deleteSms] = useDeleteSmSMutation();
+
+  const [
+    deleteSmsEnAttente,
+    { isLoading: isDeletingPendingSmsLoading, isError },
+  ] = useDeleteSmsEnAttenteMutation();
 
   const pending_sms = data.filter((sms) => sms.status === "Pending");
 
@@ -88,7 +94,7 @@ const ParentsSmses = () => {
       })
       .then((result) => {
         if (result.isConfirmed) {
-          deleteSms(ids); // Pass the array of IDs
+          deleteSms(ids);
           swalWithBootstrapButtons.fire(
             "Supprimé !",
             "Les messages sélectionnés ont été supprimés.",
@@ -104,20 +110,33 @@ const ParentsSmses = () => {
       });
   };
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  // Function to handle checkbox selection
-  const handleCheckChange = (id: string) => {
-    setSelectedIds((prevSelectedIds) =>
-      prevSelectedIds.includes(id)
-        ? prevSelectedIds.filter((selectedId) => selectedId !== id)
-        : [...prevSelectedIds, id]
-    );
-  };
-
-  // Function to clear selection
-  const clearSelection = () => {
-    setSelectedIds([]);
+  const AlertDeletePendingSms = async () => {
+    swalWithBootstrapButtons
+      .fire({
+        title: "Etes-vous sûr?",
+        text: "Vous ne pouvez pas revenir en arrière?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprime-le !",
+        cancelButtonText: "Non, annuler !",
+        reverseButtons: true,
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          deleteSmsEnAttente();
+          swalWithBootstrapButtons.fire(
+            "Supprimé !",
+            "Les SMS en attente ont été supprimés avec succès.",
+            "success"
+          );
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Annulé",
+            "Les SMS en attente sont sécurisés :)",
+            "info"
+          );
+        }
+      });
   };
 
   const [isChecked, setIsChecked] = useState(true);
@@ -281,7 +300,6 @@ const ParentsSmses = () => {
       sms["status"] = "Pending";
       sms["total_sms"] = totalSms.toString();
       sms["sms_par_destinataire"] = numberOfSms.toString();
-      // console.log(sms);
       createSms(sms)
         .then(() => notifySuccess())
         .then(() => setSms(initialSms));
@@ -357,7 +375,6 @@ const ParentsSmses = () => {
       name: <span className="font-weight-bold fs-13">Action</span>,
       sortable: true,
       cell: (row: any) => {
-        // Retrieve the IDs of all SMS messages that share the same `msg`
         const idsToDelete = row.receiversCount.map((sms: any) => sms._id);
 
         return row.status === "Pending" ? (
@@ -366,7 +383,7 @@ const ParentsSmses = () => {
               <Link to="#" className="badge badge-soft-danger remove-item-btn">
                 <i
                   className="ri-delete-bin-2-line"
-                  onClick={() => AlertDelete(idsToDelete)} // Pass multiple IDs for deletion
+                  onClick={() => AlertDelete(idsToDelete)}
                 ></i>
               </Link>
             </li>
@@ -425,7 +442,7 @@ const ParentsSmses = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={8}>
+                  <Col lg={6}>
                     <div className="d-flex align-items-center justify-content-start">
                       <div className="d-flex flex-column align-items-center mb-0">
                         <p className="h5 mb-1">Messages prêt à envoyer</p>
@@ -459,46 +476,59 @@ const ParentsSmses = () => {
                       </div>
                     </div>
                   </Col>
-                  <Col lg={2} className="d-flex justify-content-end">
-                    <div
-                      className="btn-group btn-group-sm"
-                      role="group"
-                      aria-label="Basic example"
-                    >
-                      {loadingCreateSms ? (
-                        <button
-                          className="btn btn-outline-primary btn-load d-flex align-items-center"
-                          disabled
-                        >
-                          <span
-                            className="spinner-border flex-shrink-0"
-                            role="status"
-                          />
-                          <span className="flex-grow-1 ms-2">En Cours...</span>
-                        </button>
-                      ) : (
+                  <Col lg={4} className="d-flex justify-content-end">
+                    <div className="hstack gap-3">
+                      <div
+                        className="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="Basic example"
+                      >
                         <button
                           type="button"
-                          className="btn btn-primary"
-                          onClick={() => tog_AddSms()}
+                          className="btn btn-danger"
+                          onClick={AlertDeletePendingSms}
+                          disabled={
+                            isDeletingPendingSmsLoading ||
+                            pending_sms.length === 0
+                          }
                         >
-                          <i
-                            className="ri-add-fill align-middle"
-                            style={{
-                              transition: "transform 0.3s ease-in-out",
-                              cursor: "pointer",
-                              fontSize: "1.5em",
-                            }}
-                            onMouseEnter={(e) =>
-                              (e.currentTarget.style.transform = "scale(1.3)")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
-                          ></i>{" "}
-                          <span>Ajouter Message(s)</span>
+                          <i className="ri-delete-bin-2-line align-middle fs-20"></i>{" "}
+                          {isDeletingPendingSmsLoading ? (
+                            <span>Nettoyer ... </span>
+                          ) : (
+                            <span>Nettoyer Sms en attente</span>
+                          )}
                         </button>
-                      )}
+                      </div>
+                      <div
+                        className="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="Basic example"
+                      >
+                        {loadingCreateSms ? (
+                          <button
+                            className="btn btn-outline-primary btn-load d-flex align-items-center"
+                            disabled
+                          >
+                            <span
+                              className="spinner-border flex-shrink-0"
+                              role="status"
+                            />
+                            <span className="flex-grow-1 ms-2">
+                              En Cours...
+                            </span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => tog_AddSms()}
+                          >
+                            <i className="ri-add-fill align-middle fs-20"></i>{" "}
+                            <span>Ajouter Message(s)</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </Col>
                 </Row>
