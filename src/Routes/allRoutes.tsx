@@ -48,6 +48,7 @@ import UpdateNote from "pages/Notes/UpdateNote";
 import UpdateAbsence from "pages/Absence/UpdateAbsence";
 import MessageCollectif from "pages/Messages/MessageCollectif";
 import Surveillants from "pages/Surveillants";
+import SmsStatistiques from "pages/SmsStatistiques";
 
 const authProtectedRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
@@ -114,6 +115,7 @@ const authProtectedRoutes = [
   { path: "/sms-parents", component: <ParentsSmses /> },
   { path: "/sms-enseignants", component: <EnseignantsSmses /> },
   { path: "/paremètres-sms", component: <Parametres /> },
+  { path: "/statistiques-sms", component: <SmsStatistiques /> },
 
   { path: "/surveillants", component: <Surveillants /> },
 

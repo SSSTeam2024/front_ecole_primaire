@@ -217,16 +217,15 @@ const CreateAbsence = () => {
     e.preventDefault();
 
     try {
-      // Create elevesWithTypes with the correct structure (array of objects)
       const elevesWithTypes = students.map((eleve) => ({
         eleve: eleve._id,
-        typeAbsent: studentTypes[eleve._id] || "P", // Default to "P" if no type selected
+        typeAbsent: studentTypes[eleve._id] || "P",
       }));
 
       const absenceData = {
         ...absence,
         classe: selectedClasse,
-        eleves: elevesWithTypes, // Ensure this is an array of objects, not a string
+        eleves: elevesWithTypes,
         date: formatDate(selectedDate),
         matiere: OneEnseignant?.matiere!,
         heure: formatTime(selectedTime),
@@ -234,13 +233,12 @@ const CreateAbsence = () => {
         enseignant: selectedEnseignant,
       };
       console.log(absenceData);
-      //   Submit to the backend
       createAbsence(absenceData)
         .then(() => notifySuccess())
         .then(() => setAbsence(initialAbsence));
       tog_AllAbsences();
     } catch (error) {
-      notifyError(error); // Handle errors
+      notifyError(error);
     }
   };
 

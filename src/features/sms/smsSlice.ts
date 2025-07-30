@@ -1,17 +1,24 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface SmS {
-  _id?: string,
-  sender: string,
-  receivers: string[],
-  msg: string,
-  status: string,
-  receiver?: string,
-  include_names?: string,
-  specefic_students? : string[],
-  sms_par_destinataire?: string,
-  total_sms?: string,
-  eleve?: string,
+  _id?: string;
+  sender: string;
+  receivers: string[];
+  msg: string;
+  status: string;
+  receiver?: string;
+  include_names?: string;
+  specefic_students?: string[];
+  sms_par_destinataire?: string;
+  total_sms?: string;
+  eleve?: string;
+}
+
+export interface SoldeResponse {
+  error: string;
+  nbrsms: string;
+  senderListe: string;
+  solde: string;
 }
 
 export const smSSlice = createApi({
@@ -30,12 +37,22 @@ export const smSSlice = createApi({
       }),
       sendSmS: builder.mutation<void, void>({
         query() {
-            return {
-              url: "/send-pending-smses",
-              method: "POST",
-            };
-          },
-          invalidatesTags: ["SmS"],
+          return {
+            url: "/send-pending-smses",
+            method: "POST",
+          };
+        },
+        invalidatesTags: ["SmS"],
+      }),
+      fetchsolde: builder.mutation<SoldeResponse, {api_key: string}>({
+        query(payload) {
+          return {
+            url: "/soldeSms",
+            method: "POST",
+            body: payload,
+          };
+        },
+        invalidatesTags: ["SmS"],
       }),
       addSmS: builder.mutation<void, SmS>({
         query(payload) {
@@ -77,10 +94,11 @@ export const smSSlice = createApi({
 });
 
 export const {
- useAddSmSMutation,
- useDeleteSmSMutation,
- useFetchSmSQuery,
- useUpdateSmSMutation,
- useSendSmSMutation,
- useDeleteSmsEnAttenteMutation
+  useAddSmSMutation,
+  useDeleteSmSMutation,
+  useFetchSmSQuery,
+  useUpdateSmSMutation,
+  useSendSmSMutation,
+  useDeleteSmsEnAttenteMutation,
+  useFetchsoldeMutation,
 } = smSSlice;

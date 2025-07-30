@@ -20,7 +20,7 @@ export const smsEnseignantSlice = createApi({
   tagTypes: ["SmS"],
   endpoints(builder) {
     return {
-      fetchSmS: builder.query<SmS[], number | void>({
+      fetchAllSmS: builder.query<SmS[], number | void>({
         query() {
           return `/getSms`;
         },
@@ -76,7 +76,7 @@ export const smsEnseignantSlice = createApi({
 export const {
  useAddSmSMutation,
  useDeleteSmSMutation,
- useFetchSmSQuery,
+ useFetchAllSmSQuery,
  useUpdateSmSMutation,
  useSendSmSMutation,
  useDeleteSmsEnAttenteMutation

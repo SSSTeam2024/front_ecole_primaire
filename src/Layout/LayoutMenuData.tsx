@@ -226,6 +226,13 @@ const Navdata = () => {
         },
         {
           id: "invoices",
+          label: "Statistiques",
+          link: "/statistiques-sms",
+          parentId: "invoices",
+          icon: "ph ph-chart-line",
+        },
+        {
+          id: "invoices",
           label: "Paramètres",
           link: "/paremètres-sms",
           parentId: "invoices",

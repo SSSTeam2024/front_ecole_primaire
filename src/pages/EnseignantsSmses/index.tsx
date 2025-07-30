@@ -16,7 +16,7 @@ import Swal from "sweetalert2";
 import {
   useAddSmSMutation,
   useDeleteSmsEnAttenteMutation,
-  useFetchSmSQuery,
+  useFetchAllSmSQuery,
   useSendSmSMutation,
 } from "features/smsEnseignants/smsEnseignantSlice";
 import Select from "react-select";
@@ -24,7 +24,7 @@ import shortCode from "Common/shortCode";
 import { useFetchEnseignantsQuery } from "features/enseignants/enseignantSlice";
 
 const EnseignantsSmses = () => {
-  const { data = [] } = useFetchSmSQuery();
+  const { data = [] } = useFetchAllSmSQuery();
 
   const { data: AllEnseignants = [] } = useFetchEnseignantsQuery();
 
