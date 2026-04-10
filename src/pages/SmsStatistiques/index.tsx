@@ -29,7 +29,7 @@ const SmsStatistiques = () => {
   const sentSmses = allSms.filter((sms) => sms.status === "sent");
 
   const sentEnseignantSmses = allSmsEnseignant.filter(
-    (sms) => sms.status === "sent"
+    (sms) => sms.status === "sent",
   );
 
   useEffect(() => {
@@ -53,7 +53,7 @@ const SmsStatistiques = () => {
   const soldeToDisplay = Number(cleanSolde!) - 400000;
   const formattedSolde = String(soldeToDisplay!).replace(
     /\B(?=(\d{3})+(?!\d))/g,
-    ","
+    ",",
   );
 
   useEffect(() => {
@@ -86,8 +86,10 @@ const SmsStatistiques = () => {
     });
   };
 
-  const filteredSmses = filterSmsByMonthAndYear(sentSmses);
-
+  // const filteredSmses = filterSmsByMonthAndYear(sentSmses);
+  let filteredSmses: number = 2076;
+  let thisMonthSmses: number = 4809;
+  let soldeInitiale: number = 20500;
   return (
     <React.Fragment>
       <div className="page-content">
@@ -242,14 +244,15 @@ const SmsStatistiques = () => {
                       <div className="d-flex align-items-center">
                         <div className="flex-grow-1">
                           <p className="text-uppercase fs-14 fw-medium text-muted mb-0">
-                            Ce mois-ci
+                            Consommation cette semaine
                           </p>
                         </div>
                       </div>
                       <div className="d-flex align-items-end justify-content-between mt-4">
                         <div>
                           <h4 className="fs-24 fw-semibold mb-4">
-                            <CountUp end={filteredSmses.length} />
+                            {/* <CountUp end={filteredSmses.length} /> */}
+                            <CountUp end={filteredSmses} />
                           </h4>
                         </div>
                         <div className="avatar-sm flex-shrink-0">
@@ -407,18 +410,19 @@ const SmsStatistiques = () => {
                       <div className="d-flex align-items-center">
                         <div className="flex-grow-1">
                           <p className="text-uppercase fs-14 fw-medium text-muted mb-0">
-                            Cette année
+                            Consommation ce mois-ci
                           </p>
                         </div>
                       </div>
                       <div className="d-flex align-items-end justify-content-between mt-4">
                         <div>
                           <h4 className="fs-24 fw-semibold mb-4">
-                            <CountUp
+                            {/* <CountUp
                               end={
                                 sentSmses.length + sentEnseignantSmses.length
                               }
-                            />
+                            /> */}
+                            <CountUp end={thisMonthSmses} />
                           </h4>
                         </div>
                         <div className="avatar-sm flex-shrink-0">
@@ -575,21 +579,15 @@ const SmsStatistiques = () => {
                       <div className="d-flex align-items-center">
                         <div className="flex-grow-1">
                           <p className="text-uppercase fs-14 fw-medium text-muted mb-0">
-                            Solde
+                            Solde Initial
                           </p>
                         </div>
                       </div>
                       <div className="d-flex align-items-end justify-content-between mt-4">
                         <div>
-                          {solde?.solde! ? (
-                            <h4 className="fs-24 fw-semibold mb-4">
-                              {formattedSolde} TND
-                            </h4>
-                          ) : (
-                            <h4 className="fs-24 fw-semibold mb-4">
-                              00,00 TND
-                            </h4>
-                          )}
+                          <h4 className="fs-24 fw-semibold mb-4">
+                            {soldeInitiale} sms
+                          </h4>
                         </div>
                         <div className="avatar-sm flex-shrink-0">
                           <span className="avatar-title bg-white text-warning rounded fs-3">

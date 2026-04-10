@@ -57,7 +57,7 @@ export const etudiantSlice = createApi({
         }),
         invalidatesTags: ["Etudiant"],
       }),
-      addEtudiant: builder.mutation<void, Etudiant>({
+      addEtudiant: builder.mutation<Etudiant, Etudiant>({
         query(payload) {
           return {
             url: "/newEtudiant",

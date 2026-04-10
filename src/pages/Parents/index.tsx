@@ -17,11 +17,16 @@ import {
   useAddParentMutation,
   useDeleteParentMutation,
   useFetchParentsQuery,
+  useUpdateParentMutation,
 } from "features/parents/parentSlice";
 import Select from "react-select";
-import { useFetchEtudiantsQuery } from "features/etudiants/etudiantSlice";
+import {
+  useAddEtudiantMutation,
+  useFetchEtudiantsQuery,
+} from "features/etudiants/etudiantSlice";
 import UpdateParent from "./UpdateParent";
 import UpdatePassword from "./UpdatePassword";
+import * as XLSX from "xlsx";
 
 const Parents = () => {
   const { data = [] } = useFetchParentsQuery();
@@ -316,6 +321,106 @@ const Parents = () => {
     return filteredParents;
   };
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [updateParent] = useUpdateParentMutation();
+  const [createEleve] = useAddEtudiantMutation();
+  const handleFileUpload = async (e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data, { type: "array" });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    console.log("Parsed Excel:", jsonData);
+    await processExcelData(jsonData as any[]);
+  };
+
+  const processExcelData = async (rows: any[]) => {
+    for (const row of rows) {
+      try {
+        const telParent = row["Tel Parent"] ? String(row["Tel Parent"]) : "";
+        const lastSixDigits = telParent.slice(-6);
+        const reversedLastSixDigits = lastSixDigits
+          .split("")
+          .reverse()
+          .join("");
+
+        const parentPayload = {
+          cin: "",
+          nom_parent: "",
+          prenom_parent: row["Nom parent FR"] || "",
+          phone: telParent || "",
+          username: telParent || "",
+          password: reversedLastSixDigits,
+          profession: "",
+        };
+
+        // 1. Create parent
+        const parent = await createParent(parentPayload).unwrap();
+
+        if (!parent._id) {
+          console.error("Parent not created:", row);
+          continue;
+        }
+
+        // 2. Create student (etudiant)
+        const etudiantPayload = {
+          nom: "",
+          prenom: row["Nom Eleve FR"] || "",
+          classe: row["Classe"] || "",
+          parent: parent._id,
+          genre: "",
+          avatar: "",
+          date_de_naissance: "",
+          lieu_naissance: "",
+          adresse_eleve: "",
+          ville: "",
+          nationalite: "",
+          annee_scolaire: "",
+          etablissement_frequente: "",
+          moyenne_trimestre_1: "",
+          moyenne_trimestre_2: "",
+          moyenne_trimestre_3: "",
+          moyenne_annuelle: "",
+          moyenne_concours_6: "",
+          numero_convocation_concours: "",
+        };
+
+        const student = await createEleve(etudiantPayload).unwrap();
+
+        if (!student._id) {
+          console.error("Student not created properly:", student);
+          continue; // skip this row
+        }
+
+        // 3. Update parent by adding the new student to `fils` array
+        const updatedFils = [
+          {
+            _id: student._id,
+            nom: student.nom,
+            prenom: student.prenom,
+            avatar: student.avatar,
+            classe: student.classe,
+          },
+        ];
+
+        await updateParent({
+          _id: parent._id,
+          ...parentPayload,
+          fils: updatedFils,
+        });
+
+        console.log(
+          `Created and linked child to parent: ${row["Nom Eleve FR"]}`
+        );
+      } catch (err) {
+        console.error("Error processing row:", row, err);
+      }
+    }
+  };
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -337,7 +442,14 @@ const Parents = () => {
                       <i className="ri-search-line search-icon"></i>
                     </div>
                   </Col>
-                  <Col lg={7}></Col>
+                  <Col lg={5}></Col>
+                  <Col lg={2} className="d-flex justify-content-end">
+                    <input
+                      type="file"
+                      accept=".xlsx, .xls"
+                      onChange={handleFileUpload}
+                    />
+                  </Col>
                   <Col lg={2} className="d-flex justify-content-end">
                     <div
                       className="btn-group btn-group-sm"

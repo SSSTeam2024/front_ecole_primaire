@@ -39,6 +39,16 @@ const shortCode = [
     name: "Nom Elève",
     code: "[nom_eleve]",
   },
+  {
+    id: 9,
+    name: "Lien Android",
+    code: "[lien_android]",
+  },
+  {
+    id: 10,
+    name: "Lien Appel",
+    code: "[lien_appel]",
+  },
 ];
 
 export default shortCode;

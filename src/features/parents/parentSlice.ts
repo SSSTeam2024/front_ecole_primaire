@@ -44,7 +44,7 @@ export const parentSlice = createApi({
         }),
         invalidatesTags: ["Parent"],
       }),
-      addParent: builder.mutation<void, Parent>({
+      addParent: builder.mutation<Parent, Parent>({
         query(payload) {
           return {
             url: "/newParent",
